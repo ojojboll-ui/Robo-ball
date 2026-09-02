@@ -81,12 +81,14 @@ jobs:
           path: build/windows
 
   # Publicerar webbygget på GitHub Pages, så att det finns en länk att öppna på
-  # telefonen. Kräver att repot är publikt (Pages på privata repon kräver
-  # betalplan) och att variabeln ENABLE_PAGES sätts till "true" under
-  # Settings → Secrets and variables → Actions → Variables.
+  # telefonen: https://ojojboll-ui.github.io/Robo-ball/
+  #
+  # Jobbet hoppas över så länge repot är privat — Pages på privata repon kräver
+  # betalplan. Görs repot publikt börjar det köra av sig självt, och steget
+  # nedan slår på Pages utan att någon behöver leta i inställningarna.
   pages:
     needs: build
-    if: ${{ vars.ENABLE_PAGES == 'true' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event.repository.visibility == 'public' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -100,6 +102,8 @@ jobs:
           name: robo-ball-webb
           path: web
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web
