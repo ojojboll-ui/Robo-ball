@@ -18,6 +18,7 @@ const WALK_SPEED := 130.0
 const AIM_MIN_DEG := 20.0
 const AIM_MAX_DEG := 160.0
 const AUTO_AIM_DELAY := 0.7   ## hur länge pilen visas innan spelet hoppar åt en
+const SAFETY_MARGIN := 2.0    ## slack i förflyttningstaket, se _move()
 const SIM_STEP := 1.0 / 45.0
 const SIM_STEPS := 70
 
@@ -27,6 +28,8 @@ var aim_deg := 90.0
 
 var _sweep_t := 0.0
 var _aim_elapsed := 0.0
+var _air_jumps_used := 0
+var _aim_from_air := false
 var _auto_angle := 90.0
 var _leg_phase := 0.0
 var _start_position := Vector2.ZERO
@@ -67,7 +70,12 @@ func _process_walk(delta: float) -> void:
 	_leg_phase += delta * 9.0
 	velocity.x = facing * WALK_SPEED * Settings.walk_speed
 	velocity.y += Settings.rb_gravity * delta
-	move_and_slide()
+	_move(delta)
+	# Även på marken måste lösa föremål knuffas undan. Gör han inte det blir
+	# ett litet block inklämt mellan RB och marken, och fysikmotorn löser
+	# överlappet genom att skjuta ut RB i stället — buggen där han försvinner
+	# rakt upp ur bild.
+	_push_things(0.5)
 
 	if is_on_wall():
 		_turn_around()
@@ -107,17 +115,18 @@ func _process_aim(delta: float) -> void:
 		aim_deg = AIM_MIN_DEG + roundf((aim_deg - AIM_MIN_DEG) / step) * step
 
 	if Settings.aim_timeout > 0.0 and _aim_elapsed > Settings.aim_timeout:
-		_set_state(State.WALK)
+		_set_state(State.AIR if _aim_from_air else State.WALK)
 
 func _process_air(delta: float) -> void:
 	velocity.y += Settings.rb_gravity * delta
-	move_and_slide()
-	_push_things()
+	_move(delta)
+	_push_things(1.0)
 
 	if is_on_floor():
 		if not is_zero_approx(velocity.x):
 			facing = 1 if velocity.x >= 0.0 else -1
 		velocity = Vector2.ZERO
+		_air_jumps_used = 0
 		_set_state(State.WALK)
 	elif is_on_wall():
 		velocity.x = -velocity.x * Settings.wall_bounce
@@ -135,7 +144,12 @@ func _on_signal_pressed() -> void:
 			if Settings.control_variant == Settings.ControlVariant.CLASSIC:
 				_launch()
 		State.AIR:
-			pass
+			# Dubbelhopp: samma två tryck som på marken, mitt i luften. RB
+			# stannar upp medan pilen svepar, så förmågan lägger till räckvidd
+			# utan att lägga till en enda ny inmatning — kravet varje förmåga
+			# i det här spelet måste klara (docs/DESIGN.md avsnitt 5).
+			if _air_jumps_used < Settings.air_jumps:
+				_begin_aim()
 
 func _on_signal_released() -> void:
 	if state == State.AIM and Settings.control_variant == Settings.ControlVariant.HOLD_RELEASE:
@@ -144,12 +158,15 @@ func _on_signal_released() -> void:
 func _begin_aim() -> void:
 	_aim_elapsed = 0.0
 	_sweep_t = 0.0
+	_aim_from_air = state == State.AIR
 	if Settings.control_variant == Settings.ControlVariant.AUTO_AIM:
 		_auto_angle = _pick_best_angle()
 		aim_deg = _auto_angle
 	_set_state(State.AIM)
 
 func _launch() -> void:
+	if _aim_from_air:
+		_air_jumps_used += 1
 	var a := deg_to_rad(aim_deg)
 	velocity = Vector2(cos(a), -sin(a)) * Settings.jump_power
 	facing = 1 if velocity.x >= 0.0 else -1
@@ -173,9 +190,26 @@ func respawn() -> void:
 	global_position = _start_position
 	velocity = Vector2.ZERO
 	facing = 1
+	_air_jumps_used = 0
 	_set_state(State.WALK)
 
 # ---------------------------------------------------------------- hjälpare
+
+## move_and_slide med tak på hur långt en bildruta får flytta RB.
+##
+## Fysikmotorn löser överlapp genom att trycka ut kroppen ur det den fastnat i,
+## och sitter han djupt inne i en låda blir den knuffen enorm — RB skjuts rakt
+## upp ur bild. Ett sådant hopp går aldrig att förklara med hans egen fart, så
+## vi mäter förflyttningen mot vad farten tillåter och kapar överskottet.
+## Symtomlindring, men rätt sorts: nästa bildruta får försöka igen, och lådan
+## hinner knuffas undan i stället.
+func _move(delta: float) -> void:
+	var before := global_position
+	var allowed := velocity.length() * delta + SAFETY_MARGIN
+	move_and_slide()
+	var moved := global_position - before
+	if moved.length() > allowed:
+		global_position = before + moved.normalized() * allowed
 
 func _turn_around() -> void:
 	facing = -facing
@@ -186,15 +220,23 @@ func _ground_ahead() -> bool:
 	_ledge_ray.force_raycast_update()
 	return _ledge_ray.is_colliding()
 
-func _push_things() -> void:
+func _push_things(strength: float) -> void:
 	for i in get_slide_collision_count():
 		var c := get_slide_collision(i)
 		var body := c.get_collider()
-		if body is RigidBody2D:
-			var impulse := velocity * Settings.push_force
-			body.apply_impulse(impulse, c.get_position() - body.global_position)
-			if body.has_method("take_impact"):
-				body.take_impact(velocity.length())
+		if not (body is RigidBody2D):
+			continue
+		if body.has_method("take_impact"):
+			body.take_impact(velocity.length())
+		# Knuffa aldrig något som ligger under oss. Gör man det trycks lådan ner
+		# i marken, marken trycker tillbaka, och fysikmotorn löser överlappet
+		# genom att kasta ut RB uppåt — bildruta efter bildruta. Det var
+		# orsaken till att han sköt rakt upp ur bild när han landade på ett
+		# litet block. Att stå på något är inte att knuffa det.
+		if c.get_normal().y < -0.5:
+			continue
+		var impulse := velocity * Settings.push_force * strength
+		body.apply_impulse(impulse, c.get_position() - body.global_position)
 
 ## Simulerar hoppbanan mot den riktiga kollisionsvärlden. Eftersom lufttiden är
 ## ren ballistik är resultatet exakt — det är därför förhandsbanan går att visa

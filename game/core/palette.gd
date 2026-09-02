@@ -16,3 +16,7 @@ const GROUND := Color(0.78, 0.79, 0.83)
 const GROUND_EDGE := Color(0.35, 0.35, 0.42)
 const BACKDROP := Color(0.93, 0.94, 0.96)
 const CRATE := Color(0.85, 0.88, 0.95)
+## Inställningspanelen. Ljus botten så att svart text går att läsa på den —
+## panelen ska se ut som spelet, inte som en systemdialog.
+const PANEL := Color(0.95, 0.95, 0.96)
+const LINE := Color(0.70, 0.71, 0.77)

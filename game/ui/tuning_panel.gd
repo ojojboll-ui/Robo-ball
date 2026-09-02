@@ -48,6 +48,14 @@ func _ready() -> void:
 	_panel.offset_bottom = 0.0
 	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_panel.visible = false
+	# Ljus botten, svart text. Panelen ska se ut som spelet och inte som en
+	# systemdialog — och svart text kräver en ljus yta för att gå att läsa.
+	var skin := StyleBoxFlat.new()
+	skin.bg_color = Palette.PANEL
+	skin.border_width_left = 2
+	skin.border_color = Palette.LINE
+	skin.content_margin_left = 4.0
+	_panel.add_theme_stylebox_override("panel", skin)
 	root.add_child(_panel)
 
 	var margin := MarginContainer.new()
@@ -63,6 +71,7 @@ func _ready() -> void:
 	var title := Label.new()
 	title.text = "Inställningar"
 	title.add_theme_font_size_override("font_size", 30)
+	title.add_theme_color_override("font_color", Palette.INK)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(title)
 	var close := Button.new()
@@ -107,6 +116,8 @@ func _build_rows() -> void:
 		func(v: float) -> void: Settings.slowmo = v, "%.0f%%", 100.0)
 	_slider("Vinkelsteg (0 = mjuk pendel)", 0.0, 9.0, 1.0, float(Settings.aim_steps),
 		func(v: float) -> void: Settings.aim_steps = int(v), "%.0f")
+	_slider("Extra hopp i luften", 0.0, 2.0, 1.0, float(Settings.air_jumps),
+		func(v: float) -> void: Settings.air_jumps = int(v), "%.0f")
 
 	_section("RB:s fysik")
 	_slider("Gångfart", 0.3, 2.0, 0.05, Settings.walk_speed,
@@ -181,7 +192,7 @@ func _section(title: String) -> void:
 	var label := Label.new()
 	label.text = title.to_upper()
 	label.add_theme_font_size_override("font_size", 20)
-	label.add_theme_color_override("font_color", Palette.PINK_UI)
+	label.add_theme_color_override("font_color", Palette.INK)
 	_rows.add_child(label)
 
 ## En rad: namn och värde överst, sedan minus, reglage och plus. Knapparna finns
@@ -195,11 +206,13 @@ func _slider(title: String, minv: float, maxv: float, step: float, value: float,
 	var name_label := Label.new()
 	name_label.text = title
 	name_label.add_theme_font_size_override("font_size", 21)
+	name_label.add_theme_color_override("font_color", Palette.INK)
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(name_label)
 	var value_label := Label.new()
 	value_label.text = fmt % (value * display_scale)
 	value_label.add_theme_font_size_override("font_size", 21)
+	value_label.add_theme_color_override("font_color", Palette.INK)
 	head.add_child(value_label)
 	row.add_child(head)
 
@@ -246,6 +259,8 @@ func _check(title: String, value: bool, setter: Callable) -> void:
 	check.button_pressed = value
 	check.custom_minimum_size = Vector2(0, 52)
 	check.add_theme_font_size_override("font_size", 21)
+	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		check.add_theme_color_override(state, Palette.INK)
 	check.toggled.connect(func(on: bool) -> void:
 		setter.call(on)
 		Settings.notify_changed()
@@ -256,6 +271,7 @@ func _choice(title: String, options: Array, current: int, setter: Callable) -> v
 	var label := Label.new()
 	label.text = title
 	label.add_theme_font_size_override("font_size", 21)
+	label.add_theme_color_override("font_color", Palette.INK)
 	_rows.add_child(label)
 	var picker := OptionButton.new()
 	picker.custom_minimum_size = Vector2(0, 54)

@@ -112,11 +112,14 @@ func crate_layout() -> Array[Dictionary]:
 					GROUND_Y - cube.y * 0.5 - row * (cube.y + 2)),
 				"size": cube})
 
-	# Torn, ett brett och sex högt
-	for row in 6:
-		out.append({
-			"pos": Vector2(3320, GROUND_Y - cube.y * 0.5 - row * (cube.y + 2)),
-			"size": cube})
+	# Enkelbreda torn i tre höjder. Att landa på toppen av en smal stapel är
+	# det svåraste fallet för kollisionerna, så de får stå kvar som testfall.
+	var towers := {2900: 4, 3320: 6, 3620: 9}
+	for x in towers:
+		for row in int(towers[x]):
+			out.append({
+				"pos": Vector2(float(x), GROUND_Y - cube.y * 0.5 - row * (cube.y + 2)),
+				"size": cube})
 
 	# Mur, fyra gånger tre
 	for col in 4:

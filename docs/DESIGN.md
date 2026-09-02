@@ -113,17 +113,26 @@ synlig tidigare, och (c) gå att förstå utan text.
 | 2 | **Strutsbenen** | högre och längre hopp, kliver över småkanter | höga avsatser, breda hål |
 | 3 | **Spikar** | fastnar på och rullar uppför vertikala väggar och i tak | schakt, upp-och-nedvända rum |
 | 4 | **Hårt skal** | krossar spröda block, tål fall och smällar | murar, rasområden, taggar |
-| 5 | **Ficklampan** | ljuskägla ur ögat, lyser upp mörker | mörka grottor, ljuskänsliga fiender/mekanismer |
-| 6 | **Kroken** *(förslag)* | fäster i trapetser och rälsar, svingar (skiss 4) | långa gap, hängande sektioner |
-| 7 | **Gummiskal** *(förslag)* | studsar i stället för att stanna, kedjehopp | höga schakt, studsbanepussel |
-| 8 | **Turbon** *(förslag)* | högre grundfart → loopar och korkskruvar går att klara | Sonic-sektionerna, rampbanor |
+| 5 | **Dubbelhoppet** | ett andra hopp mitt i luften, med samma två tryck | långa gap, höga avsatser, omtag när första hoppet blev fel |
+| 6 | **Ficklampan** | ljuskägla ur ögat, lyser upp mörker | mörka grottor, ljuskänsliga fiender/mekanismer |
+| 7 | **Kroken** *(förslag)* | fäster i trapetser och rälsar, svingar (skiss 4) | långa gap, hängande sektioner |
+| 8 | **Gummiskal** *(förslag)* | studsar i stället för att stanna, kedjehopp | höga schakt, studsbanepussel |
+| 9 | **Turbon** *(förslag)* | högre grundfart → loopar och korkskruvar går att klara | Sonic-sektionerna, rampbanor |
 
-**I v1 (ca 90 minuter) ingår 1, 2, 3 och 5:** rulla, strutsbenen, spikar och ficklampan.
-De täcker horisontell, vertikal och "utanför golvet"-rörelse plus en synlig ljusgrind,
-och gör kartan tre gånger större utan att lägga till en enda knapp. Hårt skal, kroken,
-gummiskalet och turbon flyttas till v2 — notera att den förstörbara fysiken finns i
-spelet ändå från start, eftersom saker går sönder av rörelseenergi; det hårda skalet
-höjer bara tröskeln, det skapar den inte.
+**I v1 (ca 90 minuter) ingår 1, 2, 3 och 5:** rulla, strutsbenen, spikar och dubbelhoppet.
+De täcker horisontell, vertikal och "utanför golvet"-rörelse plus räckvidd, och gör
+kartan tre gånger större utan att lägga till en enda knapp.
+
+Dubbelhoppet är värt en anmärkning, eftersom det är just den sortens förmåga som brukar
+kräva en extra knapp i andra spel. Här gör den inte det: i luften betyder ett tryck
+samma sak som på marken — RB stannar upp, pilen svepar, nästa tryck kastar iväg honom
+igen. Förmågan lägger alltså till räckvidd utan att lägga till inmatning, precis som
+regeln nedan kräver. Den ger dessutom något värdefullare än räckvidd: ett omtag. Ett
+hopp som blev fel går att rädda i luften, och för en spelare vars timing är ojämn är
+det skillnaden mellan att misslyckas och att få försöka igen. Hårt skal, kroken,
+gummiskalet, turbon och ficklampan flyttas till v2 — notera att den förstörbara fysiken
+finns i spelet ändå från start, eftersom saker går sönder av rörelseenergi; det hårda
+skalet höjer bara tröskeln, det skapar den inte.
 
 **Regel:** ingen förmåga får göra styrningen svårare. En förmåga som kräver att man
 trycker "i rätt ögonblick under hoppet" bryter mot premissen. Förmågor ändrar
@@ -134,9 +143,10 @@ trycker "i rätt ögonblick under hoppet" bryter mot premissen. Förmågor ändr
 * **Struktur:** sammanhängande 2D-karta i Metroid-anda, uppdelad i 5–6 biotoper som
   möts i en central hubb (kraschplatsen). Tornet i mitten är synligt från nästan
   överallt och blir slutmålet.
-* **Biotoper i v1:** kraschplatsen (tutorial, benen), grottorna (ficklampan), rörsystemet
-  (spikar, vertikalt), skrotupplaget (förstörbar fysik), och en kort tornsektion som
-  avslutning. Rampdalen, det fulla tornet och resterande biotoper är v2.
+* **Biotoper i v1:** kraschplatsen (tutorial, benen), rörsystemet (spikar, vertikalt),
+  skrotupplaget (förstörbar fysik), klyftorna (dubbelhoppet), och en kort tornsektion som
+  avslutning. Grottorna följer med ficklampan till v2, liksom rampdalen och det fulla
+  tornet.
 * **Backtracking:** ska alltid vara kortare än första resan — genvägar som låses upp
   inifrån, och snabbresa mellan hittade laddstationer.
 * **Sparning:** kontinuerlig autosparning, inte sparrum. Spelet ska kunna stängas av

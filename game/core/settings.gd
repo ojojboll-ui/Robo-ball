@@ -29,6 +29,7 @@ var input_debounce := 0.15     ## sekunder, filtrerar skakningar och dubbeltryck
 var control_variant: int = ControlVariant.CLASSIC
 var aim_steps := 0             ## 0 = mjuk pendel, annars antal diskreta vinklar
 var trajectory_preview := true
+var air_jumps := 1             ## extra hopp i luften: 0 = av, 1 = dubbelhopp
 var ledge_guard := true        ## vänd vid kanter i stället för att ramla
 
 ## Effekter
@@ -62,6 +63,7 @@ func as_dict() -> Dictionary:
 		"control_variant": int(control_variant),
 		"aim_steps": aim_steps,
 		"trajectory_preview": trajectory_preview,
+		"air_jumps": air_jumps,
 		"ledge_guard": ledge_guard,
 		"effects": effects,
 		"jump_power": jump_power,
@@ -85,6 +87,7 @@ func apply(data: Dictionary) -> void:
 	control_variant = int(data.get("control_variant", control_variant))
 	aim_steps = int(data.get("aim_steps", aim_steps))
 	trajectory_preview = bool(data.get("trajectory_preview", trajectory_preview))
+	air_jumps = int(data.get("air_jumps", air_jumps))
 	ledge_guard = bool(data.get("ledge_guard", ledge_guard))
 	effects = bool(data.get("effects", effects))
 	jump_power = float(data.get("jump_power", jump_power))
