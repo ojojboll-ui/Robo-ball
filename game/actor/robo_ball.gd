@@ -92,7 +92,12 @@ func _process_aim(delta: float) -> void:
 		return
 
 	_sweep_t += real * Settings.aim_sweep_speed * 1.6
-	var t := 0.5 + 0.5 * sin(_sweep_t)
+	# Bågen startar bakom RB och svepar fram mot den håll han går åt. Det ger
+	# spelaren ett helt svep på sig att förbereda det hopp hen troligen vill
+	# göra, i stället för att missa framåtvinkeln direkt och få vänta ett varv.
+	# Cosinus i stället för sinus gör dessutom att pilen börjar stilla vid
+	# ytterläget och accelererar mjukt.
+	var t := 0.5 + 0.5 * cos(_sweep_t) * float(facing)
 	aim_deg = lerpf(AIM_MIN_DEG, AIM_MAX_DEG, t)
 	if Settings.aim_steps > 1:
 		# Diskreta vinklar: lättare att träffa rätt, och möjligt att beskriva
