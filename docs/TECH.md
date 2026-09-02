@@ -154,10 +154,12 @@ robo-ball/
 
 Webben är rätt beslut, men den har sina egna fällor. Ta dem i fas 0, inte i fas 4:
 
-* **Headers.** Godots webbygge vill ha `SharedArrayBuffer`, vilket kräver
-  `Cross-Origin-Opener-Policy: same-origin` och `Cross-Origin-Embedder-Policy:
-  require-corp` från servern. itch.io har en inställning för detta; egen hosting måste
-  sätta dem själv. Verifiera på riktig hosting i fas 0 — inte lokalt.
+* **Headers.** Med trådstöd kräver Godots webbygge `SharedArrayBuffer`, vilket i sin
+  tur kräver `Cross-Origin-Opener-Policy: same-origin` och
+  `Cross-Origin-Embedder-Policy: require-corp` från servern. GitHub Pages kan inte sätta
+  headers alls, och itch.io har visserligen en inställning — men **fas 0 exporterar utan
+  trådstöd** (beslut 8) just för att bygget ska gå att lägga var som helst. Frågan tas
+  upp igen den dag prestandataket biter.
 * **Fokus i iframe.** I en inbäddad spelare måste sidan klickas innan tangentbordet når
   spelet. För ett enknappsspel är det ett tillgänglighetsproblem, inte en detalj: se till
   att spelet tar fokus automatiskt, att klick var som helst räknas som signal, och att

@@ -14,7 +14,10 @@ Tillgänglighet är inte en feature i det här projektet — det är premissen.
 
 ## Läget
 
-Förproduktion. Ingen kod ännu; fas 0 är nästa steg.
+**Fas 0 — gråboxprototypen körs.** RB går av sig själv och vänder vid väggar, ett tryck
+sätter honom i siktläge med pendlande pil och förhandsbana medan världen går i slow
+motion, ett tryck till kastar iväg honom, och lådstapeln rasar av rörelseenergi.
+Verifierat i Godot 4.5 och som webbygge i webbläsare.
 
 **Låsta beslut:** Godot 4 · GDScript · webben som förstahandsplattform · ca 90 minuters
 speltid i första utgåvan · fyra förmågor (rulla, ben, spikar, ficklampan).
@@ -31,27 +34,55 @@ Se [docs/DECISIONS.md](docs/DECISIONS.md).
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutslogg |
 | [concept/](concept/) | Konceptskisser |
 
-## Struktur (planerad)
+## Köra spelet
+
+Öppna `game/` i Godot 4.5 och tryck på play. Eller från terminalen:
+
+```sh
+godot --path game
+```
+
+Spelet styrs med **en enda signal**: vilken tangent som helst, klick var som helst,
+skärmtryck var som helst, valfri knapp på en handkontroll. Ett tryck siktar, ett till
+hoppar.
+
+Funktionstangenterna F1–F8 är undantagna från signalen och växlar inställningar under
+speltest (styrningsvariant, slow motion, förhandsbana, kantskydd, vinkelsteg,
+spelhastighet). Inget hjälpmedel skickar funktionstangenter, så undantaget kostar
+ingen tillgänglighet.
+
+## Bygga
+
+CI bygger webb- och Windowsversionen vid varje push till `main` och lägger dem som
+artefakter på körningen. Lokalt:
+
+```sh
+godot --headless --path game --export-release "Web" ../build/web/index.html
+godot --headless --path game --export-release "Windows Desktop" ../build/windows/RoboBall.exe
+```
+
+Vill du ha en länk att öppna på telefonen: gör repot publikt, aktivera GitHub Pages
+och sätt variabeln `ENABLE_PAGES` till `true` under *Settings → Secrets and variables →
+Actions → Variables*. Då publiceras webbygget automatiskt.
+
+## Struktur
 
 ```
-game/       Godot-projektet
-  core/     WorldClock, InputSignal, Save, Settings, Profiles
-  actor/    RB: markkontroller, siktläge, förmågor
-  world/    tiles, destruerbara objekt, faror, fiender
-  ui/       scanning-meny, HUD, karta
-  levels/   art/   audio/
-tools/      bygg- och exportskript
-docs/       denna dokumentation
+game/
+  core/     Settings, WorldClock, InputSignal, Palette
+  actor/    RB — lägen, sikte, hoppsimulering, ritning
+  world/    gråboxbanan och de destruerbara lådorna
+  ui/       HUD och utvecklarpanel (scanning-menyn kommer i fas 1)
+  main/     prototypens startscen
+docs/       design, teknik, tillgänglighet, projektplan, beslut
+concept/    konceptskisser
 ```
 
 ## Nästa steg
 
-1. Godot 4-projekt i `game/`, CI som bygger webbexport och Windows-export på varje push.
-2. Verifiera webbkedjan på riktig hosting: COOP/COEP-headers, tangentbordsfokus i
-   inbäddad spelare, test på Chromebook och surfplatta.
-3. Fas 0-prototypen: auto-gång, siktläge med förhandsbana, ballistiskt hopp, en hög
-   lådor som rasar.
-4. Boka första speltestet innan prototypen är klar.
+1. Speltesta prototypen — särskilt auto-siktet (F2) mot pendelpilen.
+2. Fas 1: den handskrivna markkontrollern, scanning-menyn, profiler, förmåga 1–2.
+3. Boka det första speltestet med målgruppen. Datumet driver arbetet.
 
 ## Not om stora filer
 

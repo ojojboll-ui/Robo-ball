@@ -1,0 +1,33 @@
+; Robo Ball — Godot 4 project
+; Se docs/TECH.md för arkitektur och docs/DECISIONS.md för låsta beslut.
+
+config_version=5
+
+[application]
+
+config/name="Robo Ball"
+run/main_scene="res://main/main.tscn"
+config/features=PackedStringArray("4.5", "GL Compatibility")
+
+[autoload]
+
+Settings="*res://core/settings.gd"
+WorldClock="*res://core/world_clock.gd"
+InputSignal="*res://core/input_signal.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[physics]
+
+common/physics_ticks_per_second=60
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true

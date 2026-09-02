@@ -4,9 +4,9 @@
 *.translation
 
 # Export
+# export_presets.cfg är medvetet versionerad — CI behöver den för att bygga.
 build/
 export/
-export_presets.cfg
 
 # OS / editor
 .DS_Store

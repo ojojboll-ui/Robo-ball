@@ -1,0 +1,107 @@
+name: Bygg
+
+# Varje ändring på main ger ett nytt webbygge. Det är hela poängen med
+# webben som förstahandsplattform: en länk som går att öppna i Safari på en
+# telefon och skicka till en lärare, utan att någon installerar något.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  # Bump här när vi byter Godot-version. Både motorn och exportmallarna
+  # hämtas från samma release.
+  GODOT_VERSION: "4.5"
+  GODOT_RELEASE: "stable"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Hämta Godot och exportmallar
+        run: |
+          set -euo pipefail
+          BASE="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}"
+          curl -sSL -o godot.zip "${BASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip"
+          unzip -q godot.zip
+          sudo mv "Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64" /usr/local/bin/godot
+          sudo chmod +x /usr/local/bin/godot
+          curl -sSL -o templates.tpz "${BASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_export_templates.tpz"
+          unzip -q templates.tpz
+          mkdir -p "${HOME}/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}"
+          mv templates/* "${HOME}/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_RELEASE}/"
+          godot --version
+
+      - name: Importera projektet
+        working-directory: game
+        run: |
+          set -o pipefail
+          godot --headless --import 2>&1 | tee import.log
+          if grep -qE "SCRIPT ERROR|Parse Error|Failed to load script" import.log; then
+            echo "::error::Skriptfel vid import"
+            exit 1
+          fi
+
+      - name: Röktest
+        working-directory: game
+        run: |
+          set -o pipefail
+          godot --headless --quit-after 600 2>&1 | tee run.log
+          if grep -qE "SCRIPT ERROR|Parse Error" run.log; then
+            echo "::error::Körfel under röktestet"
+            exit 1
+          fi
+
+      - name: Exportera webb
+        working-directory: game
+        run: |
+          mkdir -p ../build/web
+          godot --headless --export-release "Web" ../build/web/index.html
+          test -f ../build/web/index.html
+
+      - name: Exportera Windows
+        working-directory: game
+        run: |
+          mkdir -p ../build/windows
+          godot --headless --export-release "Windows Desktop" ../build/windows/RoboBall.exe
+          test -f ../build/windows/RoboBall.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: robo-ball-webb
+          path: build/web
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: robo-ball-windows
+          path: build/windows
+
+  # Publicerar webbygget på GitHub Pages, så att det finns en länk att öppna på
+  # telefonen. Kräver att repot är publikt (Pages på privata repon kräver
+  # betalplan) och att variabeln ENABLE_PAGES sätts till "true" under
+  # Settings → Secrets and variables → Actions → Variables.
+  pages:
+    needs: build
+    if: ${{ vars.ENABLE_PAGES == 'true' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: robo-ball-webb
+          path: web
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+      - id: deploy
+        uses: actions/deploy-pages@v4
