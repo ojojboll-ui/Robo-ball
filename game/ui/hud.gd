@@ -12,13 +12,13 @@ var _foot_label: Label
 
 func _ready() -> void:
 	_state_label = _make_label(Vector2(28, 22), 34)
-	_hint_label = _make_label(Vector2(28, 66), 20)
-	_foot_label = _make_label(Vector2(28, 0), 15)
+	_hint_label = _make_label(Vector2(28, 66), 22)
+	_foot_label = _make_label(Vector2(28, 0), 19)
 	_foot_label.anchor_top = 1.0
 	_foot_label.anchor_bottom = 1.0
-	_foot_label.offset_top = -46.0
+	_foot_label.offset_top = -50.0
 	_foot_label.offset_bottom = -14.0
-	_foot_label.text = "Tryck var som helst för att spela · kugghjulet uppe till höger ställer in · F8 börjar om"
+	_foot_label.text = "Tryck var som helst för att spela · kugghjulet ställer in"
 
 func _make_label(pos: Vector2, size: int) -> Label:
 	var label := Label.new()

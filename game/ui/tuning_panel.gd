@@ -15,8 +15,8 @@ class_name TuningPanel
 signal restart_requested
 signal travel_requested(position: Vector2)
 
-const PANEL_WIDTH := 470.0
-const ROW_HEIGHT := 44.0
+const PANEL_WIDTH := 540.0
+const ROW_HEIGHT := 48.0
 
 var _panel: PanelContainer
 var _rows: VBoxContainer
@@ -32,8 +32,8 @@ func _ready() -> void:
 
 	var gear := Button.new()
 	gear.text = "⚙"
-	gear.add_theme_font_size_override("font_size", 30)
-	gear.custom_minimum_size = Vector2(66, 66)
+	gear.add_theme_font_size_override("font_size", 34)
+	gear.custom_minimum_size = Vector2(72, 72)
 	gear.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	gear.position = Vector2(-82, 16)
 	gear.tooltip_text = "Inställningar för speltest"
@@ -62,12 +62,13 @@ func _ready() -> void:
 	var head := HBoxContainer.new()
 	var title := Label.new()
 	title.text = "Inställningar"
-	title.add_theme_font_size_override("font_size", 26)
+	title.add_theme_font_size_override("font_size", 30)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(title)
 	var close := Button.new()
 	close.text = "Stäng"
-	close.custom_minimum_size = Vector2(96, 48)
+	close.custom_minimum_size = Vector2(110, 52)
+	close.add_theme_font_size_override("font_size", 20)
 	close.pressed.connect(toggle)
 	head.add_child(close)
 	column.add_child(head)
@@ -149,7 +150,8 @@ func _build_rows() -> void:
 	_section("Lekplatsen")
 	var restart := Button.new()
 	restart.text = "Börja om — ställ tillbaka alla lådor"
-	restart.custom_minimum_size = Vector2(0, 52)
+	restart.custom_minimum_size = Vector2(0, 58)
+	restart.add_theme_font_size_override("font_size", 20)
 	restart.pressed.connect(func() -> void: restart_requested.emit())
 	_rows.add_child(restart)
 	_travel_buttons()
@@ -163,7 +165,8 @@ func _travel_buttons() -> void:
 		var pos: Vector2 = point["pos"]
 		var button := Button.new()
 		button.text = str(point["name"])
-		button.custom_minimum_size = Vector2(0, 48)
+		button.custom_minimum_size = Vector2(0, 54)
+		button.add_theme_font_size_override("font_size", 19)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.pressed.connect(func() -> void: travel_requested.emit(pos))
 		grid.add_child(button)
@@ -177,7 +180,7 @@ func _section(title: String) -> void:
 	_rows.add_child(spacer)
 	var label := Label.new()
 	label.text = title.to_upper()
-	label.add_theme_font_size_override("font_size", 15)
+	label.add_theme_font_size_override("font_size", 20)
 	label.add_theme_color_override("font_color", Palette.PINK_UI)
 	_rows.add_child(label)
 
@@ -191,12 +194,12 @@ func _slider(title: String, minv: float, maxv: float, step: float, value: float,
 	var head := HBoxContainer.new()
 	var name_label := Label.new()
 	name_label.text = title
-	name_label.add_theme_font_size_override("font_size", 18)
+	name_label.add_theme_font_size_override("font_size", 21)
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(name_label)
 	var value_label := Label.new()
 	value_label.text = fmt % (value * display_scale)
-	value_label.add_theme_font_size_override("font_size", 18)
+	value_label.add_theme_font_size_override("font_size", 21)
 	head.add_child(value_label)
 	row.add_child(head)
 
@@ -233,16 +236,16 @@ func _slider(title: String, minv: float, maxv: float, step: float, value: float,
 func _step_button(text: String) -> Button:
 	var button := Button.new()
 	button.text = text
-	button.custom_minimum_size = Vector2(48, ROW_HEIGHT)
-	button.add_theme_font_size_override("font_size", 22)
+	button.custom_minimum_size = Vector2(54, ROW_HEIGHT)
+	button.add_theme_font_size_override("font_size", 26)
 	return button
 
 func _check(title: String, value: bool, setter: Callable) -> void:
 	var check := CheckButton.new()
 	check.text = title
 	check.button_pressed = value
-	check.custom_minimum_size = Vector2(0, 46)
-	check.add_theme_font_size_override("font_size", 18)
+	check.custom_minimum_size = Vector2(0, 52)
+	check.add_theme_font_size_override("font_size", 21)
 	check.toggled.connect(func(on: bool) -> void:
 		setter.call(on)
 		Settings.notify_changed()
@@ -252,11 +255,11 @@ func _check(title: String, value: bool, setter: Callable) -> void:
 func _choice(title: String, options: Array, current: int, setter: Callable) -> void:
 	var label := Label.new()
 	label.text = title
-	label.add_theme_font_size_override("font_size", 18)
+	label.add_theme_font_size_override("font_size", 21)
 	_rows.add_child(label)
 	var picker := OptionButton.new()
-	picker.custom_minimum_size = Vector2(0, 48)
-	picker.add_theme_font_size_override("font_size", 18)
+	picker.custom_minimum_size = Vector2(0, 54)
+	picker.add_theme_font_size_override("font_size", 21)
 	for i in options.size():
 		picker.add_item(str(options[i]), i)
 	picker.selected = clampi(current, 0, options.size() - 1)

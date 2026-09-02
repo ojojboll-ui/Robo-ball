@@ -44,9 +44,10 @@ func _build_ramps() -> void:
 	# Svag lutning — RB går uppför utan att tappa fäste.
 	ramps.append(PackedVector2Array([
 		Vector2(650, GROUND_Y), Vector2(980, GROUND_Y), Vector2(980, GROUND_Y - 110)]))
-	# Brant lutning — här börjar gravitationen ta över.
+	# Brantare lutning, men fortfarande gåbar. Var 190 hög på 140 bredd, alltså
+	# 54 grader — brantare än RB får fäste i, så den fungerade som en vägg.
 	ramps.append(PackedVector2Array([
-		Vector2(1060, GROUND_Y), Vector2(1200, GROUND_Y), Vector2(1200, GROUND_Y - 190)]))
+		Vector2(1060, GROUND_Y), Vector2(1290, GROUND_Y), Vector2(1290, GROUND_Y - 140)]))
 	# Hoppbacke: kurvan blir brantare mot slutet, så farten går uppåt.
 	ramps.append(_curve(2560.0, 300.0, 150.0, false))
 	# Kvartspipa: brant vid foten, flackare på toppen.
