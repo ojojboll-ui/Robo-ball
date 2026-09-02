@@ -34,6 +34,20 @@ var ledge_guard := true        ## vänd vid kanter i stället för att ramla
 ## Effekter
 var effects := true
 
+## Fysik och känsla. Ligger här och inte som konstanter i koden av två skäl:
+## de ska gå att skruva på mitt i ett speltest, och flera av dem är i praktiken
+## tillgänglighetsinställningar — hoppkraft och gravitation avgör hur stor
+## marginal spelaren har när hen siktar.
+var jump_power := 700.0        ## 300–1100
+var rb_gravity := 1400.0       ## 600–2400
+var wall_bounce := 0.4         ## 0.0–0.9, hur mycket RB studsar på väggar
+var push_force := 0.55         ## 0.1–2.0, hur hårt RB knuffar lösa föremål
+var crate_mass := 1.2          ## 0.2–5.0
+var crate_break_speed := 380.0 ## 100–900, farten som krävs för att krossa
+var crate_friction := 0.6      ## 0.0–1.0
+var crate_bounce := 0.0        ## 0.0–0.9
+var crate_gravity := 1.0       ## 0.2–3.0, gravitationsskala för lösa föremål
+
 func _ready() -> void:
 	load_settings()
 
@@ -50,6 +64,15 @@ func as_dict() -> Dictionary:
 		"trajectory_preview": trajectory_preview,
 		"ledge_guard": ledge_guard,
 		"effects": effects,
+		"jump_power": jump_power,
+		"rb_gravity": rb_gravity,
+		"wall_bounce": wall_bounce,
+		"push_force": push_force,
+		"crate_mass": crate_mass,
+		"crate_break_speed": crate_break_speed,
+		"crate_friction": crate_friction,
+		"crate_bounce": crate_bounce,
+		"crate_gravity": crate_gravity,
 	}
 
 func apply(data: Dictionary) -> void:
@@ -64,6 +87,15 @@ func apply(data: Dictionary) -> void:
 	trajectory_preview = bool(data.get("trajectory_preview", trajectory_preview))
 	ledge_guard = bool(data.get("ledge_guard", ledge_guard))
 	effects = bool(data.get("effects", effects))
+	jump_power = float(data.get("jump_power", jump_power))
+	rb_gravity = float(data.get("rb_gravity", rb_gravity))
+	wall_bounce = float(data.get("wall_bounce", wall_bounce))
+	push_force = float(data.get("push_force", push_force))
+	crate_mass = float(data.get("crate_mass", crate_mass))
+	crate_break_speed = float(data.get("crate_break_speed", crate_break_speed))
+	crate_friction = float(data.get("crate_friction", crate_friction))
+	crate_bounce = float(data.get("crate_bounce", crate_bounce))
+	crate_gravity = float(data.get("crate_gravity", crate_gravity))
 	changed.emit()
 
 func save_settings() -> void:

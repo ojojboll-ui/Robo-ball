@@ -15,8 +15,6 @@ enum State { WALK, AIM, AIR }
 
 const RADIUS := 22.0
 const WALK_SPEED := 130.0
-const GRAVITY := 1400.0
-const JUMP_POWER := 700.0
 const AIM_MIN_DEG := 20.0
 const AIM_MAX_DEG := 160.0
 const AUTO_AIM_DELAY := 0.7   ## hur länge pilen visas innan spelet hoppar åt en
@@ -68,7 +66,7 @@ func _physics_process(delta: float) -> void:
 func _process_walk(delta: float) -> void:
 	_leg_phase += delta * 9.0
 	velocity.x = facing * WALK_SPEED * Settings.walk_speed
-	velocity.y += GRAVITY * delta
+	velocity.y += Settings.rb_gravity * delta
 	move_and_slide()
 
 	if is_on_wall():
@@ -107,7 +105,7 @@ func _process_aim(delta: float) -> void:
 		_set_state(State.WALK)
 
 func _process_air(delta: float) -> void:
-	velocity.y += GRAVITY * delta
+	velocity.y += Settings.rb_gravity * delta
 	move_and_slide()
 	_push_things()
 
@@ -117,9 +115,9 @@ func _process_air(delta: float) -> void:
 		velocity = Vector2.ZERO
 		_set_state(State.WALK)
 	elif is_on_wall():
-		velocity.x = -velocity.x * 0.4
+		velocity.x = -velocity.x * Settings.wall_bounce
 
-	if global_position.y > _start_position.y + 1200.0:
+	if global_position.y > _start_position.y + 1400.0:
 		respawn()
 
 # ---------------------------------------------------------------- signalen
@@ -148,7 +146,7 @@ func _begin_aim() -> void:
 
 func _launch() -> void:
 	var a := deg_to_rad(aim_deg)
-	velocity = Vector2(cos(a), -sin(a)) * JUMP_POWER
+	velocity = Vector2(cos(a), -sin(a)) * Settings.jump_power
 	facing = 1 if velocity.x >= 0.0 else -1
 	_set_state(State.AIR)
 
@@ -158,6 +156,13 @@ func _set_state(next: State) -> void:
 	state = next
 	WorldClock.set_slowmo(state == State.AIM)
 	state_changed.emit(state)
+
+func set_start_position(pos: Vector2) -> void:
+	_start_position = pos
+
+func teleport_to(pos: Vector2) -> void:
+	_start_position = pos
+	respawn()
 
 func respawn() -> void:
 	global_position = _start_position
@@ -181,7 +186,7 @@ func _push_things() -> void:
 		var c := get_slide_collision(i)
 		var body := c.get_collider()
 		if body is RigidBody2D:
-			var impulse := velocity * 0.55
+			var impulse := velocity * Settings.push_force
 			body.apply_impulse(impulse, c.get_position() - body.global_position)
 			if body.has_method("take_impact"):
 				body.take_impact(velocity.length())
@@ -192,11 +197,11 @@ func _push_things() -> void:
 func simulate(angle_deg: float, steps: int = SIM_STEPS) -> Dictionary:
 	var a := deg_to_rad(angle_deg)
 	var pos := global_position
-	var vel := Vector2(cos(a), -sin(a)) * JUMP_POWER
+	var vel := Vector2(cos(a), -sin(a)) * Settings.jump_power
 	var points := PackedVector2Array()
 	var space := get_world_2d().direct_space_state
 	for i in steps:
-		vel.y += GRAVITY * SIM_STEP
+		vel.y += Settings.rb_gravity * SIM_STEP
 		var next := pos + vel * SIM_STEP
 		var query := PhysicsRayQueryParameters2D.create(pos, next, collision_mask, [get_rid()])
 		var hit := space.intersect_ray(query)

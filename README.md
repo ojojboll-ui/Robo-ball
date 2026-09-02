@@ -46,10 +46,29 @@ Spelet styrs med **en enda signal**: vilken tangent som helst, klick var som hel
 skärmtryck var som helst, valfri knapp på en handkontroll. Ett tryck siktar, ett till
 hoppar.
 
-Funktionstangenterna F1–F8 är undantagna från signalen och växlar inställningar under
-speltest (styrningsvariant, slow motion, förhandsbana, kantskydd, vinkelsteg,
-spelhastighet). Inget hjälpmedel skickar funktionstangenter, så undantaget kostar
+**Kugghjulet uppe till höger** öppnar inställningspanelen: pilens hastighet, hoppkraft,
+slow motion, RB:s gravitation och studs, lådornas tyngd, tålighet, friktion och
+studsighet, samt styrningsvariant och hjälpmedel. Allt slår igenom direkt, mitt i
+spelet. Panelen äter sina egna tryck, så ett finger på ett reglage får aldrig RB att
+hoppa.
+
+Panelen är ett verktyg för den som leder ett speltest — inte spelets meny. Den riktiga
+menyn ska gå att använda med samma enda signal som spelet, och byggs i fas 1
+(se docs/ACCESSIBILITY.md avsnitt 4).
+
+F1 öppnar panelen, F2 växlar styrningsvariant, F8 börjar om. Funktionstangenter är
+undantagna från spelets signal — inget hjälpmedel skickar dem, så undantaget kostar
 ingen tillgänglighet.
+
+## Lekplatsen
+
+Banan är byggd som en verkstad, inte som en nivå: lös småsten direkt vid starten, två
+raka ramper, en hoppbacke och en kvartspipa med böjda ytor, en plattformstrappa, och
+fem lådformationer — pyramid, torn, mur, en bro på pelare och en stapel högst upp i
+trappan. Snabbresa mellan områdena finns längst ner i panelen.
+
+Marken är sammanhängande hela vägen. RB går av sig själv, och en bana där auto-gången
+kan leda ner i en avgrund straffar spelaren för att inte trycka.
 
 ## Bygga
 
@@ -80,7 +99,7 @@ concept/    konceptskisser
 
 ## Nästa steg
 
-1. Speltesta prototypen — särskilt auto-siktet (F2) mot pendelpilen.
+1. Speltesta prototypen — särskilt auto-siktet mot pendelpilen.
 2. Fas 1: den handskrivna markkontrollern, scanning-menyn, profiler, förmåga 1–2.
 3. Boka det första speltestet med målgruppen. Datumet driver arbetet.
 
