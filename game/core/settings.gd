@@ -47,6 +47,12 @@ var effects := true
 var jump_power := 700.0        ## 300–1100
 var rb_gravity := 1400.0       ## 600–2400
 var wall_bounce := 0.4         ## 0.0–0.9, hur mycket RB studsar på väggar
+## Hur mycket av farten *in i* underlaget som blir fart *längs* det vid landning.
+## Vid 0 kastas den bort helt — då stannar ett hopp ner i en backe nästan tvärt,
+## vilket är vad ett klibbigt föremål gör. En boll som landar i en backe får i
+## stället sin rörelse omdirigerad nedför, och det är den här siffran som styr
+## hur mycket. Effekten växer med lutningen och är noll på plan mark.
+var landing_redirect := 0.6
 var push_force := 0.55         ## 0.1–2.0, hur hårt RB knuffar lösa föremål
 var crate_mass := 1.2          ## 0.2–5.0
 var crate_break_speed := 380.0 ## 100–900, farten som krävs för att krossa
@@ -100,6 +106,7 @@ func as_dict() -> Dictionary:
 		"jump_power": jump_power,
 		"rb_gravity": rb_gravity,
 		"wall_bounce": wall_bounce,
+		"landing_redirect": landing_redirect,
 		"push_force": push_force,
 		"crate_mass": crate_mass,
 		"crate_break_speed": crate_break_speed,
@@ -139,6 +146,7 @@ func apply(data: Dictionary) -> void:
 	jump_power = float(data.get("jump_power", jump_power))
 	rb_gravity = float(data.get("rb_gravity", rb_gravity))
 	wall_bounce = float(data.get("wall_bounce", wall_bounce))
+	landing_redirect = float(data.get("landing_redirect", landing_redirect))
 	push_force = float(data.get("push_force", push_force))
 	crate_mass = float(data.get("crate_mass", crate_mass))
 	crate_break_speed = float(data.get("crate_break_speed", crate_break_speed))

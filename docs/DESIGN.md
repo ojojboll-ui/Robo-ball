@@ -204,8 +204,12 @@ Tre olika fysikbeteenden som måste samexistera (se TECH.md för implementation)
    mekaniken med berättelsen: spelets grundform är dess ursprungsform. Den går att
    stänga av för den som blir förvirrad av ett lägesbyte hen inte bad om.
 2. **RB i luften** — ren ballistik. Förutsägbar, siktbar, ingen luftstyrning (det finns
-   ingen input att styra med). Landningen projicerar farten på underlagets tangent i
-   stället för att nollställa den, så ett hopp ner i en sluttning fortsätter nedför.
+   ingen input att styra med). Landningen bevarar rörelsemängden på två sätt: farten
+   projiceras på underlagets tangent, och en andel av farten *in i* ytan blir fart
+   *längs* den, nedför. Utan det andra stannar ett hopp ner i en backe nästan tvärt —
+   det är vad ett klibbigt föremål gör, inte en boll. Andelen är ett reglage, effekten
+   växer med lutningen och är noll på plan mark, och resultatet har ett tak vid den fart
+   han kom in med: en landning får omdirigera rörelsemängd men aldrig skapa den.
 3. **Världen** — riktig stelkroppsfysik. Lådor, stenar, spröda plankor, gungande
    trapetser, vippbrädor. Det är här Angry Birds-känslan bor: RB slår in i en stapel
    och den rasar på ett sätt som ingen har animerat i förväg.

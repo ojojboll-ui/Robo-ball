@@ -137,6 +137,8 @@ func _build_rows() -> void:
 		func(v: float) -> void: Settings.rb_gravity = v, "%.0f")
 	_slider("Studs mot väggar", 0.0, 0.9, 0.05, Settings.wall_bounce,
 		func(v: float) -> void: Settings.wall_bounce = v, "%.2f")
+	_slider("Fart som följer med i landningen", 0.0, 1.5, 0.05, Settings.landing_redirect,
+		func(v: float) -> void: Settings.landing_redirect = v, "%.2f")
 	_slider("Knuffkraft mot föremål", 0.1, 2.0, 0.05, Settings.push_force,
 		func(v: float) -> void: Settings.push_force = v, "%.2f")
 	_slider("Markfäste", 0.0, 600.0, 10.0, Settings.ground_stick,

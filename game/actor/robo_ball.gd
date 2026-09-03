@@ -57,6 +57,10 @@ var _aim_elapsed := 0.0
 var _air_jumps_used := 0
 var _aim_from_air := false
 var _airborne_frames := 0
+## Farten i bildrutan innan kollisionen löstes. move_and_slide skär bort
+## komponenten in i ytan, så efter den är rörelsen mot marken redan borta —
+## läser landningen därifrån har den ingenting att bevara.
+var _impact_velocity := Vector2.ZERO
 var _legs := Legs.new()
 var _shape: CollisionShape2D
 var _capsule := CapsuleShape2D.new()
@@ -185,6 +189,7 @@ func _process_aim(delta: float) -> void:
 func _process_air(delta: float) -> void:
 	velocity.y += Settings.rb_gravity * delta
 	spin += velocity.x / RADIUS * delta * 0.5
+	_impact_velocity = velocity
 	_move(delta)
 	_push_things(1.0)
 
@@ -196,16 +201,32 @@ func _process_air(delta: float) -> void:
 	if global_position.y > _start_position.y + 1400.0:
 		respawn()
 
-## Landningen bevarar rörelsemängden: farten projiceras på underlagets tangent
-## i stället för att nollställas. Det är därför ett hopp ner i en sluttning
-## fortsätter nedför i stället för att stanna som en säck.
+## Landningen bevarar rörelsemängden på två sätt.
+##
+## Dels projiceras farten på underlagets tangent. Dels — och det är det som
+## saknades — blir en del av farten *in i* ytan till fart *längs* ytan, nedför.
+## Kastas den bort helt stannar ett hopp ner i en backe nästan tvärt, för det är
+## vad ett klibbigt föremål gör. En boll som landar i en backe får sin rörelse
+## omdirigerad nedför, och andelen styrs av Settings.landing_redirect.
+##
+## Effekten skalar med lutningen och är noll på plan mark, vilket den ska vara:
+## där finns ingen riktning att dirigera farten åt.
 func _land() -> void:
 	_airborne_frames = 0
 	ground_normal = get_floor_normal()
 	# Fötterna har hängt under kroppen under fallet. Sätt ner dem på underlaget
 	# vid landningen — annars står de kvar i luften och benen ser lösa ut.
 	_legs.reset(self, ground_normal)
-	ground_speed = velocity.dot(tangent())
+	var t := tangent()
+	var impact := _impact_velocity
+	var into := maxf(0.0, -impact.dot(ground_normal))
+	var steepness := clampf(absf(t.y), 0.0, 1.0)
+	ground_speed = impact.dot(t) + Settings.landing_redirect * into * steepness * signf(t.y)
+	# En landning får omdirigera rörelsemängd men aldrig skapa den. Utan taket
+	# kan han lämna backen fortare än han kom in i den, och då är fysiken inte
+	# längre ärlig — se docs/DESIGN.md avsnitt 4a.
+	var incoming := impact.length()
+	ground_speed = clampf(ground_speed, -incoming, incoming)
 	if not is_zero_approx(ground_speed):
 		facing = 1 if ground_speed > 0.0 else -1
 	velocity = Vector2.ZERO
