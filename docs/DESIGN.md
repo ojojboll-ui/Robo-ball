@@ -283,9 +283,14 @@ en fot hamnat för långt bak, och kroppen hänger i en fjäder ovanför fötter
 verkar bara längs underlagets normal — drar den även i sidled ser det ut som att han
 lutar bakåt när han går uppför.
 
-Att RB *sjunker ner till marken* när benen dras in i en rullning följer av samma rigg:
-utan ben finns ingenting som bär kroppen, och bollen hamnar där kollisionskroppen alltid
-har varit.
+Kollisionskroppen säger samma sak som bilden: **en kapsel när benen är ute**, från
+bollens topp ner till fötterna, och **en cirkel när han rullar**. Det är inte en
+finess utan en följd av att fysiken ska vara ärlig — med benen ute är han en boll
+på ben och kan inte krypa in i springor som bara bollen får plats i.
+
+Att RB *sjunker ner till marken* när benen dras in följer av samma sak, och nu på
+riktigt: bytet från kapsel till cirkel flyttar honom fysiskt nedåt. Utan ben finns
+ingenting som bär kroppen.
 
 ## 8. Grafisk riktning
 

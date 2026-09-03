@@ -17,17 +17,17 @@ extends RefCounted
 ##      kollisionskroppen och ärvde varje litet hack i underlaget — därav
 ##      skakandet uppför ramper.
 
-const THIGH := 19.0        ## höft → ankel, det korta övre benet
-const SHIN := 27.0         ## ankel → tå, det långa nedre benet
+const THIGH := 28.0        ## höft → ankel, det korta övre benet
+const SHIN := 40.0         ## ankel → tå, det långa nedre benet
 const TOE := 9.0
 const HIP_SPREAD := 7.0    ## halva avståndet mellan höfterna
-const BODY_HEIGHT := 44.0  ## kroppens mitt ovanför fotplanet
+const BODY_HEIGHT := 66.0  ## bollens mitt över fotplanet = kapselhöjd minus radie
 const LIFT := 13.0         ## hur högt foten lyfts under ett steg
 const MAX_SAG := 16.0      ## hur långt kroppen får hamna från kollisionskroppen
 const STIFFNESS := 220.0
 const DAMPING := 22.0
 const MIN_STRIDE := 22.0
-const MAX_STRIDE := 40.0
+const MAX_STRIDE := 52.0
 ## Så långt benet når. Höften sitter 34 px över marken och ett steg framåt lägger
 ## till en bit i sidled — med för kort ben blir hypotenusan längre än räckvidden,
 ## taket nedan drar upp foten, och den nuddar aldrig marken. Benet ska vara långt
@@ -45,11 +45,14 @@ var step_from := [Vector2.ZERO, Vector2.ZERO]
 var step_to := [Vector2.ZERO, Vector2.ZERO]
 var step_time := [0.2, 0.2]
 var body_point := Vector2.ZERO
+## Hur högt bollens mitt sitter över kollisionskroppens mitt. Sätts av RoboBall
+## så att de två aldrig kan glida isär.
+var body_lift := 16.0
 var _body_vel := Vector2.ZERO
 var _ready := false
 
 func reset(rb: Node2D, normal: Vector2) -> void:
-	body_point = rb.global_position + normal * 22.0
+	body_point = rb.global_position + normal * body_lift
 	_body_vel = Vector2.ZERO
 	var t := Vector2(-normal.y, normal.x)
 	for i in 2:
@@ -206,7 +209,7 @@ func _carry_body(rb: Node2D, normal: Vector2, delta: float) -> void:
 	# Kroppen sitter alltid rakt ovanför kollisionskroppen i sidled — en
 	# fjädring som också drar i sidled får RB att luta bakåt när han går uppför.
 	# Bara höjden fjädrar, och den styrs av var fötterna faktiskt står.
-	var anchor := rb.global_position + normal * 22.0
+	var anchor := rb.global_position + normal * body_lift
 	var support: Vector2 = ((feet[0] as Vector2) + (feet[1] as Vector2)) * 0.5
 	var along := (support + normal * BODY_HEIGHT - anchor).dot(normal)
 	var target := anchor + normal * clampf(along, -MAX_SAG, MAX_SAG)
