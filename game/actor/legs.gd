@@ -28,6 +28,14 @@ const STIFFNESS := 220.0
 const DAMPING := 22.0
 const MIN_STRIDE := 22.0
 const MAX_STRIDE := 46.0
+## Så långt benet når. En fot bortom det här går inte att stå på — då sträcks
+## benet ut och ser trasigt ut, vilket är precis vad som hände när strålen
+## hittade en plattform bakom eller ovanför RB.
+const REACH := THIGH + SHIN - 3.0
+## Hur långt ovanför och nedanför den tänkta fotpunkten vi letar. Kort med flit:
+## benet ska söka marken **under sig**, inte närmsta yta i grannskapet.
+const PROBE_UP := 12.0
+const PROBE_DOWN := 26.0
 
 var feet := [Vector2.ZERO, Vector2.ZERO]
 var planted := [true, true]
@@ -70,6 +78,15 @@ func _step(rb: Node2D, normal: Vector2, speed: float, delta: float) -> void:
 	var stride := clampf(MIN_STRIDE + absf(speed) * 0.12, MIN_STRIDE, MAX_STRIDE)
 	var hip_list := hips(normal)
 
+	# Skyddsnät: en fot som ändå hamnat orimligt långt bort flyttas hem direkt
+	# i stället för att svepa dit över en halv sekund.
+	for i in 2:
+		if ((feet[i] as Vector2) - (hip_list[i] as Vector2)).length() > REACH * 1.6:
+			feet[i] = (hip_list[i] as Vector2) - normal * (BODY_HEIGHT - 10.0)
+			step_to[i] = feet[i]
+			step_t[i] = 1.0
+			planted[i] = true
+
 	for i in 2:
 		if planted[i]:
 			continue
@@ -82,10 +99,17 @@ func _step(rb: Node2D, normal: Vector2, speed: float, delta: float) -> void:
 			var k: float = step_t[i]
 			feet[i] = (step_from[i] as Vector2).lerp(step_to[i], k) + normal * sin(k * PI) * LIFT
 
-	# Ett ben i taget. Står båda och ett av dem har hamnat för långt bak tar
-	# det steget — det är därför gången blir omväxlande och inte hoppig.
+	# Ett ben som sträckts till bristningsgränsen måste flytta sig genast, även
+	# om det andra är mitt i ett steg. Annars sträcks benet ut tills det andra
+	# hunnit sätta ner foten, och det syns.
+	for i in 2:
+		if planted[i] and ((feet[i] as Vector2) - (hip_list[i] as Vector2)).length() > REACH * 0.9:
+			_begin_step(rb, normal, i, stride, speed, hip_list[i])
+
+	# I övrigt ett ben i taget: står båda och ett av dem har hamnat för långt
+	# bak tar det steget. Det är därför gången blir omväxlande och inte hoppig.
 	if planted[0] and planted[1]:
-		var worst := -1
+		var choice := -1
 		var worst_lag := stride * 0.5
 		for i in 2:
 			var lag: float = -((feet[i] as Vector2) - (hip_list[i] as Vector2)).dot(t) * signf(speed)
@@ -93,33 +117,60 @@ func _step(rb: Node2D, normal: Vector2, speed: float, delta: float) -> void:
 				lag = absf(((feet[i] as Vector2) - (hip_list[i] as Vector2)).dot(t)) - stride * 0.4
 			if lag > worst_lag:
 				worst_lag = lag
-				worst = i
-		if worst >= 0:
-			_begin_step(rb, normal, worst, stride, speed, hip_list[worst])
+				choice = i
+		if choice >= 0:
+			_begin_step(rb, normal, choice, stride, speed, hip_list[choice])
+
+	# Hårt tak. Benet är så här långt och inte längre — hellre att foten glider
+	# den sista biten än att benet ritas utsträckt.
+	for i in 2:
+		var d: Vector2 = (feet[i] as Vector2) - (hip_list[i] as Vector2)
+		if d.length() > REACH:
+			feet[i] = (hip_list[i] as Vector2) + d.normalized() * REACH
 
 func _begin_step(rb: Node2D, normal: Vector2, i: int, stride: float, speed: float, hip: Vector2) -> void:
 	var t := Vector2(-normal.y, normal.x)
 	var forward := signf(speed) if speed != 0.0 else 1.0
 	var aim := hip + t * forward * stride * 0.55
 	var space := rb.get_world_2d().direct_space_state
-	var from := aim + normal * 28.0
-	var to := aim - normal * 70.0
-	var query := PhysicsRayQueryParameters2D.create(from, to, rb.collision_mask, [rb.get_rid()])
+	var query := PhysicsRayQueryParameters2D.create(
+		aim + normal * PROBE_UP, aim - normal * PROBE_DOWN, rb.collision_mask, [rb.get_rid()])
 	var hit := space.intersect_ray(query)
+
+	# Marken under foten, inte närmsta yta åt något håll: träffen måste luta åt
+	# samma håll som underlaget han står på, annars är det en vägg eller
+	# undersidan av en plattform.
+	var target := aim
+	if not hit.is_empty() and (hit["normal"] as Vector2).dot(normal) > 0.35:
+		target = hit["position"]
+	else:
+		target = hip - normal * (BODY_HEIGHT - 10.0)
+
+	# Och aldrig längre bort än benet räcker.
+	var reach_vec := target - hip
+	if reach_vec.length() > REACH:
+		target = hip + reach_vec.normalized() * REACH
+
 	step_from[i] = feet[i]
-	step_to[i] = hit["position"] if not hit.is_empty() else aim
+	step_to[i] = target
 	step_t[i] = 0.0
 	planted[i] = false
 	step_time[i] = clampf(stride / maxf(absf(speed), 40.0) * 0.55, 0.07, 0.32)
 
 ## I luften hänger benen ner under kroppen.
+##
+## Viktigt: de räknas som planterade där de hänger, inte som mitt i ett steg.
+## Markerade vi dem som stegande med stegtiden slut skulle nästa markbildruta
+## flytta foten till *förra* stegets slutpunkt — som mycket väl kan ligga tvärs
+## över banan. Det var felet som gjorde benen jättelånga vid landning.
 func _dangle(normal: Vector2, delta: float) -> void:
 	var t := Vector2(-normal.y, normal.x)
 	for i in 2:
 		var rest := body_point - normal * (BODY_HEIGHT - 6.0) + t * (i * 2.0 - 1.0) * HIP_SPREAD
 		feet[i] = (feet[i] as Vector2).lerp(rest, minf(1.0, delta * 9.0))
-		planted[i] = false
+		planted[i] = true
 		step_t[i] = 1.0
+		step_to[i] = feet[i]
 
 # ---------------------------------------------------------------- kroppen
 
