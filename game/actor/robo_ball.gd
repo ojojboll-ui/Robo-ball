@@ -30,6 +30,12 @@ const AIM_MAX_DEG := 160.0
 const AUTO_AIM_DELAY := 0.7    ## hur länge pilen visas innan spelet hoppar åt en
 const SAFETY_MARGIN := 2.0     ## slack i förflyttningstaket, se _move()
 const STAND_UP_MARGIN := 6.0   ## hysteres, annars fladdrar han mellan lägena
+## Hur hårt han hålls mot underlaget. Farten är helt tangentiell, och uppför en
+## backe pekar tangenten bort från marken — utan den här kraften lättar han från
+## ytan var trettonde bildruta och spelet fladdrar mellan "går" och "i luften".
+## Den är också vad som håller honom kvar över en krön: räcker den inte, lyfter
+## han, precis som han ska.
+const GROUND_STICK := 150.0
 const SIM_STEP := 1.0 / 45.0
 const SIM_STEPS := 70
 
@@ -45,8 +51,11 @@ var _sweep_t := 0.0
 var _aim_elapsed := 0.0
 var _air_jumps_used := 0
 var _aim_from_air := false
-var _leg_phase := 0.0
 var _airborne_frames := 0
+var _legs := Legs.new()
+## Underlagets normal, utjämnad. Rå normal hoppar till vid varje skarv mellan
+## kollisionspolygonens delar, och det syntes som ryck i kroppens lutning.
+var _smooth_normal := Vector2.UP
 var _start_position := Vector2.ZERO
 var _ledge_ray: RayCast2D
 
@@ -64,6 +73,7 @@ func _ready() -> void:
 
 	_start_position = global_position
 	floor_snap_length = 20.0
+	_legs.reset(self, Vector2.UP)
 	InputSignal.pressed.connect(_on_signal_pressed)
 	InputSignal.released.connect(_on_signal_released)
 
@@ -78,7 +88,18 @@ func _physics_process(delta: float) -> void:
 			_process_aim(delta)
 		State.AIR:
 			_process_air(delta)
+	_update_legs(delta)
 	queue_redraw()
+
+func _update_legs(delta: float) -> void:
+	var grounded := state == State.WALK or state == State.AIM
+	_smooth_normal = _smooth_normal.lerp(ground_normal, minf(1.0, delta * 14.0)).normalized()
+	if state == State.ROLL:
+		# Benen är indragna — då finns inget att simulera, och kroppen sitter
+		# åter fast i bollen eftersom det *är* bollen som rullar.
+		_legs.body_point = global_position
+		return
+	_legs.update(self, _smooth_normal, ground_speed, grounded, delta)
 
 # ---------------------------------------------------------------- lägen
 
@@ -91,12 +112,11 @@ func _process_ground(delta: float) -> void:
 	if state == State.WALK:
 		var target := facing * WALK_SPEED * Settings.walk_speed
 		ground_speed = move_toward(ground_speed, target, WALK_ACCEL * delta)
-		_leg_phase += delta * 9.0
 	else:
 		ground_speed = move_toward(ground_speed, 0.0, Settings.roll_friction * delta)
 
 	spin += ground_speed / RADIUS * delta
-	velocity = t * ground_speed
+	velocity = t * ground_speed - ground_normal * GROUND_STICK
 	_move(delta)
 	_push_things(0.5)
 
@@ -257,6 +277,10 @@ func _launch() -> void:
 func _set_state(next: State) -> void:
 	if state == next:
 		return
+	# Reser han sig ur en rullning har benen inga giltiga fotplaceringar kvar —
+	# utan en omstart skulle de kliva från där de stod innan han rullade.
+	if state == State.ROLL and next != State.ROLL:
+		_legs.reset(self, _smooth_normal)
 	state = next
 	WorldClock.set_slowmo(state == State.AIM)
 	state_changed.emit(state)
@@ -273,8 +297,10 @@ func respawn() -> void:
 	velocity = Vector2.ZERO
 	ground_speed = 0.0
 	ground_normal = Vector2.UP
+	_smooth_normal = Vector2.UP
 	facing = 1
 	_air_jumps_used = 0
+	_legs.reset(self, Vector2.UP)
 	_set_state(State.WALK)
 
 # ---------------------------------------------------------------- hjälpare
@@ -407,22 +433,18 @@ func _draw_rolling() -> void:
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _draw_standing() -> void:
-	var grounded := state == State.WALK or state == State.AIM
-	var lean := (ground_normal.angle() + PI * 0.5) if grounded else 0.0
+	var normal := _smooth_normal
 	var crouch := state == State.AIM
-	var body_y := -RADIUS + (4.0 if crouch else 0.0)
 	var squash := 0.86 if crouch else 1.0
+	var body := to_local(_legs.body_point)
+	if crouch:
+		# På huk: kroppen sjunker ner mot fötterna, benen viker ihop sig.
+		body += normal * -8.0
 
-	# strutsben, vinkelräta mot underlaget
-	draw_set_transform(Vector2.ZERO, lean, Vector2.ONE)
-	for s in [-1.0, 1.0]:
-		var swing := sin(_leg_phase + (0.0 if s > 0.0 else PI)) * (6.0 if state == State.WALK else 0.0)
-		var hip := Vector2(s * 6.0, body_y + RADIUS * 0.5)
-		var knee := Vector2(s * 6.0 + swing * 0.4, body_y + RADIUS * (0.6 if crouch else 1.1))
-		var foot := Vector2(s * 6.0 + swing, RADIUS * (0.35 if crouch else 0.95))
-		draw_polyline(PackedVector2Array([hip, knee, foot]), Palette.INK, 3.0, true)
+	_legs.draw_into(self, normal, facing, Palette.INK)
 
-	draw_set_transform(Vector2(0.0, body_y).rotated(lean), lean, Vector2(1.0, squash))
+	var lean := normal.angle() + PI * 0.5
+	draw_set_transform(body, lean, Vector2(1.0, squash))
 	draw_circle(Vector2.ZERO, RADIUS, Palette.SHELL)
 	draw_arc(Vector2.ZERO, RADIUS, 0.0, TAU, 32, Palette.INK, 3.0, true)
 	var eye := Vector2(facing * 6.0, -2.0)

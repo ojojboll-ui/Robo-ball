@@ -269,6 +269,24 @@ Berättas utan text: mellansekvenser i samma handteckningsstil som konceptskisse
 tysta, korta, och alltid avbrytbara med signal. Ingen dialog som kräver läsning
 (många i målgruppen läser inte), men allt röstas eller stöds av ljud och bild.
 
+## 7a. RB:s kropp
+
+Han är en boll som bärs av **strutsben**, och formen är inte dekoration. Fågelbenet
+viker sig bakåt mitt på — det man tar för ett bakåtvänt knä är i själva verket ankeln,
+för hos en struts sitter knät högt uppe mot kroppen. Den geometrin avgör hur långt han
+kan kliva, hur högt kroppen bärs över marken, och hur mycket ojämn mark som fjädras bort
+innan den når kroppen.
+
+Därför simuleras benen redan i gråbox i stället för att ritas som streck: fötterna söker
+upp marken med strålar och står stilla medan kroppen rör sig över dem, ett steg tas när
+en fot hamnat för långt bak, och kroppen hänger i en fjäder ovanför fötterna. Fjädringen
+verkar bara längs underlagets normal — drar den även i sidled ser det ut som att han
+lutar bakåt när han går uppför.
+
+Att RB *sjunker ner till marken* när benen dras in i en rullning följer av samma rigg:
+utan ben finns ingenting som bär kroppen, och bollen hamnar där kollisionskroppen alltid
+har varit.
+
 ## 8. Grafisk riktning
 
 Konceptskisserna sätter tonen: handteckning, tuschlinje, kritig skuggning, starka
