@@ -28,11 +28,11 @@ var input_debounce := 0.15     ## sekunder, filtrerar skakningar och dubbeltryck
 ## utvecklarpanelen, och GDScripts statiska typning gillar inte int → enum.
 var control_variant: int = ControlVariant.CLASSIC
 var aim_steps := 0             ## 0 = mjuk pendel, annars antal diskreta vinklar
-## Pilens spann i grader. 0 = rakt höger, 90 = rakt upp, 180 = rakt vänster,
-## 270 = rakt ner. Bågen startar vid det första värdet, så 90 betyder att den
-## börjar rakt upp och sedan pendlar varvet runt.
-var aim_min_deg := 90.0
-var aim_max_deg := 370.0
+## Pilens spann i grader. 0 = rakt höger, 90 = rakt upp, 180 = rakt vänster.
+## Bågen startar alltid i den ände som ligger åt det håll RB går, och pendlar
+## därifrån — går han åt höger börjar den vågrätt framåt och sveper upp och över.
+var aim_min_deg := 0.0
+var aim_max_deg := 180.0
 var trajectory_preview := true
 var air_jumps := 1             ## extra hopp i luften: 0 = av, 1 = dubbelhopp
 var ledge_guard := true        ## vänd vid kanter i stället för att ramla
@@ -83,8 +83,17 @@ var roll_speed := 0.0
 var auto_roll := true          ## dra in benen automatiskt i branta lutningar
 var level_index := 0
 
+## Grundvärdena fångas innan sparfilen läses, så att panelen kan återställa allt
+## utan att någon behöver skriva upp dem en andra gång.
+var _defaults: Dictionary = {}
+
 func _ready() -> void:
+	_defaults = as_dict()
 	load_settings()
+
+func reset_to_defaults() -> void:
+	apply(_defaults)
+	save_settings()
 
 func as_dict() -> Dictionary:
 	return {
@@ -185,7 +194,15 @@ func load_settings() -> void:
 		return
 	var parsed: Variant = JSON.parse_string(f.get_as_text())
 	if parsed is Dictionary:
-		apply(parsed)
+		var data: Dictionary = parsed
+		# Engångsflytt: siktets spann var en kort tid 90–370 grader. Sparade
+		# profiler med exakt de värdena får de nya i stället, annars sitter
+		# gamla speltest fast i en inställning vi övergett.
+		if is_equal_approx(float(data.get("aim_min_deg", 0.0)), 90.0) \
+				and is_equal_approx(float(data.get("aim_max_deg", 0.0)), 370.0):
+			data.erase("aim_min_deg")
+			data.erase("aim_max_deg")
+		apply(data)
 
 func notify_changed() -> void:
 	changed.emit()

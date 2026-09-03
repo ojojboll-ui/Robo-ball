@@ -46,10 +46,13 @@ fiender, projektiler och rörliga plattformar saktas ner, men pilen och UI:t gö
 Slow motion är alltså inte en effekt, det är **speltid ÷ beslutstid**, och därmed en
 tillgänglighetsparameter.
 
-* Pilen startar rakt upp och pendlar därifrån varvet runt (grund: 90°–370°, där
-  0° är rakt höger). Att spannet når förbi vågrätt och ner betyder att RB kan
-  skjuta iväg sig själv framåt och nedåt, inte bara i en båge uppåt. Spannets
-  båda ändar är reglage.
+* Pilen pendlar mellan vågrätt åt ena hållet och vågrätt åt det andra (grund:
+  0°–180°, där 0° är rakt höger). Att spannet når hela vägen ner till vågrätt
+  betyder att RB kan skjuta iväg sig själv framåt, inte bara i en båge uppåt.
+* **Bågen startar alltid åt det håll RB går.** Det är den vinkel spelaren
+  oftast vill ha, så den kommer först — och eftersom pilen börjar stilla i
+  ytterläget och accelererar mjukt får hen en tydlig stund att trycka på innan
+  den drar iväg. Spannets båda ändar är reglage.
 * Pilens längd visar hoppkraft — som standard fast, men se "Två-stegssikte" nedan.
 * En prickad förhandsbana visar var RB landar (av/på). Eftersom lufttiden är helt
   ballistisk är banan exakt förutsägbar, inte en gissning.

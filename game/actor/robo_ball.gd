@@ -171,11 +171,14 @@ func _process_aim(delta: float) -> void:
 		return
 
 	_sweep_t += real * Settings.aim_sweep_speed * 1.6
-	# Bågen startar vid spannets första värde — med grundinställningen rakt upp —
-	# och pendlar därifrån. Cosinus gör att pilen börjar stilla i ytterläget och
-	# accelererar mjukt, i stället för att starta mitt i svepet med full fart.
+	# Bågen startar alltid i den ände som ligger åt det håll RB går, och pendlar
+	# därifrån. Går han åt höger börjar pilen vågrätt framåt och sveper upp och
+	# över; går han åt vänster tvärtom. Cosinus gör att den börjar stilla i
+	# ytterläget och accelererar mjukt i stället för att starta mitt i svepet.
 	var t := 0.5 - 0.5 * cos(_sweep_t)
-	aim_deg = lerpf(Settings.aim_min_deg, Settings.aim_max_deg, t)
+	var from := Settings.aim_min_deg if facing > 0 else Settings.aim_max_deg
+	var to := Settings.aim_max_deg if facing > 0 else Settings.aim_min_deg
+	aim_deg = lerpf(from, to, t)
 	if Settings.aim_steps > 1:
 		# Diskreta vinklar: lättare att träffa rätt, och möjligt att beskriva
 		# i ord för någon som behöver hjälp att välja.

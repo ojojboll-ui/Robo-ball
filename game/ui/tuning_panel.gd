@@ -100,6 +100,16 @@ func _ready() -> void:
 
 	_build_rows()
 
+## Bygger om hela listan, för när värden ändrats på ett sätt som rör många rader.
+func _rebuild_rows() -> void:
+	for child in _rows.get_children():
+		_rows.remove_child(child)
+		child.queue_free()
+	_rows_by_title.clear()
+	_travel = null
+	_tempo_note = null
+	_build_rows()
+
 func toggle() -> void:
 	_open = not _open
 	_panel.visible = _open
@@ -209,6 +219,18 @@ func _build_rows() -> void:
 	restart.add_theme_font_size_override("font_size", 20)
 	restart.pressed.connect(func() -> void: restart_requested.emit())
 	_rows.add_child(restart)
+
+	# Nollställning hör hemma i ett verktyg för speltest: nästa barn ska kunna
+	# börja från samma utgångsläge utan att någon minns vad som skruvats på.
+	var reset := Button.new()
+	reset.text = "Återställ alla inställningar"
+	reset.custom_minimum_size = Vector2(0, 58)
+	reset.add_theme_font_size_override("font_size", 20)
+	reset.pressed.connect(func() -> void:
+		Settings.reset_to_defaults()
+		Settings.notify_changed()
+		_rebuild_rows())
+	_rows.add_child(reset)
 	_travel = GridContainer.new()
 	_travel.columns = 3
 	_travel.add_theme_constant_override("h_separation", 6)
