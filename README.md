@@ -20,8 +20,8 @@ motion, ett tryck till kastar iväg honom, och lådstapeln rasar av rörelseener
 Verifierat i Godot 4.5 och som webbygge i webbläsare.
 
 **Låsta beslut:** Godot 4 · GDScript · webben som förstahandsplattform · ca 90 minuters
-speltid i första utgåvan · fyra förmågor (rulla, ben, spikar, ficklampan).
-Se [docs/DECISIONS.md](docs/DECISIONS.md).
+speltid i första utgåvan · fyra förmågor (rulla, ben, spikar, dubbelhopp) · fysiken som
+innehåll, inte ytbehandling. Se [docs/DECISIONS.md](docs/DECISIONS.md).
 
 ## Dokumentation
 

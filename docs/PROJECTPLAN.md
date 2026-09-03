@@ -153,6 +153,10 @@ Motor, språk, plattform, repo och omfattning är beslutade (DECISIONS.md). Kvar
    och det tar tid att ordna — beslutet bör tas under fas 0, inte efter.
 4. **Affärsmodell:** gratis på webben och betalt på Steam, eller betalt överallt? Påverkar
    både räckvidd och vilka bidrag som är möjliga.
+5. **Laboratorieläget i v1 eller v2?** En egen bana där fysikreglagen är innehållet
+   (DESIGN.md avsnitt 4a). Billigt att bygga eftersom reglagen redan finns, starkt för
+   målgruppen, och ett tungt argument i en bidragsansökan — men det är ändå en egen
+   funktion med egen scanning-meny, så det ska in i planen och inte smygas in.
 
 ## 8. Nästa konkreta steg
 

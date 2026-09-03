@@ -2,7 +2,7 @@
 
 ## 1. Designprinciper
 
-Fem regler som alla andra beslut ska kunna härledas ur:
+Sex regler som alla andra beslut ska kunna härledas ur:
 
 1. **En signal räcker.** Spelet får aldrig kräva två samtidiga inmatningar, håll,
    dubbelklick eller riktning. "Signal" = valfri knapp, klick, tryck, blink, blås
@@ -16,6 +16,8 @@ Fem regler som alla andra beslut ska kunna härledas ur:
    omstart. Om RB fastnar finns alltid en väg ut, eller så återställs han automatiskt.
 5. **Menyerna är en del av spelet.** Om huvudmenyn kräver en mus är spelet
    ospelbart, hur bra själva spelet än är. Se ACCESSIBILITY.md, avsnitt "Scanning-UI".
+6. **Fysiken är innehållet, inte kryddan.** Ingenting fejkas, ingenting animeras i
+   förväg, ingenting slumpas. Se avsnitt 4a.
 
 ## 2. Kärnloop
 
@@ -84,7 +86,94 @@ Väljs i en profil, inte i en undermeny någonstans.
 per gång med lång latens. Spelet väljer då den vinkel som leder till framsteg. Det är
 inte "fusk" — det är att flytta svårighetsgraden från precision till timing.
 
-## 4. Fysikkänsla
+## 4a. Fysiken som innehåll
+
+Det här är projektets andra grundidé, jämsides med enknappsstyrningen, och den
+förtjänar att stå före allt annat om fysik.
+
+Målgruppen möter sällan fysiska lagar på egen hand. Ett barn som inte kan kasta en boll,
+välta en klosshög eller gunga för högt får aldrig göra de experiment som resten av oss
+gjorde innan vi kunde stava. Robo Ball ska ge dem laboratoriet: fart, tyngd, balans,
+gravitation och rörelsemängd — Newton, helt enkelt — som något man kan *pilla på* och
+dra slutsatser av.
+
+Det gör fysiken till spelets innehåll, inte till dess ytbehandling. Fem följder:
+
+**Ingenting fejkas.** Inga skriptade ras, inga animerade studsar, inga effekter som
+"ser ut som" fysik. Allt kommer ur samma simulering. Det stänger några billiga genvägar
+längre fram, och det är värt priset: om samma orsak inte alltid ger samma verkan finns
+inget mönster att upptäcka.
+
+**Förutsägbarhet slår spektakel.** En explosion som blir olika varje gång är rolig en
+gång men lär inte ut något. Samma tyngd och samma fart ska ge samma resultat. Därför ska
+slumpen bort där den smugit sig in — krossade bitar får i dag slumpmässig utfart, och det
+bör ersättas med något som härleds ur träffen.
+
+**Förhandsbanan är ett pedagogiskt verktyg.** Den ritar parabeln innan hoppet: barnet
+gissar, ser prickarna, ser RB följa dem exakt. Förutsägelse och verifiering, alltså den
+väg man faktiskt lär sig en naturlag. Den byggdes som en tillgänglighetshjälp och är
+minst lika mycket en lärandehjälp.
+
+**Överdriv hellre än var korrekt.** Verklig newtonsk fysik är otydlig i små skalor. Det
+som lär ut är *relationerna* — tyngre är trögare, snabbare ger större effekt — och de
+blir tydligare om de förstärks. Sikta på läsbar fysik, inte realistisk.
+
+**Reglagen är själva leksaken.** Ett barn som drar i gravitationen och ser hoppkurvan
+ändras gör fysik. I dag ligger de reglagen i en utvecklarpanel bakom ett kugghjul; de
+hör hemma i ett **laboratorieläge**: en egen bana där ett fåtal stora, tydliga reglage
+är innehållet, körbara med samma enda signal (scanning). För någon som knappt kan styra
+sin egen kropp är det att få styra tyngdkraften.
+
+Och en varning: låt det aldrig bli pedagogiskt på ytan. Lärandet händer för att fysiken
+är ärlig och spelet är kul, inte för att något förklaras. I samma sekund det känns som en
+lektion är de borta.
+
+### Rörelsemängd i hoppet
+
+I dag är hoppet *rent*: RB:s fart nollställs och ersätts av pilens riktning gånger en
+fast kraft. Det är därför banan går att förutsäga exakt, och därför förhandsbanan och
+auto-siktet fungerar så väl.
+
+Att låta farten följa med — hoppet blir pilen **plus** den rörelse han redan har — ger
+precis den fysik det här avsnittet handlar om. Nedför rampen blir hoppet längre. Släpper
+man trapetsen flyger man iväg längs tangenten. Newtons första lag, synlig.
+
+Priset är att resultatet börjar bero på *när* man trycker och inte bara på vinkeln.
+Alltså mer timing, alltså en tröskel. Lösningen är därför ett reglage: **hur stor andel
+av farten som följer med, 0–100 %**. Vid 0 % har man dagens förutsägbara hopp, vid 100 %
+full momentumkänsla, och däremellan finns varje barns nivå. Förhandsbanan och auto-siktet
+klarar det utan ändring i sak — de simulerar redan, de behöver bara utgå från den
+nuvarande farten.
+
+Trapetsen är undantaget: den *kräver* rörelsemängd för att vara en trapets, så den bär
+med sig farten oavsett var reglaget står.
+
+### Stationer
+
+Lekplatsen ska växa till en rad stationer där varje station visar en lag. Det är samtidigt
+gråboxbanan vi testar i och skissen till ett riktigt område i spelet.
+
+| Station | Lagen den visar |
+|---|---|
+| Lådstaplar | massa, tröghet, kedjereaktion |
+| Ramper och hoppbackar | acceleration, rörelsemängd |
+| **Studsmattor** | energiåtergång — föll du högre studsar du högre, varje gång |
+| Vippbrädor | balans, hävstång |
+| Pendlar och rivningskulor | rörelsemängd, cirkelrörelse |
+| Trapetser | tangentiell hastighet |
+| Transportband | relativ hastighet |
+| Is | friktion |
+| Dominobrickor | kedjereaktion |
+| Vatten | lyftkraft, motstånd |
+
+Studsmattorna är värda en egen anmärkning, för de passar enknappsdesignen ovanligt väl.
+Studsandet sköter sig självt och skapar en **rytm som väntar på spelaren**: ett barn som
+behöver tjugo sekunder kan låta RB studsa i tjugo sekunder och hoppa av när det känns
+rätt, utan att förlora något. Det är en trygg zon som ändå rör på sig — och den enda
+mekanik vi hittills har som ger tid utan att stanna världen. Låt mattan deformeras i
+proportion till kraften, så blir avläsningen synlig.
+
+## 4b. Fysikkänsla
 
 Tre olika fysikbeteenden som måste samexistera (se TECH.md för implementation):
 
