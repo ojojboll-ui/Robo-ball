@@ -28,6 +28,11 @@ var input_debounce := 0.15     ## sekunder, filtrerar skakningar och dubbeltryck
 ## utvecklarpanelen, och GDScripts statiska typning gillar inte int → enum.
 var control_variant: int = ControlVariant.CLASSIC
 var aim_steps := 0             ## 0 = mjuk pendel, annars antal diskreta vinklar
+## Pilens spann i grader. 0 = rakt höger, 90 = rakt upp, 180 = rakt vänster,
+## 270 = rakt ner. Bågen startar vid det första värdet, så 90 betyder att den
+## börjar rakt upp och sedan pendlar varvet runt.
+var aim_min_deg := 90.0
+var aim_max_deg := 370.0
 var trajectory_preview := true
 var air_jumps := 1             ## extra hopp i luften: 0 = av, 1 = dubbelhopp
 var ledge_guard := true        ## vänd vid kanter i stället för att ramla
@@ -65,6 +70,10 @@ var tuck_lookahead := 0.30     ## sekunder framåt han känner av landningen
 var leg_max_slope := 38.0      ## grader, brantast benen klarar innan de åker in
 var roll_max_slope := 62.0     ## grader, brantast han håller sig kvar som boll
 var roll_friction := 30.0      ## px/s², rullmotstånd
+## Över den här farten drar han in benen oavsett hur flack marken är. 0 = av.
+## Det är den mekanik som bär de första pusslen, innan han hittat benen: springer
+## han fort nog blir han en boll, och då gäller andra regler.
+var roll_speed := 0.0
 var auto_roll := true          ## dra in benen automatiskt i branta lutningar
 var level_index := 0
 
@@ -81,6 +90,9 @@ func as_dict() -> Dictionary:
 		"input_debounce": input_debounce,
 		"control_variant": int(control_variant),
 		"aim_steps": aim_steps,
+		"aim_min_deg": aim_min_deg,
+		"aim_max_deg": aim_max_deg,
+		"roll_speed": roll_speed,
 		"trajectory_preview": trajectory_preview,
 		"air_jumps": air_jumps,
 		"ledge_guard": ledge_guard,
@@ -117,6 +129,9 @@ func apply(data: Dictionary) -> void:
 	input_debounce = float(data.get("input_debounce", input_debounce))
 	control_variant = int(data.get("control_variant", control_variant))
 	aim_steps = int(data.get("aim_steps", aim_steps))
+	aim_min_deg = float(data.get("aim_min_deg", aim_min_deg))
+	aim_max_deg = float(data.get("aim_max_deg", aim_max_deg))
+	roll_speed = float(data.get("roll_speed", roll_speed))
 	trajectory_preview = bool(data.get("trajectory_preview", trajectory_preview))
 	air_jumps = int(data.get("air_jumps", air_jumps))
 	ledge_guard = bool(data.get("ledge_guard", ledge_guard))

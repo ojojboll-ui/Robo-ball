@@ -123,6 +123,10 @@ func _build_rows() -> void:
 		func(v: float) -> void: Settings.slowmo = v, "%.0f%%", 100.0)
 	_slider("Vinkelsteg (0 = mjuk pendel)", 0.0, 9.0, 1.0, float(Settings.aim_steps),
 		func(v: float) -> void: Settings.aim_steps = int(v), "%.0f")
+	_slider("Bågen börjar vid", -90.0, 270.0, 5.0, Settings.aim_min_deg,
+		func(v: float) -> void: Settings.aim_min_deg = v, "%.0f°")
+	_slider("Bågen slutar vid", 0.0, 450.0, 5.0, Settings.aim_max_deg,
+		func(v: float) -> void: Settings.aim_max_deg = v, "%.0f°")
 	_slider("Extra hopp i luften", 0.0, 2.0, 1.0, float(Settings.air_jumps),
 		func(v: float) -> void: Settings.air_jumps = int(v), "%.0f")
 
@@ -159,6 +163,8 @@ func _build_rows() -> void:
 		func(v: float) -> void: Settings.roll_max_slope = v, "%.0f°")
 	_slider("Rullmotstånd", 0.0, 300.0, 5.0, Settings.roll_friction,
 		func(v: float) -> void: Settings.roll_friction = v, "%.0f")
+	_slider("Blir boll över farten (0 = av)", 0.0, 900.0, 10.0, Settings.roll_speed,
+		func(v: float) -> void: Settings.roll_speed = v, "%.0f")
 
 	_section("Lådornas fysik")
 	_slider("Tyngd", 0.2, 5.0, 0.1, Settings.crate_mass,

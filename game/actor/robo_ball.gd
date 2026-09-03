@@ -33,8 +33,6 @@ const CAPSULE_HEIGHT := 70.0
 const STAND_HALF := CAPSULE_HEIGHT * 0.5
 const BODY_LIFT := STAND_HALF - RADIUS   ## bollens mitt över kollisionsmitten
 const WALK_SPEED := 130.0
-const AIM_MIN_DEG := 20.0
-const AIM_MAX_DEG := 160.0
 const AUTO_AIM_DELAY := 0.7    ## hur länge pilen visas innan spelet hoppar åt en
 const SAFETY_MARGIN := 2.0     ## slack i förflyttningstaket, se _move()
 const STAND_UP_MARGIN := 6.0   ## hysteres, annars fladdrar han mellan lägena
@@ -169,19 +167,17 @@ func _process_aim(delta: float) -> void:
 		return
 
 	_sweep_t += real * Settings.aim_sweep_speed * 1.6
-	# Bågen startar bakom RB och svepar fram mot den håll han går åt. Det ger
-	# spelaren ett helt svep på sig att förbereda det hopp hen troligen vill
-	# göra, i stället för att missa framåtvinkeln direkt och få vänta ett varv.
-	# Cosinus i stället för sinus gör dessutom att pilen börjar stilla vid
-	# ytterläget och accelererar mjukt.
-	var t := 0.5 + 0.5 * cos(_sweep_t) * float(facing)
-	aim_deg = lerpf(AIM_MIN_DEG, AIM_MAX_DEG, t)
+	# Bågen startar vid spannets första värde — med grundinställningen rakt upp —
+	# och pendlar därifrån. Cosinus gör att pilen börjar stilla i ytterläget och
+	# accelererar mjukt, i stället för att starta mitt i svepet med full fart.
+	var t := 0.5 - 0.5 * cos(_sweep_t)
+	aim_deg = lerpf(Settings.aim_min_deg, Settings.aim_max_deg, t)
 	if Settings.aim_steps > 1:
 		# Diskreta vinklar: lättare att träffa rätt, och möjligt att beskriva
 		# i ord för någon som behöver hjälp att välja.
-		var span := AIM_MAX_DEG - AIM_MIN_DEG
+		var span := Settings.aim_max_deg - Settings.aim_min_deg
 		var step := span / float(Settings.aim_steps - 1)
-		aim_deg = AIM_MIN_DEG + roundf((aim_deg - AIM_MIN_DEG) / step) * step
+		aim_deg = Settings.aim_min_deg + roundf((aim_deg - Settings.aim_min_deg) / step) * step
 
 	if Settings.aim_timeout > 0.0 and _aim_elapsed > Settings.aim_timeout:
 		_set_state(State.AIR if _aim_from_air else _stance_for_slope())
@@ -226,9 +222,17 @@ func slope_degrees() -> float:
 	return absf(rad_to_deg(ground_normal.angle_to(Vector2.UP)))
 
 func _stance_for_slope() -> State:
-	if Settings.auto_roll and slope_degrees() > Settings.leg_max_slope:
-		return State.ROLL
-	return State.WALK
+	return State.ROLL if _should_roll() else State.WALK
+
+## Två skäl att bli boll: backen är för brant för benen, eller farten är för hög
+## för att springa på dem. Det andra är mekaniken bakom spelets första pussel —
+## innan RB hittat sina ben är fart det enda han har att arbeta med.
+func _should_roll() -> bool:
+	if not Settings.auto_roll:
+		return false
+	if slope_degrees() > Settings.leg_max_slope:
+		return true
+	return Settings.roll_speed > 0.0 and absf(ground_speed) > Settings.roll_speed
 
 ## Benen ut eller in. Hysteresen finns för att han annars skulle fladdra mellan
 ## lägena på en lutning som ligger precis på gränsen.
@@ -238,10 +242,11 @@ func _update_stance() -> void:
 			_set_state(State.WALK)
 		return
 	var slope := slope_degrees()
-	if state == State.WALK and slope > Settings.leg_max_slope:
+	if state == State.WALK and _should_roll():
 		_set_state(State.ROLL)
 	elif state == State.ROLL and slope < Settings.leg_max_slope - STAND_UP_MARGIN \
-			and absf(ground_speed) < WALK_SPEED * Settings.walk_speed * 1.3:
+			and absf(ground_speed) < WALK_SPEED * Settings.walk_speed * 1.3 \
+			and (Settings.roll_speed <= 0.0 or absf(ground_speed) < Settings.roll_speed * 0.8):
 		_set_state(State.WALK)
 
 func _hit_wall() -> void:
@@ -433,8 +438,8 @@ func simulate(angle_deg: float, steps: int = SIM_STEPS) -> Dictionary:
 func _pick_best_angle() -> float:
 	var best := 90.0
 	var best_score := -INF
-	var angle := AIM_MIN_DEG
-	while angle <= AIM_MAX_DEG:
+	var angle := Settings.aim_min_deg
+	while angle <= Settings.aim_max_deg:
 		var sim := simulate(angle, 55)
 		if sim["landed"]:
 			var end: Vector2 = sim["end"]
@@ -444,7 +449,7 @@ func _pick_best_angle() -> float:
 			if forward > 24.0 and score > best_score:
 				best_score = score
 				best = angle
-		angle += 6.0
+		angle += 8.0
 	return best
 
 # ---------------------------------------------------------------- ritning

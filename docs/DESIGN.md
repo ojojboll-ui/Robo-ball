@@ -46,7 +46,10 @@ fiender, projektiler och rörliga plattformar saktas ner, men pilen och UI:t gö
 Slow motion är alltså inte en effekt, det är **speltid ÷ beslutstid**, och därmed en
 tillgänglighetsparameter.
 
-* Pilen pendlar mellan två vinklar (grund: 20°–160°, dvs. aldrig rakt ner).
+* Pilen startar rakt upp och pendlar därifrån varvet runt (grund: 90°–370°, där
+  0° är rakt höger). Att spannet når förbi vågrätt och ner betyder att RB kan
+  skjuta iväg sig själv framåt och nedåt, inte bara i en båge uppåt. Spannets
+  båda ändar är reglage.
 * Pilens längd visar hoppkraft — som standard fast, men se "Två-stegssikte" nedan.
 * En prickad förhandsbana visar var RB landar (av/på). Eftersom lufttiden är helt
   ballistisk är banan exakt förutsägbar, inte en gissning.
@@ -221,6 +224,7 @@ synlig tidigare, och (c) gå att förstå utan text.
 | 1 | **Rulla** (start) | korta, låga hopp | — |
 | 2 | **Strutsbenen** | högre och längre hopp, kliver över småkanter | höga avsatser, breda hål |
 | 3 | **Spikar** | fastnar på och rullar uppför vertikala väggar och i tak | schakt, upp-och-nedvända rum |
+| — | *(ingen förmåga)* **Fart gör honom rund** | över en viss fart drar han in benen av sig själv | spelets första pussel, innan han hittat benen: fart är då det enda han har att arbeta med |
 | 4 | **Hårt skal** | krossar spröda block, tål fall och smällar | murar, rasområden, taggar |
 | 5 | **Dubbelhoppet** | ett andra hopp mitt i luften, med samma två tryck | långa gap, höga avsatser, omtag när första hoppet blev fel |
 | 6 | **Ficklampan** | ljuskägla ur ögat, lyser upp mörker | mörka grottor, ljuskänsliga fiender/mekanismer |

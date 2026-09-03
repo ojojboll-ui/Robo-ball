@@ -152,7 +152,7 @@ static func _playground() -> Dictionary:
 ## pendling som dör ut, en lång utrullning som visar hur väl rörelsemängden
 ## bevaras, och puckelbanan som visar vad ojämn mark gör med farten.
 static func _roll_test() -> Dictionary:
-	var right := 4400.0
+	var right := 7000.0
 	var crates: Array = []
 	var cube := Vector2(46, 40)
 
@@ -171,9 +171,14 @@ static func _roll_test() -> Dictionary:
 	# Väggarna når 58 grader, alltså långt över vad benen klarar: i skålen
 	# rullar han, och rullmotståndet blir synligt som en pendling som dör ut.
 	ramps.append(bowl(1620, 840, 340))
-	# Puckelbanan.
+	# Puckelbanan — små ojämnheter som bara skakar om farten.
 	for i in 4:
 		ramps.append(hump(2760.0 + i * 210.0, 190.0, 46.0 + i * 10.0))
+	# Kullarna: samma skala som skålen, fast åt andra hållet. Flankerna når 53
+	# grader, alltså långt över vad benen klarar — han rullar nedför, tappar fart
+	# uppför nästa, och man ser rörelsemängden räcka eller inte räcka.
+	for i in 3:
+		ramps.append(hump(4500.0 + i * 820.0, 760.0, 320.0))
 
 	return {
 		"name": "Rullbanan",
@@ -193,5 +198,6 @@ static func _roll_test() -> Dictionary:
 			{"name": "Skålen", "pos": Vector2(1700, 320)},
 			{"name": "Pucklarna", "pos": Vector2(2700, GROUND_Y - 60)},
 			{"name": "Utrullningen", "pos": Vector2(3700, 250)},
+			{"name": "Kullarna", "pos": Vector2(4420, GROUND_Y - 60)},
 		],
 	}
