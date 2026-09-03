@@ -82,6 +82,7 @@ var roll_friction := 30.0      ## px/s², rullmotstånd
 var roll_speed := 0.0
 var auto_roll := true          ## dra in benen automatiskt i branta lutningar
 var level_index := 0
+var panel_tab := 0            ## vilken flik i inställningspanelen som var öppen
 
 ## Grundvärdena fångas innan sparfilen läses, så att panelen kan återställa allt
 ## utan att någon behöver skriva upp dem en andra gång.
@@ -134,6 +135,7 @@ func as_dict() -> Dictionary:
 		"roll_friction": roll_friction,
 		"auto_roll": auto_roll,
 		"level_index": level_index,
+		"panel_tab": panel_tab,
 	}
 
 func apply(data: Dictionary) -> void:
@@ -174,6 +176,7 @@ func apply(data: Dictionary) -> void:
 	roll_friction = float(data.get("roll_friction", roll_friction))
 	auto_roll = bool(data.get("auto_roll", auto_roll))
 	level_index = int(data.get("level_index", level_index))
+	panel_tab = int(data.get("panel_tab", panel_tab))
 	changed.emit()
 
 func save_settings() -> void:

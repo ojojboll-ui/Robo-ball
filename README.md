@@ -46,12 +46,22 @@ Spelet styrs med **en enda signal**: vilken tangent som helst, klick var som hel
 skärmtryck var som helst, valfri knapp på en handkontroll. Ett tryck siktar, ett till
 hoppar.
 
-**Kugghjulet uppe till höger** öppnar inställningspanelen: pilens hastighet, hoppkraft,
-slow motion, extra hopp i luften, RB:s gravitation och studs, gränserna för när benen
-åker in och när fästet släpper, rullmotstånd, lådornas tyngd, tålighet, friktion och
-studsighet, samt styrningsvariant, hjälpmedel och banval. Allt slår igenom direkt, mitt i
-spelet. Panelen äter sina egna tryck, så ett finger på ett reglage får aldrig RB att
-hoppa.
+**Kugghjulet uppe till höger** öppnar inställningspanelen. Innehållet ligger i sex
+flikar, eftersom ett trettiotal reglage i en enda lista blev längre än vad någon orkar
+bläddra igenom mitt i ett speltest:
+
+| Flik | Innehåll |
+| --- | --- |
+| Sikte | Pilens hastighet, slow motion, vinkelsteg, bågens gränser, hoppkraft, gravitation, tempoknapparna och extra hopp i luften |
+| Rörelse | Gångfart och acceleration, markfäste, hur mycket fart som följer med i landningen, studs mot väggar, knuffkraft, benens fjädring |
+| Rullning | När benen åker in (lutning och fart), indragningstakt, förberedd rullning i luften, rullmotstånd |
+| Föremål | Lådornas tyngd, tålighet, friktion, studsighet och gravitation, samt effekter |
+| Hjälp | Styrningsvariant, förhandsbana, kantskydd, spelhastighet, dubbeltrycksfilter, timeout |
+| Bana | Banval, börja om, snabbresa och återställning av alla inställningar |
+
+Vilken flik som var öppen sparas tillsammans med inställningarna, så panelen öppnas där
+man var förra gången. Allt slår igenom direkt, mitt i spelet. Panelen äter sina egna
+tryck, så ett finger på ett reglage får aldrig RB att hoppa.
 
 Panelen är ett verktyg för den som leder ett speltest — inte spelets meny. Den riktiga
 menyn ska gå att använda med samma enda signal som spelet, och byggs i fas 1
@@ -76,7 +86,7 @@ grader där man ser exakt var benen åker in och var fästet släpper; en skål 
 pendlar och rullmotståndet blir synligt; en puckelbana; och en avsats för en lång
 utrullning som slutar i en lådstapel.
 
-Snabbresa mellan stationerna finns längst ner i panelen och byggs om när banan byts.
+Snabbresa mellan stationerna finns i panelens *Bana*-flik och byggs om när banan byts.
 
 ## Bygga
 
