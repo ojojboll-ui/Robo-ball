@@ -283,14 +283,20 @@ en fot hamnat för långt bak, och kroppen hänger i en fjäder ovanför fötter
 verkar bara längs underlagets normal — drar den även i sidled ser det ut som att han
 lutar bakåt när han går uppför.
 
-Kollisionskroppen säger samma sak som bilden: **en kapsel när benen är ute**, från
-bollens topp ner till fötterna, och **en cirkel när han rullar**. Det är inte en
-finess utan en följd av att fysiken ska vara ärlig — med benen ute är han en boll
-på ben och kan inte krypa in i springor som bara bollen får plats i.
+Kollisionskroppen säger samma sak som bilden: **en kapsel** som når från bollens topp
+ner till fötterna. Med benen ute är han en boll på ben och kan inte krypa in i springor
+som bara bollen får plats i.
 
-Att RB *sjunker ner till marken* när benen dras in följer av samma sak, och nu på
-riktigt: bytet från kapsel till cirkel flyttar honom fysiskt nedåt. Utan ben finns
-ingenting som bär kroppen.
+När benen dras in **krymper kapseln** i stället för att bytas mot en cirkel — en kapsel
+vars höjd är två radier *är* en cirkel. Det gör indragningen till en rörelse över ett
+par tiondels sekunder i stället för ett hack mellan två former, och benen viker ihop sig
+av sig själva: fötterna står kvar på marken medan höften sjunker, så geometrin sköter
+resten. Att RB sjunker ner till marken när benen försvinner är alltså inte ritat utan
+en följd av att ingenting längre bär kroppen.
+
+Benens två delar är nästan lika långa, som hos en fågel, och det ger den snäva vinkeln i
+leden — omkring 65–75 grader i normal gång. Ett fågelben står alltid böjt; ett rakt ben
+ser ut som en käpp.
 
 ## 8. Grafisk riktning
 

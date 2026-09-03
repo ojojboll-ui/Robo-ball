@@ -17,11 +17,14 @@ extends RefCounted
 ##      kollisionskroppen och ärvde varje litet hack i underlaget — därav
 ##      skakandet uppför ramper.
 
-const THIGH := 28.0        ## höft → ankel, det korta övre benet
-const SHIN := 40.0         ## ankel → tå, det långa nedre benet
+const THIGH := 36.0        ## höft → ankel
+const SHIN := 37.0         ## ankel → tå. Nästan lika långa, som hos en fågel,
+                           ## vilket ger den snäva vinkeln i leden.
 const TOE := 9.0
 const HIP_SPREAD := 7.0    ## halva avståndet mellan höfterna
-const BODY_HEIGHT := 66.0  ## bollens mitt över fotplanet = kapselhöjd minus radie
+## Bollens mitt över fotplanet. Sätts av RoboBall varje bildruta, eftersom den
+## krymper när benen dras in — det är den som får benen att vika ihop sig.
+var body_height := 48.0
 const LIFT := 13.0         ## hur högt foten lyfts under ett steg
 const MAX_SAG := 16.0      ## hur långt kroppen får hamna från kollisionskroppen
 const STIFFNESS := 220.0
@@ -47,7 +50,7 @@ var step_time := [0.2, 0.2]
 var body_point := Vector2.ZERO
 ## Hur högt bollens mitt sitter över kollisionskroppens mitt. Sätts av RoboBall
 ## så att de två aldrig kan glida isär.
-var body_lift := 16.0
+var body_lift := 13.0
 var _body_vel := Vector2.ZERO
 var _ready := false
 
@@ -56,7 +59,7 @@ func reset(rb: Node2D, normal: Vector2) -> void:
 	_body_vel = Vector2.ZERO
 	var t := Vector2(-normal.y, normal.x)
 	for i in 2:
-		feet[i] = body_point - normal * BODY_HEIGHT + t * (i * 2.0 - 1.0) * HIP_SPREAD
+		feet[i] = body_point - normal * body_height + t * (i * 2.0 - 1.0) * HIP_SPREAD
 		planted[i] = true
 		step_t[i] = 1.0
 	_ready = true
@@ -86,7 +89,7 @@ func _step(rb: Node2D, normal: Vector2, speed: float, delta: float) -> void:
 	# i stället för att svepa dit över en halv sekund.
 	for i in 2:
 		if ((feet[i] as Vector2) - (hip_list[i] as Vector2)).length() > REACH * 1.6:
-			feet[i] = (hip_list[i] as Vector2) - normal * (BODY_HEIGHT - 10.0)
+			feet[i] = (hip_list[i] as Vector2) - normal * (body_height - 10.0)
 			step_to[i] = feet[i]
 			step_t[i] = 1.0
 			planted[i] = true
@@ -109,7 +112,7 @@ func _step(rb: Node2D, normal: Vector2, speed: float, delta: float) -> void:
 			# Ingen mark inom räckhåll — foten hänger i luften, troligen kvar
 			# från ett fall. Flytta den till det förväntade fotplanet så att
 			# strålen hittar marken nästa bildruta.
-			feet[i] = (hip_list[i] as Vector2) - normal * (BODY_HEIGHT - 10.0)
+			feet[i] = (hip_list[i] as Vector2) - normal * (body_height - 10.0)
 
 	for i in 2:
 		if planted[i]:
@@ -159,7 +162,7 @@ func _begin_step(rb: Node2D, normal: Vector2, i: int, stride: float, speed: floa
 	# Sikta på **fotplanet** framför höften, inte på höftens egen höjd. Utgick
 	# strålen från höften nådde den aldrig ner till marken, fallbacken användes
 	# varje gång, och foten hamnade en bit över underlaget.
-	var aim := hip - normal * (BODY_HEIGHT - 10.0) + t * forward * stride * 0.55
+	var aim := hip - normal * (body_height - 10.0) + t * forward * stride * 0.55
 	var space := rb.get_world_2d().direct_space_state
 	var query := PhysicsRayQueryParameters2D.create(
 		aim + normal * PROBE_UP, aim - normal * PROBE_DOWN, rb.collision_mask, [rb.get_rid()])
@@ -172,7 +175,7 @@ func _begin_step(rb: Node2D, normal: Vector2, i: int, stride: float, speed: floa
 	if not hit.is_empty() and (hit["normal"] as Vector2).dot(normal) > 0.35:
 		target = hit["position"]
 	else:
-		target = hip - normal * (BODY_HEIGHT - 10.0)
+		target = hip - normal * (body_height - 10.0)
 
 	# Och aldrig längre bort än benet räcker.
 	var reach_vec := target - hip
@@ -194,7 +197,7 @@ func _begin_step(rb: Node2D, normal: Vector2, i: int, stride: float, speed: floa
 func _dangle(normal: Vector2, delta: float) -> void:
 	var t := Vector2(-normal.y, normal.x)
 	for i in 2:
-		var rest := body_point - normal * (BODY_HEIGHT - 6.0) + t * (i * 2.0 - 1.0) * HIP_SPREAD
+		var rest := body_point - normal * (body_height - 6.0) + t * (i * 2.0 - 1.0) * HIP_SPREAD
 		feet[i] = (feet[i] as Vector2).lerp(rest, minf(1.0, delta * 9.0))
 		planted[i] = true
 		step_t[i] = 1.0
@@ -211,7 +214,7 @@ func _carry_body(rb: Node2D, normal: Vector2, delta: float) -> void:
 	# Bara höjden fjädrar, och den styrs av var fötterna faktiskt står.
 	var anchor := rb.global_position + normal * body_lift
 	var support: Vector2 = ((feet[0] as Vector2) + (feet[1] as Vector2)) * 0.5
-	var along := (support + normal * BODY_HEIGHT - anchor).dot(normal)
+	var along := (support + normal * body_height - anchor).dot(normal)
 	var target := anchor + normal * clampf(along, -MAX_SAG, MAX_SAG)
 
 	_body_vel += (target - body_point) * STIFFNESS * delta

@@ -23,12 +23,15 @@ signal state_changed(state: State)
 enum State { WALK, ROLL, AIM, AIR }
 
 const RADIUS := 22.0            ## bollens radie, och kollisionscirkeln när han rullar
-## Med benen ute är han en boll på ben, och kollisionskroppen ska säga samma
-## sak: en kapsel som når från bollens topp ner till fötterna. När benen dras in
-## byts den mot en cirkel — då *är* han bollen. Bytet flyttar honom 16 px, vilket
-## är exakt varför bollen sjunker mot marken när benen försvinner.
-const CAPSULE_HEIGHT := 88.0
+## Med benen ute är han en boll på ben, och kollisionskroppen ska säga samma sak:
+## en kapsel som når från bollens topp ner till fötterna. När benen dras in
+## *krymper* kapseln i stället för att bytas ut — en kapsel vars höjd är två
+## radier är per definition en cirkel. Därför blir indragningen en mjuk rörelse
+## över några bildrutor i stället för ett hack mellan två former, och benen viker
+## ihop sig av sig själva när höften sjunker: fötterna står kvar på marken.
+const CAPSULE_HEIGHT := 70.0
 const STAND_HALF := CAPSULE_HEIGHT * 0.5
+const TUCK_SPEED := 6.5        ## hur snabbt benen viks in, ~0.15 s
 const BODY_LIFT := STAND_HALF - RADIUS   ## bollens mitt över kollisionsmitten
 const WALK_SPEED := 130.0
 const WALK_ACCEL := 900.0      ## hur hårt benen driver mot gångfarten
@@ -62,7 +65,8 @@ var _airborne_frames := 0
 var _legs := Legs.new()
 var _shape: CollisionShape2D
 var _capsule := CapsuleShape2D.new()
-var _circle := CircleShape2D.new()
+## 1.0 = benen ute, 0.0 = helt indragna. Allt annat följer av den här siffran.
+var _stance := 1.0
 ## Underlagets normal, utjämnad. Rå normal hoppar till vid varje skarv mellan
 ## kollisionspolygonens delar, och det syntes som ryck i kroppens lutning.
 var _smooth_normal := Vector2.UP
@@ -72,7 +76,6 @@ var _ledge_ray: RayCast2D
 ## Noderna byggs i kod i stället för i en scenfil — RB har få delar, och det
 ## håller allt som beskriver honom i en enda läsbar fil.
 func _ready() -> void:
-	_circle.radius = RADIUS
 	_capsule.radius = RADIUS
 	_capsule.height = CAPSULE_HEIGHT
 	_shape = CollisionShape2D.new()
@@ -93,6 +96,7 @@ func _physics_process(delta: float) -> void:
 	# Vad som räknas som golv avgörs av bollformen, inte av benen. Brantare än
 	# så tappar han fästet helt och faller.
 	floor_max_angle = deg_to_rad(Settings.roll_max_slope)
+	_update_stance_shape(delta)
 	match state:
 		State.WALK, State.ROLL:
 			_process_ground(delta)
@@ -106,12 +110,14 @@ func _physics_process(delta: float) -> void:
 func _update_legs(delta: float) -> void:
 	var grounded := state == State.WALK or state == State.AIM
 	_smooth_normal = _smooth_normal.lerp(ground_normal, minf(1.0, delta * 14.0)).normalized()
-	if state == State.ROLL:
-		# Benen är indragna — då finns inget att simulera, och kroppen sitter
-		# åter fast i bollen eftersom det *är* bollen som rullar.
+	if _stance < 0.08:
+		# Helt indragna — då finns inget att simulera, och kroppen sitter åter
+		# fast i bollen eftersom det *är* bollen som rullar.
 		_legs.body_point = global_position
 		return
-	_legs.update(self, _smooth_normal, ground_speed, grounded, delta)
+	# Under indragningen simuleras benen fortfarande. Höften sjunker med
+	# kapseln, fötterna står kvar, och vikningen kommer ur geometrin.
+	_legs.update(self, _smooth_normal, ground_speed, grounded or state == State.ROLL, delta)
 
 # ---------------------------------------------------------------- lägen
 
@@ -292,29 +298,29 @@ func _launch() -> void:
 func _set_state(next: State) -> void:
 	if state == next:
 		return
-	var was_rolling := state == State.ROLL
-	var will_roll := next == State.ROLL
-	if was_rolling != will_roll:
-		_swap_shape(will_roll)
 	# Reser han sig ur en rullning har benen inga giltiga fotplaceringar kvar —
 	# utan en omstart skulle de kliva från där de stod innan han rullade.
-	if was_rolling and not will_roll:
+	if state == State.ROLL and next != State.ROLL:
 		_legs.reset(self, _smooth_normal)
 	state = next
 	WorldClock.set_slowmo(state == State.AIM)
 	state_changed.emit(state)
 
-## Kapseln står med mitten 54 px över marken, cirkeln med mitten 22 px över.
-## Byter vi form utan att flytta honom hamnar han antingen svävande eller nere i
-## marken, så förflyttningen hör till bytet.
-func _swap_shape(rolling: bool) -> void:
-	var up := ground_normal if ground_normal.length() > 0.1 else Vector2.UP
-	if rolling:
-		_shape.shape = _circle
-		global_position -= up * BODY_LIFT
-	else:
-		_shape.shape = _capsule
-		global_position += up * BODY_LIFT
+## Kapselns höjd följer hållningen: full höjd med benen ute, två radier — alltså
+## en cirkel — när de är indragna. Fötterna står still medan höften sjunker, så
+## benen viker ihop sig av sig själva. Kroppen flyttas med halva höjdändringen
+## så att kapselns undersida står kvar på marken hela vägen.
+func _update_stance_shape(delta: float) -> void:
+	var target := 0.0 if state == State.ROLL else 1.0
+	_stance = move_toward(_stance, target, TUCK_SPEED * delta)
+	var height := lerpf(RADIUS * 2.0, CAPSULE_HEIGHT, _stance)
+	var change := height - _capsule.height
+	if absf(change) > 0.001:
+		_capsule.height = height
+		var up := ground_normal if ground_normal.length() > 0.1 else Vector2.UP
+		global_position += up * change * 0.5
+	_legs.body_lift = height * 0.5 - RADIUS
+	_legs.body_height = height - RADIUS
 
 func set_start_position(pos: Vector2) -> void:
 	_start_position = pos
@@ -324,8 +330,8 @@ func teleport_to(pos: Vector2) -> void:
 	respawn()
 
 func respawn() -> void:
-	if state == State.ROLL:
-		_swap_shape(false)
+	_stance = 1.0
+	_capsule.height = CAPSULE_HEIGHT
 	global_position = _start_position
 	velocity = Vector2.ZERO
 	ground_speed = 0.0
@@ -358,7 +364,7 @@ func _turn_around() -> void:
 
 func _ground_ahead() -> bool:
 	var lean := ground_normal.angle() + PI * 0.5
-	_ledge_ray.target_position = Vector2(facing * (RADIUS + 8.0), STAND_HALF + 22.0).rotated(lean)
+	_ledge_ray.target_position = Vector2(facing * (RADIUS + 8.0), _capsule.height * 0.5 + 22.0).rotated(lean)
 	_ledge_ray.force_raycast_update()
 	return _ledge_ray.is_colliding()
 
@@ -425,7 +431,7 @@ func _pick_best_angle() -> float:
 func _draw() -> void:
 	if state == State.AIM:
 		_draw_aim()
-	if state == State.ROLL:
+	if _stance < 0.08:
 		_draw_rolling()
 	else:
 		_draw_standing()
