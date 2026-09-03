@@ -49,6 +49,13 @@ var crate_friction := 0.6      ## 0.0–1.0
 var crate_bounce := 0.0        ## 0.0–0.9
 var crate_gravity := 1.0       ## 0.2–3.0, gravitationsskala för lösa föremål
 
+## Markkontrollern och rullningen
+var leg_max_slope := 38.0      ## grader, brantast benen klarar innan de åker in
+var roll_max_slope := 62.0     ## grader, brantast han håller sig kvar som boll
+var roll_friction := 30.0      ## px/s², rullmotstånd
+var auto_roll := true          ## dra in benen automatiskt i branta lutningar
+var level_index := 0
+
 func _ready() -> void:
 	load_settings()
 
@@ -75,6 +82,11 @@ func as_dict() -> Dictionary:
 		"crate_friction": crate_friction,
 		"crate_bounce": crate_bounce,
 		"crate_gravity": crate_gravity,
+		"leg_max_slope": leg_max_slope,
+		"roll_max_slope": roll_max_slope,
+		"roll_friction": roll_friction,
+		"auto_roll": auto_roll,
+		"level_index": level_index,
 	}
 
 func apply(data: Dictionary) -> void:
@@ -99,6 +111,11 @@ func apply(data: Dictionary) -> void:
 	crate_friction = float(data.get("crate_friction", crate_friction))
 	crate_bounce = float(data.get("crate_bounce", crate_bounce))
 	crate_gravity = float(data.get("crate_gravity", crate_gravity))
+	leg_max_slope = float(data.get("leg_max_slope", leg_max_slope))
+	roll_max_slope = float(data.get("roll_max_slope", roll_max_slope))
+	roll_friction = float(data.get("roll_friction", roll_friction))
+	auto_roll = bool(data.get("auto_roll", auto_roll))
+	level_index = int(data.get("level_index", level_index))
 	changed.emit()
 
 func save_settings() -> void:

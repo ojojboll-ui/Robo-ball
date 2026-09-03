@@ -1,16 +1,17 @@
 extends Node2D
-## Fas 0 — lekplatsen.
+## Fas 0 — lekplatsen och rullbanan.
 ##
 ## Syftet är fortfarande ett enda: ta reda på om kärnan är rolig, och kunna
-## skruva på den medan någon spelar. Banan är byggd som en verkstad snarare än
-## en nivå, och allt som påverkar känslan ligger i inställningspanelen i stället
-## för som konstanter i koden.
+## skruva på den medan någon spelar. Banorna är verkstäder snarare än nivåer,
+## och allt som påverkar känslan ligger i inställningspanelen i stället för som
+## konstanter i koden.
 
 var _level: Level
 var _rb: RoboBall
 var _hud: Hud
 var _panel: TuningPanel
 var _crates: Node2D
+var _camera: Camera2D
 
 func _ready() -> void:
 	RenderingServer.set_default_clear_color(Palette.BACKDROP)
@@ -22,19 +23,17 @@ func _ready() -> void:
 	add_child(_crates)
 
 	_rb = RoboBall.new()
-	_rb.global_position = _level.spawn_point()
 	_rb.state_changed.connect(_on_state_changed)
 	add_child(_rb)
 
-	var camera := Camera2D.new()
-	camera.position_smoothing_enabled = true
-	camera.position_smoothing_speed = 4.0
-	camera.zoom = Vector2(1.05, 1.05)
-	camera.limit_left = -120
-	camera.limit_right = int(Level.RIGHT_EDGE + 60.0)
-	camera.limit_top = -260
-	camera.limit_bottom = 980
-	_rb.add_child(camera)
+	_camera = Camera2D.new()
+	_camera.position_smoothing_enabled = true
+	_camera.position_smoothing_speed = 4.0
+	_camera.zoom = Vector2(1.05, 1.05)
+	_camera.limit_left = -120
+	_camera.limit_top = -400
+	_camera.limit_bottom = 1100
+	_rb.add_child(_camera)
 
 	_hud = Hud.new()
 	add_child(_hud)
@@ -42,15 +41,22 @@ func _ready() -> void:
 	_panel = TuningPanel.new()
 	_panel.restart_requested.connect(_restart)
 	_panel.travel_requested.connect(_travel_to)
+	_panel.level_requested.connect(load_level)
 	add_child(_panel)
 
+	load_level(Settings.level_index)
+
+func load_level(index: int) -> void:
+	_level.load_level(index)
+	_camera.limit_right = int(_level.right_edge() + 60.0)
 	_build_crates()
+	_rb.teleport_to(_level.spawn_point())
 	_hud.update_state(_rb.state)
 
 func _build_crates() -> void:
 	for child in _crates.get_children():
 		child.queue_free()
-	for entry in _level.crate_layout():
+	for entry: Dictionary in _level.crate_layout():
 		var crate := Crate.new()
 		crate.box = entry["size"]
 		crate.position = entry["pos"]
@@ -80,6 +86,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			Settings.notify_changed()
 			Settings.save_settings()
 			_hud.update_state(_rb.state)
+		KEY_F3:
+			Settings.level_index = (Settings.level_index + 1) % Levels.names().size()
+			Settings.save_settings()
+			load_level(Settings.level_index)
 		KEY_F8:
 			_restart()
 		_:

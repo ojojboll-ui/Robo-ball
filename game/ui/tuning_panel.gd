@@ -14,6 +14,7 @@ class_name TuningPanel
 
 signal restart_requested
 signal travel_requested(position: Vector2)
+signal level_requested(index: int)
 
 const PANEL_WIDTH := 540.0
 const ROW_HEIGHT := 48.0
@@ -21,6 +22,7 @@ const ROW_HEIGHT := 48.0
 var _panel: PanelContainer
 var _rows: VBoxContainer
 var _gear: Button
+var _travel: GridContainer
 var _open := false
 
 func _ready() -> void:
@@ -129,6 +131,16 @@ func _build_rows() -> void:
 	_slider("Knuffkraft mot föremål", 0.1, 2.0, 0.05, Settings.push_force,
 		func(v: float) -> void: Settings.push_force = v, "%.2f")
 
+	_section("Rullning")
+	_check("Dra in benen i branta backar", Settings.auto_roll,
+		func(v: bool) -> void: Settings.auto_roll = v)
+	_slider("Brantast benen klarar", 15.0, 60.0, 1.0, Settings.leg_max_slope,
+		func(v: float) -> void: Settings.leg_max_slope = v, "%.0f°")
+	_slider("Brantast som boll", 30.0, 85.0, 1.0, Settings.roll_max_slope,
+		func(v: float) -> void: Settings.roll_max_slope = v, "%.0f°")
+	_slider("Rullmotstånd", 0.0, 300.0, 5.0, Settings.roll_friction,
+		func(v: float) -> void: Settings.roll_friction = v, "%.0f")
+
 	_section("Lådornas fysik")
 	_slider("Tyngd", 0.2, 5.0, 0.1, Settings.crate_mass,
 		func(v: float) -> void: Settings.crate_mass = v, "%.1f")
@@ -158,21 +170,33 @@ func _build_rows() -> void:
 	_check("Effekter", Settings.effects,
 		func(v: bool) -> void: Settings.effects = v)
 
-	_section("Lekplatsen")
+	_section("Bana")
+	_choice("Välj bana", Levels.names(), Settings.level_index,
+		func(i: int) -> void:
+			Settings.level_index = i
+			level_requested.emit(i)
+			_rebuild_travel())
 	var restart := Button.new()
 	restart.text = "Börja om — ställ tillbaka alla lådor"
 	restart.custom_minimum_size = Vector2(0, 58)
 	restart.add_theme_font_size_override("font_size", 20)
 	restart.pressed.connect(func() -> void: restart_requested.emit())
 	_rows.add_child(restart)
-	_travel_buttons()
+	_travel = GridContainer.new()
+	_travel.columns = 3
+	_travel.add_theme_constant_override("h_separation", 6)
+	_travel.add_theme_constant_override("v_separation", 6)
+	_rows.add_child(_travel)
+	_rebuild_travel()
 
-func _travel_buttons() -> void:
-	var grid := GridContainer.new()
-	grid.columns = 3
-	grid.add_theme_constant_override("h_separation", 6)
-	grid.add_theme_constant_override("v_separation", 6)
-	for point in Level.spawn_points():
+## Snabbresan hör till banan, så knapparna byggs om när banan byts.
+func _rebuild_travel() -> void:
+	if _travel == null:
+		return
+	for child in _travel.get_children():
+		child.queue_free()
+	var level: Dictionary = Levels.build(Settings.level_index)
+	for point: Dictionary in level.get("spawns", []):
 		var pos: Vector2 = point["pos"]
 		var button := Button.new()
 		button.text = str(point["name"])
@@ -180,8 +204,7 @@ func _travel_buttons() -> void:
 		button.add_theme_font_size_override("font_size", 19)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.pressed.connect(func() -> void: travel_requested.emit(pos))
-		grid.add_child(button)
-	_rows.add_child(grid)
+		_travel.add_child(button)
 
 # ---------------------------------------------------------------- byggstenar
 

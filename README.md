@@ -47,8 +47,9 @@ skärmtryck var som helst, valfri knapp på en handkontroll. Ett tryck siktar, e
 hoppar.
 
 **Kugghjulet uppe till höger** öppnar inställningspanelen: pilens hastighet, hoppkraft,
-slow motion, RB:s gravitation och studs, lådornas tyngd, tålighet, friktion och
-studsighet, samt styrningsvariant och hjälpmedel. Allt slår igenom direkt, mitt i
+slow motion, extra hopp i luften, RB:s gravitation och studs, gränserna för när benen
+åker in och när fästet släpper, rullmotstånd, lådornas tyngd, tålighet, friktion och
+studsighet, samt styrningsvariant, hjälpmedel och banval. Allt slår igenom direkt, mitt i
 spelet. Panelen äter sina egna tryck, så ett finger på ett reglage får aldrig RB att
 hoppa.
 
@@ -60,15 +61,22 @@ F1 öppnar panelen, F2 växlar styrningsvariant, F8 börjar om. Funktionstangent
 undantagna från spelets signal — inget hjälpmedel skickar dem, så undantaget kostar
 ingen tillgänglighet.
 
-## Lekplatsen
+## Banorna
 
-Banan är byggd som en verkstad, inte som en nivå: lös småsten direkt vid starten, två
-raka ramper, en hoppbacke och en kvartspipa med böjda ytor, en plattformstrappa, och
-fem lådformationer — pyramid, torn, mur, en bro på pelare och en stapel högst upp i
-trappan. Snabbresa mellan områdena finns längst ner i panelen.
+Två banor, valbara i panelen under *Bana* (eller med F3). Båda är verkstäder, inte
+nivåer, och i båda är marken sammanhängande hela vägen — RB går av sig själv, och en
+bana där auto-gången kan leda ner i en avgrund straffar spelaren för att inte trycka.
 
-Marken är sammanhängande hela vägen. RB går av sig själv, och en bana där auto-gången
-kan leda ner i en avgrund straffar spelaren för att inte trycka.
+**Lekplatsen.** Lös småsten direkt vid starten, två raka ramper, en hoppbacke och en
+kvartspipa med böjda ytor, en plattformstrappa, och fem lådformationer — pyramid, tre
+enkelbreda torn, mur, en bro på pelare och en stapel högst upp i trappan.
+
+**Rullbanan.** Bara rullfysik. En vinkeltrappa med lutningar på 15, 25, 35, 45 och 55
+grader där man ser exakt var benen åker in och var fästet släpper; en skål där han
+pendlar och rullmotståndet blir synligt; en puckelbana; och en avsats för en lång
+utrullning som slutar i en lådstapel.
+
+Snabbresa mellan stationerna finns längst ner i panelen och byggs om när banan byts.
 
 ## Bygga
 

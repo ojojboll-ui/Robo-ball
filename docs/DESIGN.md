@@ -177,12 +177,25 @@ proportion till kraften, så blir avläsningen synlig.
 
 Tre olika fysikbeteenden som måste samexistera (se TECH.md för implementation):
 
-1. **RB på mark** — Sonic-modellen. Han följer underlagets normal, kan åka ner för ramper,
-   samla fart i sluttningar och (med rätt fart) klara loopar och korkskruvar. Det här är
-   *inte* generell stelkroppsfysik utan en handskriven markkontroller, annars blir det
-   klumpigt.
+1. **RB på mark** — Sonic-modellen, och sedan fas 0 byggd. Farten lagras **längs
+   underlagets tangent**, inte som x och y, och gravitationens komponent längs ytan
+   verkar på den i full styrka. Det är därför en sluttning känns som en sluttning: han
+   accelererar nedför för att fysiken säger det, inte för att någon har skrivit "öka
+   farten här". Två hållningar:
+   * **Benen ute.** Han driver sig själv mot sin gångfart. Ju brantare backe, desto
+     mer av drivningen äts av gravitationen — mätt i prototypen går han uppför
+     15 grader lätt, 25 tydligt långsammare och 35 knappt alls.
+   * **Benen inne.** Över gränsen (grund 38 grader) drar han in benen och blir den boll
+     han var innan han hittade dem. Ingen drivning, bara lutning och rullmotstånd, och
+     rörelsemängden bevaras. Över bollens egen gräns (grund 62 grader) släpper fästet
+     helt och han faller.
+
+   Övergången är den synliga versionen av en annars osynlig regel, och den knyter ihop
+   mekaniken med berättelsen: spelets grundform är dess ursprungsform. Den går att
+   stänga av för den som blir förvirrad av ett lägesbyte hen inte bad om.
 2. **RB i luften** — ren ballistik. Förutsägbar, siktbar, ingen luftstyrning (det finns
-   ingen input att styra med).
+   ingen input att styra med). Landningen projicerar farten på underlagets tangent i
+   stället för att nollställa den, så ett hopp ner i en sluttning fortsätter nedför.
 3. **Världen** — riktig stelkroppsfysik. Lådor, stenar, spröda plankor, gungande
    trapetser, vippbrädor. Det är här Angry Birds-känslan bor: RB slår in i en stapel
    och den rasar på ett sätt som ingen har animerat i förväg.

@@ -35,6 +35,9 @@ func update_state(state: RoboBall.State) -> void:
 		RoboBall.State.WALK:
 			_state_label.text = "GÅENDE"
 			_hint_label.text = "Tryck för att sikta"
+		RoboBall.State.ROLL:
+			_state_label.text = "RULLAR"
+			_hint_label.text = "För brant för benen — tryck för att sikta"
 		RoboBall.State.AIM:
 			_state_label.text = "SIKTAR"
 			match Settings.control_variant:

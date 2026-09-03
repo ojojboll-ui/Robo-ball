@@ -60,9 +60,12 @@ func _spawn_pieces() -> void:
 				(x - 0.5) * half.x, (y - 0.5) * half.y)
 			piece.rotation = rotation
 			parent.add_child(piece)
-			piece.linear_velocity = linear_velocity + Vector2(
-				randf_range(-90.0, 90.0), randf_range(-170.0, -50.0))
-			piece.angular_velocity = randf_range(-8.0, 8.0)
+			# Härledd ur träffen, inte slumpad: bitarna kastas utåt från lådans
+			# mitt. Samma smäll ska ge samma ras, annars finns inget mönster
+			# att upptäcka — docs/DESIGN.md avsnitt 4a.
+			var outward := Vector2(x - 0.5, y - 0.5).normalized()
+			piece.linear_velocity = linear_velocity + outward * 120.0 + Vector2(0.0, -70.0)
+			piece.angular_velocity = outward.x * 7.0
 			piece.expire_after(PIECE_LIFETIME)
 
 ## Bitar städas bort, hela lådor blir kvar tills banan startas om.

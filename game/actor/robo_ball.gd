@@ -2,36 +2,51 @@ extends CharacterBody2D
 class_name RoboBall
 ## RB — en robotboll med ett öga och strutsben.
 ##
-## Tre lägen och en enda signal. Se docs/DESIGN.md, avsnitt "Kärnloop".
+## Markkontrollern lagrar farten **längs underlaget**, inte som x och y. Det är
+## Sonic-modellen, och den är skälet till att ramper känns som ramper: en boll i
+## en sluttning accelererar av gravitationens komponent längs ytan, inte av att
+## någon har skrivit "öka farten här". Se docs/DESIGN.md avsnitt 4a — fysiken är
+## innehållet, så den ska härledas och inte fejkas.
 ##
-## FAS 0 använder CharacterBody2D med Godots vanliga golvhantering, vilket klarar
-## gång, lutningar och kanter. Den handskrivna markkontrollern som behövs för
-## loopar och korkskruvar (Sonic-modellen: fart lagrad längs ytans tangent) hör
-## till fas 1 — se docs/TECH.md, avsnitt "Fysikarkitektur".
+## Fyra lägen:
+##   WALK  benen ute, han driver sig själv mot sin gångfart
+##   ROLL  benen indragna, ingen drivning — bara lutning och rullmotstånd
+##   AIM   fryst, pilen svepar, världen i slow motion
+##   AIR   ren ballistik
+##
+## Övergången WALK → ROLL är den synliga versionen av en regel som annars är
+## osynlig: blir backen brantare än benen klarar drar han in dem och blir en
+## boll. Spelaren behöver ingen text för att förstå varför.
 
 signal state_changed(state: State)
 
-enum State { WALK, AIM, AIR }
+enum State { WALK, ROLL, AIM, AIR }
 
 const RADIUS := 22.0
 const WALK_SPEED := 130.0
+const WALK_ACCEL := 900.0      ## hur hårt benen driver mot gångfarten
 const AIM_MIN_DEG := 20.0
 const AIM_MAX_DEG := 160.0
-const AUTO_AIM_DELAY := 0.7   ## hur länge pilen visas innan spelet hoppar åt en
-const SAFETY_MARGIN := 2.0    ## slack i förflyttningstaket, se _move()
+const AUTO_AIM_DELAY := 0.7    ## hur länge pilen visas innan spelet hoppar åt en
+const SAFETY_MARGIN := 2.0     ## slack i förflyttningstaket, se _move()
+const STAND_UP_MARGIN := 6.0   ## hysteres, annars fladdrar han mellan lägena
 const SIM_STEP := 1.0 / 45.0
 const SIM_STEPS := 70
 
 var state: State = State.WALK
 var facing := 1
 var aim_deg := 90.0
+## Fart längs underlagets tangent. Positiv = åt höger längs ytan.
+var ground_speed := 0.0
+var ground_normal := Vector2.UP
+var spin := 0.0                ## bollens rotation, härledd ur farten
 
 var _sweep_t := 0.0
 var _aim_elapsed := 0.0
 var _air_jumps_used := 0
 var _aim_from_air := false
-var _auto_angle := 90.0
 var _leg_phase := 0.0
+var _airborne_frames := 0
 var _start_position := Vector2.ZERO
 var _ledge_ray: RayCast2D
 
@@ -45,19 +60,20 @@ func _ready() -> void:
 	add_child(shape)
 
 	_ledge_ray = RayCast2D.new()
-	_ledge_ray.target_position = Vector2(RADIUS + 8.0, RADIUS + 22.0)
 	add_child(_ledge_ray)
 
 	_start_position = global_position
-	floor_snap_length = 12.0
-	floor_max_angle = deg_to_rad(50.0)
+	floor_snap_length = 20.0
 	InputSignal.pressed.connect(_on_signal_pressed)
 	InputSignal.released.connect(_on_signal_released)
 
 func _physics_process(delta: float) -> void:
+	# Vad som räknas som golv avgörs av bollformen, inte av benen. Brantare än
+	# så tappar han fästet helt och faller.
+	floor_max_angle = deg_to_rad(Settings.roll_max_slope)
 	match state:
-		State.WALK:
-			_process_walk(delta)
+		State.WALK, State.ROLL:
+			_process_ground(delta)
 		State.AIM:
 			_process_aim(delta)
 		State.AIR:
@@ -66,25 +82,43 @@ func _physics_process(delta: float) -> void:
 
 # ---------------------------------------------------------------- lägen
 
-func _process_walk(delta: float) -> void:
-	_leg_phase += delta * 9.0
-	velocity.x = facing * WALK_SPEED * Settings.walk_speed
-	velocity.y += Settings.rb_gravity * delta
+func _process_ground(delta: float) -> void:
+	var t := tangent()
+	# Gravitationens komponent längs ytan, i full styrka. På plan mark är den
+	# noll, i en sluttning är den allt.
+	ground_speed += Settings.rb_gravity * t.y * delta
+
+	if state == State.WALK:
+		var target := facing * WALK_SPEED * Settings.walk_speed
+		ground_speed = move_toward(ground_speed, target, WALK_ACCEL * delta)
+		_leg_phase += delta * 9.0
+	else:
+		ground_speed = move_toward(ground_speed, 0.0, Settings.roll_friction * delta)
+
+	spin += ground_speed / RADIUS * delta
+	velocity = t * ground_speed
 	_move(delta)
-	# Även på marken måste lösa föremål knuffas undan. Gör han inte det blir
-	# ett litet block inklämt mellan RB och marken, och fysikmotorn löser
-	# överlappet genom att skjuta ut RB i stället — buggen där han försvinner
-	# rakt upp ur bild.
 	_push_things(0.5)
 
 	if is_on_wall():
-		_turn_around()
-	elif Settings.ledge_guard and is_on_floor() and not _ground_ahead():
-		_turn_around()
+		_hit_wall()
 
-	if not is_on_floor() and velocity.y > 0.0:
-		# Ramlade över en kant med kantskyddet avstängt — fritt fall, inte ett hopp.
-		_set_state(State.AIR)
+	if not is_on_floor():
+		# Några bildrutors nåd. Kryper han uppför en brant lutning tappar han
+		# annars marken en enstaka bildruta i taget och fladdrar mellan lägena.
+		_airborne_frames += 1
+		if _airborne_frames > 3:
+			velocity = tangent() * ground_speed
+			_set_state(State.AIR)
+		return
+	_airborne_frames = 0
+
+	ground_normal = get_floor_normal()
+	if not is_zero_approx(ground_speed):
+		facing = 1 if ground_speed > 0.0 else -1
+	if Settings.ledge_guard and state == State.WALK and not _ground_ahead():
+		_turn_around()
+	_update_stance()
 
 func _process_aim(delta: float) -> void:
 	velocity = Vector2.ZERO
@@ -115,30 +149,75 @@ func _process_aim(delta: float) -> void:
 		aim_deg = AIM_MIN_DEG + roundf((aim_deg - AIM_MIN_DEG) / step) * step
 
 	if Settings.aim_timeout > 0.0 and _aim_elapsed > Settings.aim_timeout:
-		_set_state(State.AIR if _aim_from_air else State.WALK)
+		_set_state(State.AIR if _aim_from_air else _stance_for_slope())
 
 func _process_air(delta: float) -> void:
 	velocity.y += Settings.rb_gravity * delta
+	spin += velocity.x / RADIUS * delta * 0.5
 	_move(delta)
 	_push_things(1.0)
 
 	if is_on_floor():
-		if not is_zero_approx(velocity.x):
-			facing = 1 if velocity.x >= 0.0 else -1
-		velocity = Vector2.ZERO
-		_air_jumps_used = 0
-		_set_state(State.WALK)
+		_land()
 	elif is_on_wall():
 		velocity.x = -velocity.x * Settings.wall_bounce
 
 	if global_position.y > _start_position.y + 1400.0:
 		respawn()
 
+## Landningen bevarar rörelsemängden: farten projiceras på underlagets tangent
+## i stället för att nollställas. Det är därför ett hopp ner i en sluttning
+## fortsätter nedför i stället för att stanna som en säck.
+func _land() -> void:
+	_airborne_frames = 0
+	ground_normal = get_floor_normal()
+	ground_speed = velocity.dot(tangent())
+	if not is_zero_approx(ground_speed):
+		facing = 1 if ground_speed > 0.0 else -1
+	velocity = Vector2.ZERO
+	_air_jumps_used = 0
+	_set_state(_stance_for_slope())
+
+# ---------------------------------------------------------------- hållning
+
+func tangent() -> Vector2:
+	return Vector2(-ground_normal.y, ground_normal.x)
+
+## Underlagets lutning i grader, oavsett åt vilket håll det lutar.
+func slope_degrees() -> float:
+	return absf(rad_to_deg(ground_normal.angle_to(Vector2.UP)))
+
+func _stance_for_slope() -> State:
+	if Settings.auto_roll and slope_degrees() > Settings.leg_max_slope:
+		return State.ROLL
+	return State.WALK
+
+## Benen ut eller in. Hysteresen finns för att han annars skulle fladdra mellan
+## lägena på en lutning som ligger precis på gränsen.
+func _update_stance() -> void:
+	if not Settings.auto_roll:
+		if state == State.ROLL:
+			_set_state(State.WALK)
+		return
+	var slope := slope_degrees()
+	if state == State.WALK and slope > Settings.leg_max_slope:
+		_set_state(State.ROLL)
+	elif state == State.ROLL and slope < Settings.leg_max_slope - STAND_UP_MARGIN \
+			and absf(ground_speed) < WALK_SPEED * Settings.walk_speed * 1.3:
+		_set_state(State.WALK)
+
+func _hit_wall() -> void:
+	if state == State.ROLL:
+		ground_speed = -ground_speed * Settings.wall_bounce
+	else:
+		facing = -facing
+		ground_speed = 0.0
+
 # ---------------------------------------------------------------- signalen
 
 func _on_signal_pressed() -> void:
 	match state:
-		State.WALK:
+		State.WALK, State.ROLL:
 			_begin_aim()
 		State.AIM:
 			if Settings.control_variant == Settings.ControlVariant.CLASSIC:
@@ -164,11 +243,14 @@ func _begin_aim() -> void:
 		aim_deg = _auto_angle
 	_set_state(State.AIM)
 
+var _auto_angle := 90.0
+
 func _launch() -> void:
 	if _aim_from_air:
 		_air_jumps_used += 1
 	var a := deg_to_rad(aim_deg)
 	velocity = Vector2(cos(a), -sin(a)) * Settings.jump_power
+	ground_speed = 0.0
 	facing = 1 if velocity.x >= 0.0 else -1
 	_set_state(State.AIR)
 
@@ -189,6 +271,8 @@ func teleport_to(pos: Vector2) -> void:
 func respawn() -> void:
 	global_position = _start_position
 	velocity = Vector2.ZERO
+	ground_speed = 0.0
+	ground_normal = Vector2.UP
 	facing = 1
 	_air_jumps_used = 0
 	_set_state(State.WALK)
@@ -201,8 +285,6 @@ func respawn() -> void:
 ## och sitter han djupt inne i en låda blir den knuffen enorm — RB skjuts rakt
 ## upp ur bild. Ett sådant hopp går aldrig att förklara med hans egen fart, så
 ## vi mäter förflyttningen mot vad farten tillåter och kapar överskottet.
-## Symtomlindring, men rätt sorts: nästa bildruta får försöka igen, och lådan
-## hinner knuffas undan i stället.
 func _move(delta: float) -> void:
 	var before := global_position
 	var allowed := velocity.length() * delta + SAFETY_MARGIN
@@ -213,10 +295,11 @@ func _move(delta: float) -> void:
 
 func _turn_around() -> void:
 	facing = -facing
-	velocity.x = 0.0
+	ground_speed = 0.0
 
 func _ground_ahead() -> bool:
-	_ledge_ray.target_position = Vector2(facing * (RADIUS + 8.0), RADIUS + 22.0)
+	var lean := ground_normal.angle() + PI * 0.5
+	_ledge_ray.target_position = Vector2(facing * (RADIUS + 8.0), RADIUS + 22.0).rotated(lean)
 	_ledge_ray.force_raycast_update()
 	return _ledge_ray.is_colliding()
 
@@ -230,9 +313,8 @@ func _push_things(strength: float) -> void:
 			body.take_impact(velocity.length())
 		# Knuffa aldrig något som ligger under oss. Gör man det trycks lådan ner
 		# i marken, marken trycker tillbaka, och fysikmotorn löser överlappet
-		# genom att kasta ut RB uppåt — bildruta efter bildruta. Det var
-		# orsaken till att han sköt rakt upp ur bild när han landade på ett
-		# litet block. Att stå på något är inte att knuffa det.
+		# genom att kasta ut RB uppåt — bildruta efter bildruta. Att stå på
+		# något är inte att knuffa det.
 		if c.get_normal().y < -0.5:
 			continue
 		var impulse := velocity * Settings.push_force * strength
@@ -284,7 +366,10 @@ func _pick_best_angle() -> float:
 func _draw() -> void:
 	if state == State.AIM:
 		_draw_aim()
-	_draw_body()
+	if state == State.ROLL:
+		_draw_rolling()
+	else:
+		_draw_standing()
 
 func _draw_aim() -> void:
 	var a := deg_to_rad(aim_deg)
@@ -305,12 +390,31 @@ func _draw_aim() -> void:
 			var fade := 1.0 - float(i) / float(maxi(pts.size(), 1))
 			draw_circle(to_local(pts[i]), 3.0, Color(Palette.PINK, 0.15 + 0.55 * fade))
 
-func _draw_body() -> void:
+## Indragna ben: kroppen sjunker ner ett helt radieavstånd och blir den boll han
+## var innan han hittade benen. Rotationen är härledd ur farten, inte animerad —
+## en boll som rullar dubbelt så fort snurrar dubbelt så fort.
+func _draw_rolling() -> void:
+	draw_set_transform(Vector2.ZERO, spin, Vector2.ONE)
+	draw_circle(Vector2.ZERO, RADIUS, Palette.SHELL)
+	draw_arc(Vector2.ZERO, RADIUS, 0.0, TAU, 32, Palette.INK, 3.0, true)
+	var eye := Vector2(RADIUS * 0.34, -RADIUS * 0.3)
+	draw_circle(eye, 7.5, Palette.SHELL)
+	draw_arc(eye, 7.5, 0.0, TAU, 20, Palette.INK, 2.5, true)
+	draw_circle(eye + Vector2(2.2, 0.0), 3.4, Palette.INK)
+	# benstumparna sticker ut, indragna mot skalet
+	for s in [-1.0, 1.0]:
+		draw_line(Vector2(s * 9.0, 12.0), Vector2(s * 4.0, 18.0), Palette.INK, 3.0, true)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+func _draw_standing() -> void:
+	var grounded := state == State.WALK or state == State.AIM
+	var lean := (ground_normal.angle() + PI * 0.5) if grounded else 0.0
 	var crouch := state == State.AIM
 	var body_y := -RADIUS + (4.0 if crouch else 0.0)
 	var squash := 0.86 if crouch else 1.0
 
-	# strutsben
+	# strutsben, vinkelräta mot underlaget
+	draw_set_transform(Vector2.ZERO, lean, Vector2.ONE)
 	for s in [-1.0, 1.0]:
 		var swing := sin(_leg_phase + (0.0 if s > 0.0 else PI)) * (6.0 if state == State.WALK else 0.0)
 		var hip := Vector2(s * 6.0, body_y + RADIUS * 0.5)
@@ -318,7 +422,7 @@ func _draw_body() -> void:
 		var foot := Vector2(s * 6.0 + swing, RADIUS * (0.35 if crouch else 0.95))
 		draw_polyline(PackedVector2Array([hip, knee, foot]), Palette.INK, 3.0, true)
 
-	draw_set_transform(Vector2(0.0, body_y), 0.0, Vector2(1.0, squash))
+	draw_set_transform(Vector2(0.0, body_y).rotated(lean), lean, Vector2(1.0, squash))
 	draw_circle(Vector2.ZERO, RADIUS, Palette.SHELL)
 	draw_arc(Vector2.ZERO, RADIUS, 0.0, TAU, 32, Palette.INK, 3.0, true)
 	var eye := Vector2(facing * 6.0, -2.0)
