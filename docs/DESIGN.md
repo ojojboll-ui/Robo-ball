@@ -118,6 +118,13 @@ minst lika mycket en lärandehjälp.
 som lär ut är *relationerna* — tyngre är trögare, snabbare ger större effekt — och de
 blir tydligare om de förstärks. Sikta på läsbar fysik, inte realistisk.
 
+**Tempot är en egen skruv.** Gravitation och hoppkraft hör ihop: skalas gravitationen
+med k och kraften med roten ur k behåller hoppet exakt samma höjd och längd, medan tiden
+i luften ändras med 1/√k. Det är den skruv man vill åt när fysiken känns flytande, och
+den är omöjlig att hitta för hand eftersom den kräver att två reglage rör sig samtidigt
+i olika takt. Panelen har därför två knappar som gör det, och en avläsning som
+översätter värdena till det som faktiskt betyder något: hur högt, hur långt, hur länge.
+
 **Reglagen är själva leksaken.** Ett barn som drar i gravitationen och ser hoppkurvan
 ändras gör fysik. I dag ligger de reglagen i en utvecklarpanel bakom ett kugghjul; de
 hör hemma i ett **laboratorieläge**: en egen bana där ett fåtal stora, tydliga reglage

@@ -49,6 +49,12 @@ var crate_friction := 0.6      ## 0.0–1.0
 var crate_bounce := 0.0        ## 0.0–0.9
 var crate_gravity := 1.0       ## 0.2–3.0, gravitationsskala för lösa föremål
 
+## Saknade reglage tidigare, och alla tre bidrar till hur "flytande" han känns.
+var ground_stick := 150.0      ## hur hårt han trycks mot underlaget
+var walk_accel := 900.0        ## hur snabbt benen når full gångfart
+var leg_stiffness := 220.0     ## benfjädringens styvhet
+var leg_damping := 22.0        ## benfjädringens dämpning
+
 ## Markkontrollern och rullningen
 var leg_max_slope := 38.0      ## grader, brantast benen klarar innan de åker in
 var roll_max_slope := 62.0     ## grader, brantast han håller sig kvar som boll
@@ -82,6 +88,10 @@ func as_dict() -> Dictionary:
 		"crate_friction": crate_friction,
 		"crate_bounce": crate_bounce,
 		"crate_gravity": crate_gravity,
+		"ground_stick": ground_stick,
+		"walk_accel": walk_accel,
+		"leg_stiffness": leg_stiffness,
+		"leg_damping": leg_damping,
 		"leg_max_slope": leg_max_slope,
 		"roll_max_slope": roll_max_slope,
 		"roll_friction": roll_friction,
@@ -111,6 +121,10 @@ func apply(data: Dictionary) -> void:
 	crate_friction = float(data.get("crate_friction", crate_friction))
 	crate_bounce = float(data.get("crate_bounce", crate_bounce))
 	crate_gravity = float(data.get("crate_gravity", crate_gravity))
+	ground_stick = float(data.get("ground_stick", ground_stick))
+	walk_accel = float(data.get("walk_accel", walk_accel))
+	leg_stiffness = float(data.get("leg_stiffness", leg_stiffness))
+	leg_damping = float(data.get("leg_damping", leg_damping))
 	leg_max_slope = float(data.get("leg_max_slope", leg_max_slope))
 	roll_max_slope = float(data.get("roll_max_slope", roll_max_slope))
 	roll_friction = float(data.get("roll_friction", roll_friction))

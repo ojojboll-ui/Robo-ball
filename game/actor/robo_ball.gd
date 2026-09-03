@@ -34,18 +34,16 @@ const STAND_HALF := CAPSULE_HEIGHT * 0.5
 const TUCK_SPEED := 6.5        ## hur snabbt benen viks in, ~0.15 s
 const BODY_LIFT := STAND_HALF - RADIUS   ## bollens mitt över kollisionsmitten
 const WALK_SPEED := 130.0
-const WALK_ACCEL := 900.0      ## hur hårt benen driver mot gångfarten
 const AIM_MIN_DEG := 20.0
 const AIM_MAX_DEG := 160.0
 const AUTO_AIM_DELAY := 0.7    ## hur länge pilen visas innan spelet hoppar åt en
 const SAFETY_MARGIN := 2.0     ## slack i förflyttningstaket, se _move()
 const STAND_UP_MARGIN := 6.0   ## hysteres, annars fladdrar han mellan lägena
-## Hur hårt han hålls mot underlaget. Farten är helt tangentiell, och uppför en
-## backe pekar tangenten bort från marken — utan den här kraften lättar han från
-## ytan var trettonde bildruta och spelet fladdrar mellan "går" och "i luften".
-## Den är också vad som håller honom kvar över en krön: räcker den inte, lyfter
-## han, precis som han ska.
-const GROUND_STICK := 150.0
+## Hur hårt han hålls mot underlaget ligger i Settings.ground_stick. Farten är
+## helt tangentiell, och uppför en backe pekar tangenten bort från marken — utan
+## den kraften lättar han från ytan var trettonde bildruta och spelet fladdrar
+## mellan "går" och "i luften". Den avgör också hur väl han följer med över ett
+## krön: räcker den inte, lyfter han, precis som han ska.
 const SIM_STEP := 1.0 / 45.0
 const SIM_STEPS := 70
 
@@ -129,12 +127,12 @@ func _process_ground(delta: float) -> void:
 
 	if state == State.WALK:
 		var target := facing * WALK_SPEED * Settings.walk_speed
-		ground_speed = move_toward(ground_speed, target, WALK_ACCEL * delta)
+		ground_speed = move_toward(ground_speed, target, Settings.walk_accel * delta)
 	else:
 		ground_speed = move_toward(ground_speed, 0.0, Settings.roll_friction * delta)
 
 	spin += ground_speed / RADIUS * delta
-	velocity = t * ground_speed - ground_normal * GROUND_STICK
+	velocity = t * ground_speed - ground_normal * Settings.ground_stick
 	_move(delta)
 	_push_things(0.5)
 

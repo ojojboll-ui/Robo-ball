@@ -27,8 +27,6 @@ const HIP_SPREAD := 7.0    ## halva avståndet mellan höfterna
 var body_height := 48.0
 const LIFT := 13.0         ## hur högt foten lyfts under ett steg
 const MAX_SAG := 16.0      ## hur långt kroppen får hamna från kollisionskroppen
-const STIFFNESS := 220.0
-const DAMPING := 22.0
 const MIN_STRIDE := 22.0
 const MAX_STRIDE := 52.0
 ## Så långt benet når. Höften sitter 34 px över marken och ett steg framåt lägger
@@ -217,8 +215,8 @@ func _carry_body(rb: Node2D, normal: Vector2, delta: float) -> void:
 	var along := (support + normal * body_height - anchor).dot(normal)
 	var target := anchor + normal * clampf(along, -MAX_SAG, MAX_SAG)
 
-	_body_vel += (target - body_point) * STIFFNESS * delta
-	_body_vel *= exp(-DAMPING * delta)
+	_body_vel += (target - body_point) * Settings.leg_stiffness * delta
+	_body_vel *= exp(-Settings.leg_damping * delta)
 	body_point += _body_vel * delta
 
 	# Sista spärren: grafiken får aldrig lämna kollisionskroppen.

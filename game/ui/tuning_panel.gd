@@ -23,6 +23,10 @@ var _panel: PanelContainer
 var _rows: VBoxContainer
 var _gear: Button
 var _travel: GridContainer
+var _tempo_note: Label
+## Uppslag från reglagets rubrik till dess delar, så att värden som ändrats
+## någon annanstans (tempoknapparna) kan skrivas tillbaka i gränssnittet.
+var _rows_by_title: Dictionary = {}
 var _open := false
 
 func _ready() -> void:
@@ -112,8 +116,9 @@ func _build_rows() -> void:
 	_section("Sikte och hopp")
 	_slider("Pilens hastighet", 0.1, 2.5, 0.05, Settings.aim_sweep_speed,
 		func(v: float) -> void: Settings.aim_sweep_speed = v, "%.2fx")
-	_slider("Hoppkraft", 300.0, 1100.0, 10.0, Settings.jump_power,
+	_slider("Hoppkraft", 300.0, 1800.0, 10.0, Settings.jump_power,
 		func(v: float) -> void: Settings.jump_power = v, "%.0f")
+	_tempo_buttons()
 	_slider("Slow motion vid sikte", 0.05, 1.0, 0.05, Settings.slowmo,
 		func(v: float) -> void: Settings.slowmo = v, "%.0f%%", 100.0)
 	_slider("Vinkelsteg (0 = mjuk pendel)", 0.0, 9.0, 1.0, float(Settings.aim_steps),
@@ -124,12 +129,20 @@ func _build_rows() -> void:
 	_section("RB:s fysik")
 	_slider("Gångfart", 0.3, 2.0, 0.05, Settings.walk_speed,
 		func(v: float) -> void: Settings.walk_speed = v, "%.2fx")
-	_slider("Gravitation", 600.0, 2400.0, 20.0, Settings.rb_gravity,
+	_slider("Gravitation", 600.0, 6000.0, 20.0, Settings.rb_gravity,
 		func(v: float) -> void: Settings.rb_gravity = v, "%.0f")
 	_slider("Studs mot väggar", 0.0, 0.9, 0.05, Settings.wall_bounce,
 		func(v: float) -> void: Settings.wall_bounce = v, "%.2f")
 	_slider("Knuffkraft mot föremål", 0.1, 2.0, 0.05, Settings.push_force,
 		func(v: float) -> void: Settings.push_force = v, "%.2f")
+	_slider("Markfäste", 0.0, 600.0, 10.0, Settings.ground_stick,
+		func(v: float) -> void: Settings.ground_stick = v, "%.0f")
+	_slider("Gångacceleration", 200.0, 4000.0, 50.0, Settings.walk_accel,
+		func(v: float) -> void: Settings.walk_accel = v, "%.0f")
+	_slider("Benens fjädring", 60.0, 900.0, 10.0, Settings.leg_stiffness,
+		func(v: float) -> void: Settings.leg_stiffness = v, "%.0f")
+	_slider("Fjädringens dämpning", 4.0, 50.0, 1.0, Settings.leg_damping,
+		func(v: float) -> void: Settings.leg_damping = v, "%.0f")
 
 	_section("Rullning")
 	_check("Dra in benen i branta backar", Settings.auto_roll,
@@ -220,6 +233,16 @@ func _section(title: String) -> void:
 
 ## En rad: namn och värde överst, sedan minus, reglage och plus. Knapparna finns
 ## för att ett reglage är svårt att träffa exakt med ett finger på en telefon.
+## Skriver tillbaka ett värde som ändrats någon annanstans in i sitt reglage.
+func _sync(title: String, value: float) -> void:
+	if not _rows_by_title.has(title):
+		return
+	var row: Dictionary = _rows_by_title[title]
+	var slider: HSlider = row["slider"]
+	var label: Label = row["label"]
+	slider.set_value_no_signal(value)
+	label.text = (row["fmt"] as String) % (value * (row["scale"] as float))
+
 func _slider(title: String, minv: float, maxv: float, step: float, value: float,
 		setter: Callable, fmt := "%.2f", display_scale := 1.0) -> void:
 	var row := VBoxContainer.new()
@@ -254,6 +277,7 @@ func _slider(title: String, minv: float, maxv: float, step: float, value: float,
 	minus.pressed.connect(func() -> void: slider.value -= step)
 	plus.pressed.connect(func() -> void: slider.value += step)
 
+	_rows_by_title[title] = {"slider": slider, "label": value_label, "fmt": fmt, "scale": display_scale}
 	slider.value_changed.connect(func(v: float) -> void:
 		value_label.text = fmt % (v * display_scale)
 		setter.call(v)
@@ -268,6 +292,46 @@ func _slider(title: String, minv: float, maxv: float, step: float, value: float,
 	line.add_child(plus)
 	row.add_child(line)
 	_rows.add_child(row)
+
+## Gravitation och hoppkraft hör ihop. Skalas gravitationen med k och kraften med
+## roten ur k behåller hoppet exakt samma höjd och längd, men tiden i luften
+## ändras med 1/√k. Det är alltså rent tempo — precis den skruv man vill ha när
+## fysiken känns flytande, och den som är svårast att hitta för hand.
+func _tempo_buttons() -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	for entry in [["Långsammare", 1.0 / 1.4], ["Snabbare fysik", 1.4]]:
+		var factor: float = entry[1]
+		var button := Button.new()
+		button.text = str(entry[0])
+		button.custom_minimum_size = Vector2(0, 52)
+		button.add_theme_font_size_override("font_size", 19)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(func() -> void: _scale_tempo(factor))
+		row.add_child(button)
+	_rows.add_child(row)
+	_tempo_note = Label.new()
+	_tempo_note.add_theme_font_size_override("font_size", 17)
+	_tempo_note.add_theme_color_override("font_color", Palette.INK)
+	_rows.add_child(_tempo_note)
+	_update_tempo_note()
+
+func _scale_tempo(factor: float) -> void:
+	Settings.rb_gravity = clampf(Settings.rb_gravity * factor, 600.0, 6000.0)
+	Settings.jump_power = clampf(Settings.jump_power * sqrt(factor), 300.0, 1800.0)
+	Settings.notify_changed()
+	Settings.save_settings()
+	_update_tempo_note()
+	_sync("Gravitation", Settings.rb_gravity)
+	_sync("Hoppkraft", Settings.jump_power)
+
+func _update_tempo_note() -> void:
+	if _tempo_note == null:
+		return
+	var g: float = Settings.rb_gravity
+	var v: float = Settings.jump_power
+	_tempo_note.text = "Hoppet: %.0f px högt, %.0f px långt, %.2f s i luften" % [
+		v * v / (2.0 * g), v * v / g, 2.0 * v / g]
 
 func _step_button(text: String) -> Button:
 	var button := Button.new()
