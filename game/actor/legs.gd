@@ -17,20 +17,21 @@ extends RefCounted
 ##      kollisionskroppen och ärvde varje litet hack i underlaget — därav
 ##      skakandet uppför ramper.
 
-const THIGH := 17.0        ## höft → ankel, det korta övre benet
-const SHIN := 23.0         ## ankel → tå, det långa nedre benet
+const THIGH := 19.0        ## höft → ankel, det korta övre benet
+const SHIN := 27.0         ## ankel → tå, det långa nedre benet
 const TOE := 9.0
 const HIP_SPREAD := 7.0    ## halva avståndet mellan höfterna
-const BODY_HEIGHT := 46.0  ## kroppens mitt ovanför fotplanet
+const BODY_HEIGHT := 44.0  ## kroppens mitt ovanför fotplanet
 const LIFT := 13.0         ## hur högt foten lyfts under ett steg
 const MAX_SAG := 16.0      ## hur långt kroppen får hamna från kollisionskroppen
 const STIFFNESS := 220.0
 const DAMPING := 22.0
 const MIN_STRIDE := 22.0
-const MAX_STRIDE := 46.0
-## Så långt benet når. En fot bortom det här går inte att stå på — då sträcks
-## benet ut och ser trasigt ut, vilket är precis vad som hände när strålen
-## hittade en plattform bakom eller ovanför RB.
+const MAX_STRIDE := 40.0
+## Så långt benet når. Höften sitter 34 px över marken och ett steg framåt lägger
+## till en bit i sidled — med för kort ben blir hypotenusan längre än räckvidden,
+## taket nedan drar upp foten, och den nuddar aldrig marken. Benet ska vara långt
+## nog att stå böjt, precis som ett fågelben alltid gör.
 const REACH := THIGH + SHIN - 3.0
 ## Hur långt ovanför och nedanför den tänkta fotpunkten vi letar. Kort med flit:
 ## benet ska söka marken **under sig**, inte närmsta yta i grannskapet.
@@ -87,6 +88,26 @@ func _step(rb: Node2D, normal: Vector2, speed: float, delta: float) -> void:
 			step_t[i] = 1.0
 			planted[i] = true
 
+	# En planterad fot får sin höjd från marken, varje bildruta. Stegcykeln
+	# bestämmer var foten hamnar i sidled — underlaget bestämmer hur högt.
+	# Att räkna ut fothöjden ur kroppens läge i stället var både skört och fel:
+	# minsta avvikelse i kroppshöjd lyfte foten från marken.
+	var space := rb.get_world_2d().direct_space_state
+	for i in 2:
+		if not planted[i]:
+			continue
+		var probe := PhysicsRayQueryParameters2D.create(
+			(feet[i] as Vector2) + normal * 12.0, (feet[i] as Vector2) - normal * 30.0,
+			rb.collision_mask, [rb.get_rid()])
+		var ground := space.intersect_ray(probe)
+		if not ground.is_empty() and (ground["normal"] as Vector2).dot(normal) > 0.35:
+			feet[i] = ground["position"]
+		else:
+			# Ingen mark inom räckhåll — foten hänger i luften, troligen kvar
+			# från ett fall. Flytta den till det förväntade fotplanet så att
+			# strålen hittar marken nästa bildruta.
+			feet[i] = (hip_list[i] as Vector2) - normal * (BODY_HEIGHT - 10.0)
+
 	for i in 2:
 		if planted[i]:
 			continue
@@ -99,24 +120,25 @@ func _step(rb: Node2D, normal: Vector2, speed: float, delta: float) -> void:
 			var k: float = step_t[i]
 			feet[i] = (step_from[i] as Vector2).lerp(step_to[i], k) + normal * sin(k * PI) * LIFT
 
-	# Ett ben som sträckts till bristningsgränsen måste flytta sig genast, även
-	# om det andra är mitt i ett steg. Annars sträcks benet ut tills det andra
-	# hunnit sätta ner foten, och det syns.
-	for i in 2:
-		if planted[i] and ((feet[i] as Vector2) - (hip_list[i] as Vector2)).length() > REACH * 0.9:
-			_begin_step(rb, normal, i, stride, speed, hip_list[i])
-
-	# I övrigt ett ben i taget: står båda och ett av dem har hamnat för långt
-	# bak tar det steget. Det är därför gången blir omväxlande och inte hoppig.
+	# Bara **ett** ben får vara i luften åt gången. Utan den regeln utlöste
+	# brådskan nedan för båda benen samma bildruta, de steg i takt, och RB
+	# hoppade jämfota i stället för att gå. Att växla ben faller ut av sig
+	# självt: det ben som stigit landar längst fram, så nästa gång är det det
+	# andra som ligger sämst till.
 	if planted[0] and planted[1]:
 		var choice := -1
-		var worst_lag := stride * 0.5
+		var urgency := 0.0
 		for i in 2:
-			var lag: float = -((feet[i] as Vector2) - (hip_list[i] as Vector2)).dot(t) * signf(speed)
+			var d: Vector2 = (feet[i] as Vector2) - (hip_list[i] as Vector2)
+			# Hur nära bristningsgränsen benet är, och hur långt bak foten
+			# hamnat. Det som är mest akut vinner.
+			var stretch := d.length() - REACH * 0.82
+			var lag: float = -d.dot(t) * signf(speed) - stride * 0.5
 			if speed == 0.0:
-				lag = absf(((feet[i] as Vector2) - (hip_list[i] as Vector2)).dot(t)) - stride * 0.4
-			if lag > worst_lag:
-				worst_lag = lag
+				lag = absf(d.dot(t)) - stride * 0.5
+			var score := maxf(stretch * 3.0, lag)
+			if score > urgency:
+				urgency = score
 				choice = i
 		if choice >= 0:
 			_begin_step(rb, normal, choice, stride, speed, hip_list[choice])
@@ -131,7 +153,10 @@ func _step(rb: Node2D, normal: Vector2, speed: float, delta: float) -> void:
 func _begin_step(rb: Node2D, normal: Vector2, i: int, stride: float, speed: float, hip: Vector2) -> void:
 	var t := Vector2(-normal.y, normal.x)
 	var forward := signf(speed) if speed != 0.0 else 1.0
-	var aim := hip + t * forward * stride * 0.55
+	# Sikta på **fotplanet** framför höften, inte på höftens egen höjd. Utgick
+	# strålen från höften nådde den aldrig ner till marken, fallbacken användes
+	# varje gång, och foten hamnade en bit över underlaget.
+	var aim := hip - normal * (BODY_HEIGHT - 10.0) + t * forward * stride * 0.55
 	var space := rb.get_world_2d().direct_space_state
 	var query := PhysicsRayQueryParameters2D.create(
 		aim + normal * PROBE_UP, aim - normal * PROBE_DOWN, rb.collision_mask, [rb.get_rid()])

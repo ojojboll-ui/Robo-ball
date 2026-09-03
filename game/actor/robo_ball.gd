@@ -191,6 +191,9 @@ func _process_air(delta: float) -> void:
 func _land() -> void:
 	_airborne_frames = 0
 	ground_normal = get_floor_normal()
+	# Fötterna har hängt under kroppen under fallet. Sätt ner dem på underlaget
+	# vid landningen — annars står de kvar i luften och benen ser lösa ut.
+	_legs.reset(self, ground_normal)
 	ground_speed = velocity.dot(tangent())
 	if not is_zero_approx(ground_speed):
 		facing = 1 if ground_speed > 0.0 else -1
