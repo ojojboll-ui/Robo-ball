@@ -147,6 +147,12 @@ func _build_rows() -> void:
 	_section("Rullning")
 	_check("Dra in benen i branta backar", Settings.auto_roll,
 		func(v: bool) -> void: Settings.auto_roll = v)
+	_check("Förbered rullning i luften", Settings.tuck_before_landing,
+		func(v: bool) -> void: Settings.tuck_before_landing = v)
+	_slider("Hur långt fram han känner av landningen", 0.05, 0.8, 0.05, Settings.tuck_lookahead,
+		func(v: float) -> void: Settings.tuck_lookahead = v, "%.2f s")
+	_slider("Indragningstakt", 1.5, 25.0, 0.5, Settings.tuck_speed,
+		func(v: float) -> void: Settings.tuck_speed = v, "%.1f")
 	_slider("Brantast benen klarar", 15.0, 60.0, 1.0, Settings.leg_max_slope,
 		func(v: float) -> void: Settings.leg_max_slope = v, "%.0f°")
 	_slider("Brantast som boll", 30.0, 85.0, 1.0, Settings.roll_max_slope,

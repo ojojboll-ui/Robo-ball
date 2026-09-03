@@ -54,6 +54,12 @@ var ground_stick := 150.0      ## hur hårt han trycks mot underlaget
 var walk_accel := 900.0        ## hur snabbt benen når full gångfart
 var leg_stiffness := 220.0     ## benfjädringens styvhet
 var leg_damping := 22.0        ## benfjädringens dämpning
+var tuck_speed := 6.5          ## hur snabbt benen viks in, högre = snabbare
+## Ser han att marken han är på väg mot är för brant för benen drar han in dem
+## redan i luften och landar som boll. Annars landar han på fötterna först och
+## tappar farten innan rullningen hinner börja.
+var tuck_before_landing := true
+var tuck_lookahead := 0.30     ## sekunder framåt han känner av landningen
 
 ## Markkontrollern och rullningen
 var leg_max_slope := 38.0      ## grader, brantast benen klarar innan de åker in
@@ -92,6 +98,9 @@ func as_dict() -> Dictionary:
 		"walk_accel": walk_accel,
 		"leg_stiffness": leg_stiffness,
 		"leg_damping": leg_damping,
+		"tuck_speed": tuck_speed,
+		"tuck_before_landing": tuck_before_landing,
+		"tuck_lookahead": tuck_lookahead,
 		"leg_max_slope": leg_max_slope,
 		"roll_max_slope": roll_max_slope,
 		"roll_friction": roll_friction,
@@ -125,6 +134,9 @@ func apply(data: Dictionary) -> void:
 	walk_accel = float(data.get("walk_accel", walk_accel))
 	leg_stiffness = float(data.get("leg_stiffness", leg_stiffness))
 	leg_damping = float(data.get("leg_damping", leg_damping))
+	tuck_speed = float(data.get("tuck_speed", tuck_speed))
+	tuck_before_landing = bool(data.get("tuck_before_landing", tuck_before_landing))
+	tuck_lookahead = float(data.get("tuck_lookahead", tuck_lookahead))
 	leg_max_slope = float(data.get("leg_max_slope", leg_max_slope))
 	roll_max_slope = float(data.get("roll_max_slope", roll_max_slope))
 	roll_friction = float(data.get("roll_friction", roll_friction))

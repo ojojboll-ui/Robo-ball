@@ -49,6 +49,11 @@ var body_point := Vector2.ZERO
 ## Hur högt bollens mitt sitter över kollisionskroppens mitt. Sätts av RoboBall
 ## så att de två aldrig kan glida isär.
 var body_lift := 13.0
+## Vilken sida leden viker åt, ett värde per ben. Sparas mellan bildrutor med
+## hysteres: står foten rakt bakom höften är sidan matematiskt obestämd, och utan
+## minne tippar leden fram och tillbaka. Det syntes som att benen böjde sig åt
+## fel håll under fall.
+var _side := [1.0, 1.0]
 var _body_vel := Vector2.ZERO
 var _ready := false
 
@@ -196,7 +201,9 @@ func _dangle(normal: Vector2, delta: float) -> void:
 	var t := Vector2(-normal.y, normal.x)
 	for i in 2:
 		var rest := body_point - normal * (body_height - 6.0) + t * (i * 2.0 - 1.0) * HIP_SPREAD
-		feet[i] = (feet[i] as Vector2).lerp(rest, minf(1.0, delta * 9.0))
+		# Snabbt: släpar fötterna efter kroppen under ett långt hopp hamnar de
+		# bakom höften, och då blir ledens sida obestämd.
+		feet[i] = (feet[i] as Vector2).lerp(rest, minf(1.0, delta * 16.0))
 		planted[i] = true
 		step_t[i] = 1.0
 		step_to[i] = feet[i]
@@ -227,17 +234,17 @@ func _carry_body(rb: Node2D, normal: Vector2, delta: float) -> void:
 
 # ---------------------------------------------------------------- ritning
 
-## Tvåbensled där leden viker sig bakåt — fågelbenets kännetecken.
-static func solve(hip: Vector2, foot: Vector2, a: float, b: float, bend: Vector2) -> Vector2:
+## Tvåbensled där leden viker sig bakåt — fågelbenets kännetecken. `side` avgör
+## vilken sida leden hamnar på; den väljs av draw_into och sparas mellan
+## bildrutor, eftersom valet är obestämt när foten står rakt under eller rakt
+## bakom höften.
+static func solve(hip: Vector2, foot: Vector2, a: float, b: float, side: float) -> Vector2:
 	var d := foot - hip
 	var dist := clampf(d.length(), absf(a - b) + 0.01, a + b - 0.01)
 	var dir := d.normalized() if d.length() > 0.001 else Vector2.DOWN
 	var x := (dist * dist + a * a - b * b) / (2.0 * dist)
 	var y := sqrt(maxf(0.0, a * a - x * x))
-	var perp := dir.orthogonal()
-	if perp.dot(bend) < 0.0:
-		perp = -perp
-	return hip + dir * x + perp * y
+	return hip + dir * x + dir.orthogonal() * y * side
 
 func draw_into(rb: CanvasItem, normal: Vector2, facing: int, color: Color) -> void:
 	var t := Vector2(-normal.y, normal.x)
@@ -246,7 +253,14 @@ func draw_into(rb: CanvasItem, normal: Vector2, facing: int, color: Color) -> vo
 	for i in 2:
 		var hip: Vector2 = rb.to_local(hip_list[i])
 		var foot: Vector2 = rb.to_local(feet[i])
-		var ankle := solve(hip, foot, THIGH, SHIN, bend)
+		var d := foot - hip
+		if d.length() > 0.001:
+			var alignment := d.normalized().orthogonal().dot(bend)
+			# Byt sida bara när riktningen är entydig. Nära noll behåller vi den
+			# gamla, och benet slutar tippa.
+			if absf(alignment) > 0.3:
+				_side[i] = signf(alignment)
+		var ankle := solve(hip, foot, THIGH, SHIN, _side[i])
 		var width := 3.4 if i == 1 else 2.8
 		rb.draw_polyline(PackedVector2Array([hip, ankle, foot]), color, width, true)
 		rb.draw_circle(ankle, 2.6, color)

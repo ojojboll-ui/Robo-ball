@@ -31,7 +31,6 @@ const RADIUS := 22.0            ## bollens radie, och kollisionscirkeln när han
 ## ihop sig av sig själva när höften sjunker: fötterna står kvar på marken.
 const CAPSULE_HEIGHT := 70.0
 const STAND_HALF := CAPSULE_HEIGHT * 0.5
-const TUCK_SPEED := 6.5        ## hur snabbt benen viks in, ~0.15 s
 const BODY_LIFT := STAND_HALF - RADIUS   ## bollens mitt över kollisionsmitten
 const WALK_SPEED := 130.0
 const AIM_MIN_DEG := 20.0
@@ -304,13 +303,37 @@ func _set_state(next: State) -> void:
 	WorldClock.set_slowmo(state == State.AIM)
 	state_changed.emit(state)
 
+## Vill han vara boll just nu? Rullande alltid — men också på väg ner mot en yta
+## som är för brant för benen. Landar han stående på en ramp tar han emot med
+## fötterna och tappar farten innan rullningen hinner börja; ser han backen
+## komma hinner han vika ihop sig och anländer som den boll backen kräver.
+func _wants_ball() -> bool:
+	if state == State.ROLL:
+		return true
+	if state != State.AIR or not Settings.auto_roll or not Settings.tuck_before_landing:
+		return false
+	return _incoming_slope() > Settings.leg_max_slope
+
+## Lutningen på det han är på väg att träffa, eller -1 om han inte ser något.
+func _incoming_slope() -> float:
+	if velocity.length() < 1.0:
+		return -1.0
+	var ahead := velocity * Settings.tuck_lookahead
+	var space := get_world_2d().direct_space_state
+	var query := PhysicsRayQueryParameters2D.create(
+		global_position, global_position + ahead, collision_mask, [get_rid()])
+	var hit := space.intersect_ray(query)
+	if hit.is_empty():
+		return -1.0
+	return absf(rad_to_deg((hit["normal"] as Vector2).angle_to(Vector2.UP)))
+
 ## Kapselns höjd följer hållningen: full höjd med benen ute, två radier — alltså
 ## en cirkel — när de är indragna. Fötterna står still medan höften sjunker, så
 ## benen viker ihop sig av sig själva. Kroppen flyttas med halva höjdändringen
 ## så att kapselns undersida står kvar på marken hela vägen.
 func _update_stance_shape(delta: float) -> void:
-	var target := 0.0 if state == State.ROLL else 1.0
-	_stance = move_toward(_stance, target, TUCK_SPEED * delta)
+	var target := 0.0 if _wants_ball() else 1.0
+	_stance = move_toward(_stance, target, Settings.tuck_speed * delta)
 	var height := lerpf(RADIUS * 2.0, CAPSULE_HEIGHT, _stance)
 	var change := height - _capsule.height
 	if absf(change) > 0.001:

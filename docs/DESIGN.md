@@ -301,6 +301,12 @@ av sig själva: fötterna står kvar på marken medan höften sjunker, så geome
 resten. Att RB sjunker ner till marken när benen försvinner är alltså inte ritat utan
 en följd av att ingenting längre bär kroppen.
 
+Ser han att marken han är på väg mot är för brant för benen drar han in dem **redan i
+luften** och anländer som den boll backen kräver. Utan det tar han emot med fötterna,
+står tall en stund på en yta som inte bär, och rullningen hinner inte börja förrän
+farten redan gått förlorad. Hur långt fram han känner av landningen är ett reglage, och
+hela beteendet går att stänga av.
+
 Benens två delar är nästan lika långa, som hos en fågel, och det ger den snäva vinkeln i
 leden — omkring 65–75 grader i normal gång. Ett fågelben står alltid böjt; ett rakt ben
 ser ut som en käpp.
