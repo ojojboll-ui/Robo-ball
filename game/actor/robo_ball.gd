@@ -149,13 +149,14 @@ func _process_ground(delta: float) -> void:
 
 	spin += ground_speed / RADIUS * delta
 	velocity = t * ground_speed - ground_normal * Settings.ground_stick
+	var before_move := velocity
 	_move(delta)
 	_push_things(0.5)
 
 	# Bara en vägg han faktiskt kör in i. Kanten han rullar *ut ifrån* räknas
 	# också som vägg av motorn, och att vända på farten där tog allt han byggt
 	# upp — mätt gick 306 px/s till noll på en vanlig avsats.
-	if is_on_wall() and _driving_into_wall():
+	if is_on_wall() and _driving_into_wall(before_move):
 		_hit_wall()
 
 	if not is_on_floor():
@@ -186,9 +187,16 @@ func _process_ground(delta: float) -> void:
 
 ## Kör han in i väggen, eller bort från den? Motorn kallar allt brantare än
 ## golvvinkeln för vägg, och kanten han just lämnat är en sådan yta.
-func _driving_into_wall() -> bool:
+##
+## Farten som avgör måste vara den från *före* förflyttningen. Motorns glidning
+## har redan skalat bort komponenten in i väggen när vi kommer hit, så den fart
+## som står i velocity pekar aldrig in i den — läser man den ser ingen träff ut
+## som en träff. Mätt: en boll som rullade in i väggen i 400 px/s låg kvar mot
+## den i 141 bildrutor, alltså över två sekunder, och malde ner farten mot
+## rullmotståndet i stället för att studsa.
+func _driving_into_wall(incoming: Vector2) -> bool:
 	var n := get_wall_normal()
-	return n.length() > 0.1 and velocity.dot(n) < 0.0
+	return n.length() > 0.1 and incoming.dot(n) < 0.0
 
 ## Ett krön håller bara så länge tyngden räcker till svängen.
 ##
@@ -372,10 +380,14 @@ func _hit_wall_in_air() -> void:
 	var n := get_wall_normal()
 	if n.length() < 0.1:
 		return
-	var into := velocity.dot(n)
+	# Samma sak här: farten före kollisionen avgör, annars ser ingen väggträff
+	# i luften ut som en träff heller och studsen uteblev helt.
+	var into := _impact_velocity.dot(n)
 	if into >= 0.0:
 		return
-	velocity -= n * into * (1.0 + Settings.wall_bounce)
+	# Motorn har redan tagit bort komponenten in i väggen. Studsen lägger till
+	# den igen åt andra hållet, i den andel Settings.wall_bounce säger.
+	velocity -= n * into * Settings.wall_bounce
 
 ## Landningen bevarar rörelsemängden på två sätt.
 ##

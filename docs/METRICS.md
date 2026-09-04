@@ -90,6 +90,23 @@ nollade fallfarten, medan spelet fortfarande räknade honom som flygande: han
 åkte nedför hela kullen i luftläget, med benen ute, varken gående eller
 rullande. Det var felet som syntes när man landade strax efter krönet.
 
+## Väggar
+
+En boll som rullar in i en vägg studsar tillbaka med den andel `Settings.wall_bounce`
+säger — 40 % med grundvärdet — och lämnar väggen bildrutan efter träffen. Detsamma
+gäller en träff i luften: 500 px/s in ger 200 ut.
+
+Innan farten före kollisionen började användas som beslutsunderlag hände ingetdera.
+Motorns glidning skalar bort komponenten in i väggen, så koden såg aldrig någon
+träff: en boll i 400 px/s låg kvar mot väggen i **141 bildrutor**, alltså över två
+sekunder, och malde ner farten mot rullmotståndet i stället för att studsa. Svept
+över 240 sätt att möta samma vägg — olika fart, höjd och infallsvinkel — fastnade
+8 av dem förut; efteråt är längsta stillastående 1 bildruta.
+
+Det är samma rotfel som landningen hade: `move_and_slide` skriver om `velocity`
+innan koden får se den. Regeln är alltså allmän — **läs alltid farten från före
+förflyttningen när ett beslut ska fattas om en kollision**.
+
 ## Tak och tunnlar
 
 Uppmätt genom att skicka in honom i en tunnel med sänkt tak:
