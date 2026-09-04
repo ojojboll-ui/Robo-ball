@@ -36,6 +36,7 @@ const WALK_SPEED := 130.0
 const AUTO_AIM_DELAY := 0.7    ## hur länge pilen visas innan spelet hoppar åt en
 const SAFETY_MARGIN := 2.0     ## slack i förflyttningstaket, se _move()
 const STAND_UP_MARGIN := 6.0   ## hysteres, annars fladdrar han mellan lägena
+const GROUND_SNAP := 20.0      ## hur långt motorn får dra ner honom mot marken
 ## Hur hårt han hålls mot underlaget ligger i Settings.ground_stick. Farten är
 ## helt tangentiell, och uppför en backe pekar tangenten bort från marken — utan
 ## den kraften lättar han från ytan var trettonde bildruta och spelet fladdrar
@@ -89,7 +90,7 @@ func _ready() -> void:
 
 	_legs.body_lift = BODY_LIFT
 	_start_position = global_position
-	floor_snap_length = 20.0
+	floor_snap_length = GROUND_SNAP
 	_legs.reset(self, Vector2.UP)
 	InputSignal.pressed.connect(_on_signal_pressed)
 	InputSignal.released.connect(_on_signal_released)
@@ -126,6 +127,7 @@ func _update_legs(delta: float) -> void:
 # ---------------------------------------------------------------- lägen
 
 func _process_ground(delta: float) -> void:
+	floor_snap_length = GROUND_SNAP
 	var t := tangent()
 	# Gravitationens komponent längs ytan, i full styrka. På plan mark är den
 	# noll, i en sluttning är den allt.
@@ -299,20 +301,22 @@ func _process_aim(delta: float) -> void:
 		_set_state(State.AIR if _aim_from_air else _stance_for_slope())
 
 func _process_air(delta: float) -> void:
+	# Golvsnäppet hör till en gående kontroller som ska följa med nedför en
+	# backe utan att lätta. I luften gör det tvärtom skada: motorn drog honom
+	# mot flanken och nollade fallfarten, så han *såg* ut att glida nedför
+	# kullen medan spelet trodde att han fortfarande flög — varken gående eller
+	# rullande, och benen kvar ute hela vägen ner. En kastbana ska följa
+	# kastbanan tills den möter marken på riktigt.
+	floor_snap_length = 0.0
 	velocity.y += Settings.rb_gravity * delta
 	spin += velocity.x / RADIUS * delta * 0.5
 	_impact_velocity = velocity
 	_move(delta)
 	_push_things(1.0)
 
-	# Att nudda marken är inte samma sak som att landa. Rullar han ut över en
-	# kant skrapar bollen fortfarande mot hörnet den bildruta han lämnar det, och
-	# att kalla det en landning satte ner honom igen med farten vriden nedför
-	# kanten — han hann landa och lyfta tre gånger på väg ut från en avsats. Bara
-	# en rörelse *in i* ytan är en landning.
 	if _grab_swing():
 		return
-	if is_on_floor() and velocity.dot(get_floor_normal()) <= 0.0:
+	if is_on_floor() and not _leaving_surface():
 		if not _bounced_on_apparatus():
 			_land()
 	elif is_on_wall():
@@ -320,6 +324,30 @@ func _process_air(delta: float) -> void:
 
 	if global_position.y > _start_position.y + 1400.0:
 		respawn()
+
+## Nuddar han marken på väg *ut* från en kant, eller landar han?
+##
+## Rullar han ut över en avsats skrapar bollen mot hörnet den bildruta han
+## lämnar det, och att kalla det en landning satte ner honom igen med farten
+## vriden nedför kanten — tre gånger på väg ut från samma avsats.
+##
+## Men kravet får inte bli "rörelse in i ytan". Med det villkoret glider han
+## nedför en kulles flank i luftläget utan att någonsin landa: farten pekar då
+## längs ytan, och på en kupig kulle hamnar den varje bildruta en aning utåt.
+## Mätt åkte han hela kullen nedför så — varken gående eller rullande, precis
+## det som rapporterades. Nu krävs att farten pekar tydligt bort från ytan, mer
+## än en fjärdedel av sin längd längs normalen: en kantflykt ligger på 0,9 av
+## sin längd, en glidning längs flanken på några hundradelar.
+func _leaving_surface() -> bool:
+	# Farten som avgör är den från bildrutan *före* kollisionen. Motorns glidning
+	# har redan skalat bort komponenten in i ytan när vi kommer hit, så den fart
+	# som står i velocity pekar alltid längs ytan eller utåt — läser man den ser
+	# varenda landning ut som en flykt, och han fortsatte nedför kullen i
+	# luftläget hela vägen.
+	var speed := _impact_velocity.length()
+	if speed < 1.0:
+		return false
+	return _impact_velocity.dot(get_floor_normal()) > 0.25 * speed
 
 ## En vägg i luften tar bara farten *in i* väggen, aldrig farten längs den.
 ##

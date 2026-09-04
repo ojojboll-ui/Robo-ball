@@ -78,6 +78,18 @@ det, och alla tre går att stänga av var för sig i panelen:
 Innan de tre fanns tappade han 57 % av farten på en vanlig avsats och landade
 gående, vilket band honom vid gångfarten 130 px/s.
 
+## Landningar
+
+En landning avgörs av farten från bildrutan **före** kollisionen, inte av den som
+står kvar efteråt. Motorns glidning har redan skalat bort komponenten in i ytan
+när koden får se den, så läser man den ser varje landning ut som en flykt.
+
+Golvsnäppet — motorns hjälp att följa med nedför en backe utan att lätta — är
+avstängt i luften. Med det påslaget drog motorn honom mot kullens flank och
+nollade fallfarten, medan spelet fortfarande räknade honom som flygande: han
+åkte nedför hela kullen i luftläget, med benen ute, varken gående eller
+rullande. Det var felet som syntes när man landade strax efter krönet.
+
 ## Tak och tunnlar
 
 Uppmätt genom att skicka in honom i en tunnel med sänkt tak:
