@@ -107,6 +107,19 @@ Det är samma rotfel som landningen hade: `move_and_slide` skriver om `velocity`
 innan koden får se den. Regeln är alltså allmän — **läs alltid farten från före
 förflyttningen när ett beslut ska fattas om en kollision**.
 
+## Farten som följer med i hoppet
+
+Hopp på 45° ur en rullning, hoppkraft 700:
+
+| Medföljning | rullar 200 px/s | rullar 500 px/s |
+| --- | --- | --- |
+| 0 % | 685 px/s (44°) | 685 px/s (44°) |
+| 50 % | 764 px/s (39°) | 890 px/s (33°) |
+| 100 % (grund) | 847 px/s (35°) | 1114 px/s (27°) |
+
+Ju fortare han rullar, desto flackare och längre blir hoppet — han skjuter ifrån i
+stället för att starta om. I luften gäller medföljningen inte.
+
 ## Tak och tunnlar
 
 Uppmätt genom att skicka in honom i en tunnel med sänkt tak:

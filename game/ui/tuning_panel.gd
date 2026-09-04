@@ -224,6 +224,8 @@ func _tab_motion() -> void:
 	_section("Landning och studs")
 	_slider("Fart som följer med i landningen", 0.0, 1.5, 0.05, Settings.landing_redirect,
 		func(v: float) -> void: Settings.landing_redirect = v, "%.2f")
+	_slider("Fart som följer med i hoppet", 0.0, 1.0, 0.05, Settings.momentum_carry,
+		func(v: float) -> void: Settings.momentum_carry = v, "%.0f%%", 100.0)
 	_slider("Studs mot väggar", 0.0, 0.9, 0.05, Settings.wall_bounce,
 		func(v: float) -> void: Settings.wall_bounce = v, "%.2f")
 	_slider("Knuffkraft mot föremål", 0.1, 2.0, 0.05, Settings.push_force,
@@ -295,7 +297,7 @@ func _tab_objects() -> void:
 		func(v: float) -> void: Settings.swing_grab_radius = v, "%.0f px")
 	_slider("Hur fort svängen dör ut", 0.0, 1.0, 0.02, Settings.swing_damping,
 		func(v: float) -> void: Settings.swing_damping = v, "%.2f")
-	_check("Slow motion medan han hänger", Settings.hang_slowmo,
+	_check("Slow motion redan medan han hänger", Settings.hang_slowmo,
 		func(v: bool) -> void: Settings.hang_slowmo = v)
 
 func _tab_help() -> void:

@@ -54,7 +54,7 @@ bläddra igenom mitt i ett speltest:
 | Flik | Innehåll |
 | --- | --- |
 | Sikte | Pilens hastighet, slow motion, vinkelsteg, bågens gränser, hoppkraft, gravitation, tempoknapparna och extra hopp i luften |
-| Rörelse | Gångfart och acceleration, markfäste, hur mycket fart som följer med i landningen, studs mot väggar, knuffkraft, benens fjädring |
+| Rörelse | Gångfart och acceleration, markfäste, hur mycket fart som följer med i landningen och i hoppet, studs mot väggar, knuffkraft, benens fjädring |
 | Rullning | När benen åker in (lutning, benens högsta takt och absolut fart) med uträknad klättergräns under, indragningstakt, förbli boll i luften, förberedd rullning i luften, rullmotstånd |
 | Föremål | Lådornas tyngd, tålighet, friktion, studsighet och gravitation, effekter, studsmattornas studs och bukt, samt stängernas och lianernas grepp, dämpning och slow motion |
 | Hjälp | Styrningsvariant, förhandsbana, kantskydd, spelhastighet, dubbeltrycksfilter, timeout |
@@ -97,11 +97,12 @@ stängerna och därför märkbart långsammare.
 
 RB hakar fast av sig själv när han far förbi, och hänger då **i benen, upp och ner** —
 samma ben, samma IK och samma ritning som när han går, bara med fötterna satta i
-greppet och kroppens upp vänd åt andra hållet. Ett tryck släpper, och farten han har i
-svängen följer med ut i luften. Medan han hänger ritas **banan han skulle få om han
-släppte nu**, som ändrar sig hela tiden medan han svänger — den prickade kurvan *är*
-farten han har, ritad. Att inte trycka är alltid tillåtet: han hänger kvar, och världen
-går i slow motion så länge han gör det.
+greppet och kroppens upp vänd åt andra hållet. Svängningen går i **riktig tid**, och ett
+tryck betyder *sikta*: pendeln fryses, pilen sveper i slow motion, och nästa tryck
+skickar iväg honom med svängens fart plus avstampet. Medan han hänger ritas **banan han
+skulle få om han släppte nu**, som ändrar sig hela tiden medan han svänger — den
+prickade kurvan *är* farten han har, ritad. Att inte trycka är alltid tillåtet: han
+svänger kvar.
 
 Skillnaden mellan de två greppen är hela poängen med att ha båda:
 

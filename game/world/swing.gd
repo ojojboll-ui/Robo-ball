@@ -41,6 +41,8 @@ var out := -1.0
 var angle := 0.0        ## radianer från rakt ner, positivt åt höger
 var omega := 0.0        ## vinkelfart, radianer per sekund
 var rider: Node2D = null
+## Sant medan han siktar: pendeln står stilla och farten väntar i hoppet.
+var frozen := false
 
 var _cooldown := 0.0
 
@@ -51,7 +53,7 @@ func _physics_process(delta: float) -> void:
 	if _cooldown > 0.0:
 		_cooldown -= delta
 	# En fast stång rör sig inte av sig själv; bara den som hänger i den gör det.
-	if kind == Kind.VINE or rider != null:
+	if not frozen and (kind == Kind.VINE or rider != null):
 		omega += -(Settings.rb_gravity / radius()) * sin(angle) * delta
 		omega -= omega * Settings.swing_damping * delta
 		angle += omega * delta
@@ -107,6 +109,7 @@ func can_grab() -> bool:
 ## som träffar för rakt hör inte hemma i det här spelet.
 func grab(body: Node2D) -> void:
 	rider = body
+	frozen = false
 	if kind == Kind.BAR:
 		angle = _hook_angle(body.velocity)
 	else:
@@ -128,6 +131,7 @@ func _hook_angle(v: Vector2) -> float:
 func release() -> Vector2:
 	var out_velocity := tangent() * omega * radius()
 	rider = null
+	frozen = false
 	_cooldown = REGRAB_DELAY
 	return out_velocity
 
@@ -141,9 +145,9 @@ func _angle_of(point: Vector2) -> float:
 func _draw() -> void:
 	var p := pivot() - global_position
 	if kind == Kind.BAR:
-		# Fästet i väggen och själva stången ut ur den.
-		draw_line(Vector2(0.0, -13.0), Vector2(0.0, 13.0), Palette.GROUND_EDGE, 9.0)
-		draw_line(Vector2.ZERO, p, Palette.GROUND_EDGE, 8.0)
+		# Bara greppet självt syns. Fästet och stången ut ur väggen är borta med
+		# flit: det man behöver läsa av är punkten han svänger runt, inte hur den
+		# sitter fast.
 		draw_circle(p, 7.0, Palette.GROUND_EDGE)
 	else:
 		# Lianen ritas som korta segment som hänger efter i svängen, så att den

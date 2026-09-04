@@ -52,4 +52,4 @@ func update_state(state: RoboBall.State) -> void:
 			_hint_label.text = ""
 		RoboBall.State.HANG:
 			_state_label.text = "HÄNGER"
-			_hint_label.text = "Tryck för att släppa — farten följer med"
+			_hint_label.text = "Tryck för att sikta — farten följer med"

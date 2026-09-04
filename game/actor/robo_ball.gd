@@ -57,6 +57,8 @@ var _sweep_t := 0.0
 var _aim_elapsed := 0.0
 var _air_jumps_used := 0
 var _aim_from_air := false
+var _aim_from_roll := false
+var _carried := Vector2.ZERO
 var _airborne_frames := 0
 ## Lämnade han marken som boll? Då stannar han boll hela vägen genom luften.
 var _left_ground_rolling := false
@@ -314,7 +316,15 @@ func _process_aim(delta: float) -> void:
 		aim_deg = Settings.aim_min_deg + roundf((aim_deg - Settings.aim_min_deg) / step) * step
 
 	if Settings.aim_timeout > 0.0 and _aim_elapsed > Settings.aim_timeout:
-		_set_state(State.AIR if _aim_from_air else _stance_for_slope())
+		_end_aim_without_launch()
+
+## Siktet tar slut utan hopp: tillbaka dit han kom ifrån, med pendeln igång igen.
+func _end_aim_without_launch() -> void:
+	if _swing != null:
+		_swing.frozen = false
+		_set_state(State.HANG)
+		return
+	_set_state(State.AIR if _aim_from_air else _stance_for_slope())
 
 func _process_air(delta: float) -> void:
 	# Golvsnäppet hör till en gående kontroller som ska följa med nedför en
@@ -499,7 +509,7 @@ func _on_signal_pressed() -> void:
 			if Settings.control_variant == Settings.ControlVariant.CLASSIC:
 				_launch()
 		State.HANG:
-			_release_swing()
+			_begin_aim()
 		State.AIR:
 			# Dubbelhopp: samma två tryck som på marken, mitt i luften. RB
 			# stannar upp medan pilen svepar, så förmågan lägger till räckvidd
@@ -516,6 +526,13 @@ func _begin_aim() -> void:
 	_aim_elapsed = 0.0
 	_sweep_t = 0.0
 	_aim_from_air = state == State.AIR
+	_aim_from_roll = state == State.ROLL
+	_carried = _momentum_now()
+	if _swing != null:
+		# Pendeln fryses medan han siktar. Farten är redan sparad och kommer
+		# tillbaka i hoppet — det är därför man kan sikta mitt i en sväng utan
+		# att den fart man byggt upp rinner bort medan man bestämmer sig.
+		_swing.frozen = true
 	if Settings.control_variant == Settings.ControlVariant.AUTO_AIM:
 		_auto_angle = _pick_best_angle()
 		aim_deg = _auto_angle
@@ -523,17 +540,43 @@ func _begin_aim() -> void:
 
 var _auto_angle := 90.0
 
+## Hoppet är ett avstamp, inte en omstart.
+##
+## Farten han redan har läggs till hoppkraften i stället för att kastas bort.
+## Rullar han fort och trycker, skjuter han ifrån och far iväg fortare än
+## hoppkraften ensam räcker till — förut reste han sig och tappade allt han
+## byggt upp. Andelen är ett reglage, och i luften gäller den inte: där finns
+## inget att skjuta ifrån.
 func _launch() -> void:
-	# Ett hopp är en handling med benen: han skjuter ifrån och far iväg som RB,
-	# inte som en boll som råkar vara i luften.
 	_left_ground_rolling = false
 	if _aim_from_air:
 		_air_jumps_used += 1
+	if _swing != null:
+		_swing.release()
+		_swing = null
 	var a := deg_to_rad(aim_deg)
-	velocity = Vector2(cos(a), -sin(a)) * Settings.jump_power
+	velocity = Vector2(cos(a), -sin(a)) * Settings.jump_power + launch_carry()
 	ground_speed = 0.0
 	facing = 1 if velocity.x >= 0.0 else -1
 	_set_state(State.AIR)
+
+## Farten som följer med in i hoppet.
+func launch_carry() -> Vector2:
+	if _aim_from_air:
+		return Vector2.ZERO
+	return _carried * Settings.momentum_carry
+
+## Rörelsen han har just nu, oavsett vilket läge han är i.
+func _momentum_now() -> Vector2:
+	match state:
+		State.HANG:
+			if _swing != null:
+				return _swing.tangent() * _swing.omega * _swing.radius()
+			return Vector2.ZERO
+		State.AIR:
+			return velocity
+		_:
+			return tangent() * ground_speed
 
 func _set_state(next: State) -> void:
 	if state == next:
@@ -549,6 +592,7 @@ func _set_state(next: State) -> void:
 	# Slow motion är samma parameter som vid sikte, och går att stänga av.
 	WorldClock.set_slowmo(state == State.AIM
 		or (state == State.HANG and Settings.hang_slowmo))
+
 	state_changed.emit(state)
 
 ## Vill han vara boll just nu? Rullande alltid — men också på väg ner mot en yta
@@ -557,6 +601,11 @@ func _set_state(next: State) -> void:
 ## komma hinner han vika ihop sig och anländer som den boll backen kräver.
 func _wants_ball() -> bool:
 	if state == State.ROLL:
+		return true
+	# Siktar han mitt i en rullning stannar han boll. Att resa sig för att sikta
+	# och sedan sätta sig igen är både fult och fel: farten han rullar med är
+	# kvar, och det är den han skjuter ifrån med.
+	if state == State.AIM and _aim_from_roll:
 		return true
 	if state != State.AIR or not Settings.auto_roll:
 		return false
@@ -690,7 +739,9 @@ func _push_things(strength: float) -> void:
 ## och därför auto-siktet kan välja åt spelaren.
 func simulate(angle_deg: float, steps: int = SIM_STEPS) -> Dictionary:
 	var a := deg_to_rad(angle_deg)
-	return simulate_from(Vector2(cos(a), -sin(a)) * Settings.jump_power, steps)
+	# Farten som följer med räknas in, annars ljuger den prickade linjen så fort
+	# han siktar mitt i en rullning eller en sväng.
+	return simulate_from(Vector2(cos(a), -sin(a)) * Settings.jump_power + launch_carry(), steps)
 
 ## Samma kastbana, men från en fart man redan har i stället för från en vinkel.
 ## Det är den som ritas medan han hänger: banan där kommer inte ur hoppkraften

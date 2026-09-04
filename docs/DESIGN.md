@@ -153,13 +153,20 @@ man trapetsen flyger man iväg längs tangenten. Newtons första lag, synlig.
 
 Priset är att resultatet börjar bero på *när* man trycker och inte bara på vinkeln.
 Alltså mer timing, alltså en tröskel. Lösningen är därför ett reglage: **hur stor andel
-av farten som följer med, 0–100 %**. Vid 0 % har man dagens förutsägbara hopp, vid 100 %
-full momentumkänsla, och däremellan finns varje barns nivå. Förhandsbanan och auto-siktet
-klarar det utan ändring i sak — de simulerar redan, de behöver bara utgå från den
-nuvarande farten.
+av farten som följer med, 0–100 %**. Vid 0 % har man det förutsägbara hoppet, vid 100 %
+full momentumkänsla, och däremellan finns varje barns nivå.
 
-Trapetsen är undantaget: den *kräver* rörelsemängd för att vara en trapets, så den bär
-med sig farten oavsett var reglaget står.
+**Byggt.** Grundvärdet är 100 %: hoppet läggs ovanpå den fart han redan har, så en
+rullning i 500 px/s plus ett hopp på 45 grader blir 1114 px/s snett uppåt i stället för
+685. Det är skillnaden mellan att resa sig och hoppa, och att *skjuta ifrån*.
+Förhandsbanan räknar in den medföljande farten, annars skulle den prickade linjen ljuga
+så fort man siktar mitt i en rullning. I luften gäller den inte — där finns inget att
+skjuta ifrån, och ett dubbelhopp som byggde på sig självt vore något annat.
+
+Stängerna och lianerna hör hit: där betyder ett tryck *sikta*, inte *släpp*. Pendeln
+fryses medan pilen sveper, farten väntar, och hoppet skickar iväg honom med svängens
+fart plus avstampet. Man kan alltså välja riktning utan att svängen rinner bort medan
+man bestämmer sig — och den som inte trycker svänger vidare.
 
 ### Stationer
 
@@ -270,9 +277,11 @@ Banan där mekaniker provas. Just nu står tre stationer där:
 * **Banan medan han hänger.** Samma prickade kurva som vid sikte ritas medan han
   hänger, men den kommer ur svängens fart i stället för ur hoppkraften — den blir
   längre ju fortare han svänger och vrider sig hela varvet runt. Det är den tydligaste
-  bild vi kan ge av rörelsemängd: kurvan *är* farten, ritad. Världen går dessutom i
-  slow motion medan han hänger, av samma skäl som vid sikte: en stång kan snurra fort,
-  och spelet får inte ha tidspress man inte kan ställa in.
+  bild vi kan ge av rörelsemängd: kurvan *är* farten, ritad.
+* **Svängningen går i riktig tid.** Ett tryck är inte "släpp" utan "sikta": pendeln
+  fryses, pilen sveper i slow motion och nästa tryck skickar iväg honom med svängens
+  fart plus avstampet. Tempot ligger alltså i siktet, där det redan är en inställning,
+  och inte i själva svängen. Att inte trycka är fortfarande alltid tillåtet.
 
 Dubbelhoppet är värt en anmärkning, eftersom det är just den sortens förmåga som brukar
 kräva en extra knapp i andra spel. Här gör den inte det: i luften betyder ett tryck
