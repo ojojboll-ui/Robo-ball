@@ -30,6 +30,7 @@ var _scroll: ScrollContainer
 var _gear: Button
 var _travel: GridContainer
 var _tempo_note: Label
+var _climb_note: Label
 ## Uppslag från reglagets rubrik till dess delar, så att värden som ändrats
 ## någon annanstans (tempoknapparna) kan skrivas tillbaka i gränssnittet.
 var _rows_by_title: Dictionary = {}
@@ -176,6 +177,7 @@ func _build_rows() -> void:
 	_rows_by_title.clear()
 	_travel = null
 	_tempo_note = null
+	_climb_note = null
 	if _scroll:
 		_scroll.scroll_vertical = 0
 
@@ -186,6 +188,7 @@ func _build_rows() -> void:
 		4: _tab_help()
 		5: _tab_level()
 		_: _tab_aim()
+	_update_climb_note()
 
 func _tab_aim() -> void:
 	_section("Pilen")
@@ -238,6 +241,11 @@ func _tab_roll() -> void:
 		func(v: bool) -> void: Settings.auto_roll = v)
 	_slider("Brantast benen klarar", 15.0, 60.0, 1.0, Settings.leg_max_slope,
 		func(v: float) -> void: Settings.leg_max_slope = v, "%.0f°")
+	_climb_note = Label.new()
+	_climb_note.add_theme_font_size_override("font_size", 17)
+	_climb_note.add_theme_color_override("font_color", Palette.INK)
+	_climb_note.autowrap_mode = TextServer.AUTOWRAP_WORD
+	_rows.add_child(_climb_note)
 	_slider("Brantast som boll", 30.0, 85.0, 1.0, Settings.roll_max_slope,
 		func(v: float) -> void: Settings.roll_max_slope = v, "%.0f°")
 	_slider("Blir boll över farten (0 = av)", 0.0, 900.0, 10.0, Settings.roll_speed,
@@ -246,6 +254,8 @@ func _tab_roll() -> void:
 	_section("Hur det går till")
 	_slider("Indragningstakt", 1.5, 25.0, 0.5, Settings.tuck_speed,
 		func(v: float) -> void: Settings.tuck_speed = v, "%.1f")
+	_check("Förbli boll i luften", Settings.keep_ball_airborne,
+		func(v: bool) -> void: Settings.keep_ball_airborne = v)
 	_check("Förbered rullning i luften", Settings.tuck_before_landing,
 		func(v: bool) -> void: Settings.tuck_before_landing = v)
 	_slider("Hur långt fram han känner av landningen", 0.05, 0.8, 0.05, Settings.tuck_lookahead,
@@ -376,7 +386,26 @@ func _scale_tempo(factor: float) -> void:
 	_sync("Gravitation", Settings.rb_gravity)
 	_sync("Hoppkraft", Settings.jump_power)
 
+## Hur brant RB orkar gå uppför är ingen inställning utan en följd av två andra:
+## han klättrar så länge gravitationens komponent längs backen är mindre än vad
+## benen orkar accelerera, alltså upp till asin(gångacceleration / gravitation).
+## Mätt stämmer formeln på tiondelen. Sätts benens gräns högre än så finns ett
+## spann där han står kvar på fötterna men glider bakåt — värt att se, inte gissa.
+func _update_climb_note() -> void:
+	if _climb_note == null:
+		return
+	var ceiling := rad_to_deg(asin(clampf(Settings.walk_accel / maxf(Settings.rb_gravity, 1.0), 0.0, 1.0)))
+	var text := "Orkar gå uppför till %.0f° med nuvarande gravitation och gångacceleration." % ceiling
+	var gap := Settings.leg_max_slope - ceiling
+	if gap > 1.0:
+		text += " Mellan %.0f° och %.0f° står han kvar på benen men glider bakåt." % [
+			ceiling, Settings.leg_max_slope]
+	elif gap < -1.0:
+		text += " Benen åker in redan vid %.0f°, alltså innan han slutar orka." % Settings.leg_max_slope
+	_climb_note.text = text
+
 func _update_tempo_note() -> void:
+	_update_climb_note()
 	if _tempo_note == null:
 		return
 	var g: float = Settings.rb_gravity

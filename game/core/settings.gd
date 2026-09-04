@@ -73,7 +73,7 @@ var tuck_before_landing := true
 var tuck_lookahead := 0.30     ## sekunder framåt han känner av landningen
 
 ## Markkontrollern och rullningen
-var leg_max_slope := 38.0      ## grader, brantast benen klarar innan de åker in
+var leg_max_slope := 43.0      ## grader, brantast benen klarar innan de åker in
 var roll_max_slope := 62.0     ## grader, brantast han håller sig kvar som boll
 var roll_friction := 30.0      ## px/s², rullmotstånd
 ## Över den här farten drar han in benen oavsett hur flack marken är. 0 = av.
@@ -81,6 +81,8 @@ var roll_friction := 30.0      ## px/s², rullmotstånd
 ## han fort nog blir han en boll, och då gäller andra regler.
 var roll_speed := 0.0
 var auto_roll := true          ## dra in benen automatiskt i branta lutningar
+var keep_ball_airborne := true ## är han boll när han lämnar marken förblir han boll
+var crest_release := true      ## släpper underlaget på krön där farten inte kan följa det
 var level_index := 0
 var panel_tab := 0            ## vilken flik i inställningspanelen som var öppen
 
@@ -134,6 +136,8 @@ func as_dict() -> Dictionary:
 		"roll_max_slope": roll_max_slope,
 		"roll_friction": roll_friction,
 		"auto_roll": auto_roll,
+		"keep_ball_airborne": keep_ball_airborne,
+		"crest_release": crest_release,
 		"level_index": level_index,
 		"panel_tab": panel_tab,
 	}
@@ -175,6 +179,8 @@ func apply(data: Dictionary) -> void:
 	roll_max_slope = float(data.get("roll_max_slope", roll_max_slope))
 	roll_friction = float(data.get("roll_friction", roll_friction))
 	auto_roll = bool(data.get("auto_roll", auto_roll))
+	keep_ball_airborne = bool(data.get("keep_ball_airborne", keep_ball_airborne))
+	crest_release = bool(data.get("crest_release", crest_release))
 	level_index = int(data.get("level_index", level_index))
 	panel_tab = int(data.get("panel_tab", panel_tab))
 	changed.emit()
@@ -205,6 +211,11 @@ func load_settings() -> void:
 				and is_equal_approx(float(data.get("aim_max_deg", 0.0)), 370.0):
 			data.erase("aim_min_deg")
 			data.erase("aim_max_deg")
+		# Samma sak för benens gräns: 38 grader var en gissning, 43 är
+		# provspelat. En profil som står kvar på den gamla siffran bara för att
+		# den råkade sparas är inte ett val någon gjort.
+		if is_equal_approx(float(data.get("leg_max_slope", 0.0)), 38.0):
+			data.erase("leg_max_slope")
 		apply(data)
 
 func notify_changed() -> void:

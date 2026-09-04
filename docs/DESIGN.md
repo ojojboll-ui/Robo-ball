@@ -198,7 +198,7 @@ Tre olika fysikbeteenden som måste samexistera (se TECH.md för implementation)
    * **Benen ute.** Han driver sig själv mot sin gångfart. Ju brantare backe, desto
      mer av drivningen äts av gravitationen — mätt i prototypen går han uppför
      15 grader lätt, 25 tydligt långsammare och 35 knappt alls.
-   * **Benen inne.** Över gränsen (grund 38 grader) drar han in benen och blir den boll
+   * **Benen inne.** Över gränsen (grund 43 grader, se docs/METRICS.md) drar han in benen och blir den boll
      han var innan han hittade dem. Ingen drivning, bara lutning och rullmotstånd, och
      rörelsemängden bevaras. Över bollens egen gräns (grund 62 grader) släpper fästet
      helt och han faller.

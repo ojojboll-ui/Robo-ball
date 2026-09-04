@@ -57,6 +57,8 @@ var _aim_elapsed := 0.0
 var _air_jumps_used := 0
 var _aim_from_air := false
 var _airborne_frames := 0
+## Lämnade han marken som boll? Då stannar han boll hela vägen genom luften.
+var _left_ground_rolling := false
 ## Farten i bildrutan innan kollisionen löstes. move_and_slide skär bort
 ## komponenten in i ytan, så efter den är rörelsen mot marken redan borta —
 ## läser landningen därifrån har den ingenting att bevara.
@@ -137,7 +139,10 @@ func _process_ground(delta: float) -> void:
 	_move(delta)
 	_push_things(0.5)
 
-	if is_on_wall():
+	# Bara en vägg han faktiskt kör in i. Kanten han rullar *ut ifrån* räknas
+	# också som vägg av motorn, och att vända på farten där tog allt han byggt
+	# upp — mätt gick 306 px/s till noll på en vanlig avsats.
+	if is_on_wall() and _driving_into_wall():
 		_hit_wall()
 
 	if not is_on_floor():
@@ -146,16 +151,58 @@ func _process_ground(delta: float) -> void:
 		_airborne_frames += 1
 		if _airborne_frames > 3:
 			velocity = tangent() * ground_speed
+			_left_ground_rolling = state == State.ROLL
 			_set_state(State.AIR)
 		return
 	_airborne_frames = 0
 
-	ground_normal = get_floor_normal()
+	var next_normal := get_floor_normal()
+	if Settings.crest_release and _leaves_crest(ground_normal, next_normal, delta):
+		# Farten behåller riktningen den hade *före* kanten. Det är det som gör
+		# att han far ut i en båge i stället för att vika av nedåt utmed hörnet.
+		velocity = tangent() * ground_speed
+		_left_ground_rolling = state == State.ROLL
+		_set_state(State.AIR)
+		return
+	ground_normal = next_normal
 	if not is_zero_approx(ground_speed):
 		facing = 1 if ground_speed > 0.0 else -1
 	if Settings.ledge_guard and state == State.WALK and not _ground_ahead():
 		_turn_around()
 	_update_stance()
+
+## Kör han in i väggen, eller bort från den? Motorn kallar allt brantare än
+## golvvinkeln för vägg, och kanten han just lämnat är en sådan yta.
+func _driving_into_wall() -> bool:
+	var n := get_wall_normal()
+	return n.length() > 0.1 and velocity.dot(n) < 0.0
+
+## Ett krön håller bara så länge tyngden räcker till svängen.
+##
+## En boll som rullar över en kant kan inte följa hörnet: att svänga kräver
+## v²/r i centripetalkraft, och finns den inte lämnar han underlaget. Det är
+## därför man far ut i en båge från en avsats i stället för att glida ner utmed
+## kanten. Utan den här räkningen höll markfästet kvar honom mot hörnet och vred
+## farten nedåt — mätt tappade han halva farten på en helt vanlig avsats, och
+## resten tog vägghanteringen.
+##
+## Krökningsradien läses ur hur mycket ytans normal vred sig den här bildrutan:
+## r = fart · dt / dvinkel, alltså blir kravet fart · dvinkel / dt.
+func _leaves_crest(before: Vector2, after: Vector2, delta: float) -> bool:
+	if delta <= 0.0 or before.length() < 0.1 or after.length() < 0.1:
+		return false
+	var speed := absf(ground_speed)
+	var turn := absf(before.angle_to(after))
+	if turn < 0.0001 or speed < 1.0:
+		return false
+	# Bara konvext: ytan ska luta mer nedför i färdriktningen än den gjorde.
+	var t_before := Vector2(-before.y, before.x)
+	var t_after := Vector2(-after.y, after.x)
+	if signf(ground_speed) * (t_after.y - t_before.y) <= 0.0:
+		return false
+	var needed := speed * turn / delta
+	var available := Settings.rb_gravity * maxf(after.dot(Vector2.UP), 0.0) + Settings.ground_stick
+	return needed > available
 
 func _process_aim(delta: float) -> void:
 	velocity = Vector2.ZERO
@@ -196,13 +243,38 @@ func _process_air(delta: float) -> void:
 	_move(delta)
 	_push_things(1.0)
 
-	if is_on_floor():
+	# Att nudda marken är inte samma sak som att landa. Rullar han ut över en
+	# kant skrapar bollen fortfarande mot hörnet den bildruta han lämnar det, och
+	# att kalla det en landning satte ner honom igen med farten vriden nedför
+	# kanten — han hann landa och lyfta tre gånger på väg ut från en avsats. Bara
+	# en rörelse *in i* ytan är en landning.
+	if is_on_floor() and velocity.dot(get_floor_normal()) <= 0.0:
 		_land()
 	elif is_on_wall():
-		velocity.x = -velocity.x * Settings.wall_bounce
+		_hit_wall_in_air()
 
 	if global_position.y > _start_position.y + 1400.0:
 		respawn()
+
+## En vägg i luften tar bara farten *in i* väggen, aldrig farten längs den.
+##
+## Tidigare nollställdes hela x-farten så fort motorn rapporterade en vägg. Det
+## gjorde att en boll som rullade ut över en kant tappade allt: kanten han just
+## lämnat räknas som en vägg medan han faller förbi dess lodräta sida, och han
+## föll rakt ner utmed den i stället för att flyga ut i en båge. Mätt tappade ett
+## utrullande RB 57 % av sin fart på ett hörn han inte ens körde in i.
+##
+## Nu läses väggens normal: rör han sig bort från väggen händer ingenting alls,
+## och kör han in i den försvinner bara den komponenten (med studsen ovanpå).
+## Det är samma räkning som en boll som studsar snett mot en vägg gör.
+func _hit_wall_in_air() -> void:
+	var n := get_wall_normal()
+	if n.length() < 0.1:
+		return
+	var into := velocity.dot(n)
+	if into >= 0.0:
+		return
+	velocity -= n * into * (1.0 + Settings.wall_bounce)
 
 ## Landningen bevarar rörelsemängden på två sätt.
 ##
@@ -216,6 +288,7 @@ func _process_air(delta: float) -> void:
 ## där finns ingen riktning att dirigera farten åt.
 func _land() -> void:
 	_airborne_frames = 0
+	_left_ground_rolling = false
 	ground_normal = get_floor_normal()
 	# Fötterna har hängt under kroppen under fallet. Sätt ner dem på underlaget
 	# vid landningen — annars står de kvar i luften och benen ser lösa ut.
@@ -313,6 +386,9 @@ func _begin_aim() -> void:
 var _auto_angle := 90.0
 
 func _launch() -> void:
+	# Ett hopp är en handling med benen: han skjuter ifrån och far iväg som RB,
+	# inte som en boll som råkar vara i luften.
+	_left_ground_rolling = false
 	if _aim_from_air:
 		_air_jumps_used += 1
 	var a := deg_to_rad(aim_deg)
@@ -339,7 +415,14 @@ func _set_state(next: State) -> void:
 func _wants_ball() -> bool:
 	if state == State.ROLL:
 		return true
-	if state != State.AIR or not Settings.auto_roll or not Settings.tuck_before_landing:
+	if state != State.AIR or not Settings.auto_roll:
+		return false
+	# Rullade han ut över en kant är han fortfarande en boll i luften. Att
+	# sträcka ut benen mitt i flykten och landa på fötterna kostade honom farten
+	# han byggt upp — och farten är hela poängen med att han blivit boll.
+	if Settings.keep_ball_airborne and _left_ground_rolling:
+		return true
+	if not Settings.tuck_before_landing:
 		return false
 	return _incoming_slope() > Settings.leg_max_slope
 
@@ -389,6 +472,7 @@ func respawn() -> void:
 	_smooth_normal = Vector2.UP
 	facing = 1
 	_air_jumps_used = 0
+	_left_ground_rolling = false
 	_legs.reset(self, Vector2.UP)
 	_set_state(State.WALK)
 

@@ -163,8 +163,11 @@ static func _roll_test() -> Dictionary:
 				GROUND_Y - cube.y * 0.5 - row * (cube.y + 2)), "size": cube})
 
 	var ramps: Array = []
-	# Vinkeltrappan: 15, 25, 35, 45 och 55 grader bredvid varandra.
-	var angles := [15.0, 25.0, 35.0, 45.0, 55.0]
+	# Vinkeltrappan: 15, 25, 35, 41, 45 och 55 grader bredvid varandra. De tre
+	# sista ligger tätt med flit — de spänner över de två gränserna. Vid 41
+	# står han kvar på benen men orkar inte hela vägen upp (klättergränsen går
+	# vid 40 med grundvärdena), vid 45 åker benen in. Se docs/METRICS.md.
+	var angles := [15.0, 25.0, 35.0, 41.0, 45.0, 55.0]
 	for i in angles.size():
 		ramps.append(ramp(140.0 + i * 250.0, 190.0, angles[i]))
 	# Skålen.
@@ -193,8 +196,9 @@ static func _roll_test() -> Dictionary:
 		"crates": crates,
 		"spawns": [
 			{"name": "Vinkeltrappan", "pos": Vector2(160, GROUND_Y - 60)},
-			{"name": "45 grader", "pos": Vector2(900, GROUND_Y - 60)},
-			{"name": "55 grader", "pos": Vector2(1150, GROUND_Y - 60)},
+			{"name": "41 grader", "pos": Vector2(900, GROUND_Y - 60)},
+			{"name": "45 grader", "pos": Vector2(1150, GROUND_Y - 60)},
+			{"name": "55 grader", "pos": Vector2(1400, GROUND_Y - 60)},
 			{"name": "Skålen", "pos": Vector2(1700, 320)},
 			{"name": "Pucklarna", "pos": Vector2(2700, GROUND_Y - 60)},
 			{"name": "Utrullningen", "pos": Vector2(3700, 250)},

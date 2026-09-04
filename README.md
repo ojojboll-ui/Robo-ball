@@ -31,6 +31,7 @@ innehåll, inte ytbehandling. Se [docs/DECISIONS.md](docs/DECISIONS.md).
 | [docs/TECH.md](docs/TECH.md) | Teknikval, arkitektur, fysikmodell, webbexportens fällor |
 | [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md) | Tillgänglighetskrav, inställningsmatris, testprotokoll |
 | [docs/PROJECTPLAN.md](docs/PROJECTPLAN.md) | Faser, milstolpar, tidsuppskattning, risker, finansiering |
+| [docs/METRICS.md](docs/METRICS.md) | Uppmätta mått: backar, hopp, takhöjder, rutnät |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Beslutslogg |
 | [concept/](concept/) | Konceptskisser |
 
@@ -54,7 +55,7 @@ bläddra igenom mitt i ett speltest:
 | --- | --- |
 | Sikte | Pilens hastighet, slow motion, vinkelsteg, bågens gränser, hoppkraft, gravitation, tempoknapparna och extra hopp i luften |
 | Rörelse | Gångfart och acceleration, markfäste, hur mycket fart som följer med i landningen, studs mot väggar, knuffkraft, benens fjädring |
-| Rullning | När benen åker in (lutning och fart), indragningstakt, förberedd rullning i luften, rullmotstånd |
+| Rullning | När benen åker in (lutning och fart) med uträknad klättergräns under, indragningstakt, förberedd rullning i luften, rullmotstånd |
 | Föremål | Lådornas tyngd, tålighet, friktion, studsighet och gravitation, samt effekter |
 | Hjälp | Styrningsvariant, förhandsbana, kantskydd, spelhastighet, dubbeltrycksfilter, timeout |
 | Bana | Banval, börja om, snabbresa och återställning av alla inställningar |
