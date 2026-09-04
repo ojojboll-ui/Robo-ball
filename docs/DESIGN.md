@@ -264,8 +264,9 @@ Banan där mekaniker provas. Just nu står tre stationer där:
   gång: ingen energi skapas, ingen försvinner. Det här är fortfarande den enda mekanik
   vi hittat som *köper tid utan att stanna världen* — rytmen upprepar sig och väntar in
   spelaren, utan att någon räknar ner.
-* **Stången.** Sitter fast och sticker ut vågrätt ur en vägg, som en flaggstång
-  (konceptskiss 05). RB hakar benen över den och hänger upp och ner. Han hakar den på
+* **Stången.** Ett fast grepp som hänger i luften — i verkstaden ritat som bara den
+  prick han svänger runt, utan vägg eller pelare omkring sig (konceptskiss 05 visar
+  hur den ska se ut när grafiken kommer). RB hakar benen över den och hänger upp och ner. Han hakar den på
   den sida han passerar, alltså behåller han hela farten — stången är ingen fartkälla
   utan en **riktningsväxel**, den enda mekanik vi har där ett tryck kan peka farten vart
   som helst utan att något går förlorat. Det är också den enda mekanik hittills där

@@ -90,9 +90,9 @@ utrullning som slutar i en lådstapel.
 **Verkstaden.** Banan där nya mekaniker provas innan någon bestämmer sig för om de
 ska vara med (docs/DECISIONS.md 20). Tre studsmattor infällda i marken — man går rakt
 ut på dem, och de studsar när man landar på dem uppifrån. En trappa upp till en avsats
-med en matta under, så att man kan gå av kanten och studsa tillbaka upp. Tre hängande
-pelare med fasta stänger som sticker ut vågrätt, 185 px över marken: precis inom
-räckhåll för ett hopp rakt upp. Och tre lianer, nästan tre gånger så långa som
+med en matta under, så att man kan gå av kanten och studsa tillbaka upp. Tre fasta grepp som
+hänger fritt i luften, 185 px över marken: precis inom räckhåll för ett hopp rakt upp,
+och utan pelare omkring sig som är i vägen. Och tre lianer, nästan tre gånger så långa som
 stängerna och därför märkbart långsammare.
 
 RB hakar fast av sig själv när han far förbi, och hänger då **i benen, upp och ner** —

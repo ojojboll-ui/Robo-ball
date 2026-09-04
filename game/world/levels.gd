@@ -247,17 +247,13 @@ static func _workshop() -> Dictionary:
 	floors.append(Rect2(2650, 430, 240, 24))
 	floors.append(Rect2(4020, 360, 240, 24))
 
-	# Hängande pelare: de slutar 170 px över marken, så gången under är fri.
-	var pillars := [1980.0, 2480.0, 4640.0]
 	var walls: Array = [Rect2(-120, 240, 60, 400), Rect2(right, 180, 60, 460)]
-	for x: float in pillars:
-		walls.append(Rect2(x, 120, 44, 350))
 
 	var swings: Array = []
-	# Stängerna sticker ut åt vänster ur sina pelare, mot den som kommer därifrån.
-	# 185 px över marken: precis inom räckhåll för ett hopp rakt upp.
-	for x: float in pillars:
-		swings.append({"pos": Vector2(x, 455), "length": 120.0, "kind": "bar", "out": -1.0})
+	# Stängerna hänger fritt: bara greppen, inga pelare omkring dem. 185 px över
+	# marken, precis inom räckhåll för ett hopp rakt upp.
+	for x: float in [1860.0, 2360.0, 4520.0]:
+		swings.append({"pos": Vector2(x, 455), "length": 0.0, "kind": "bar"})
 	# Lianerna: nästan tre gånger så långa, alltså märkbart långsammare.
 	for i in 3:
 		swings.append({"pos": Vector2(2950.0 + i * 420.0, 130), "length": 330.0,
