@@ -24,6 +24,13 @@ bana ospelbar.
 | 43° och brantare | Benen åker in, han rullar |
 | Över 62° | Bollen tappar greppet och faller |
 
+Benen har dessutom en högsta takt: **1,8 gånger gångfarten, alltså 234 px/s**.
+Kommer han in fortare än så rullar han, oavsett lutning. Det märks mest vid
+landningar — mätt på kullens fot landade han i 40° med 582 px/s och blev
+stående, och benen åt upp hela farten på en halv sekund. Nu fortsätter han som
+boll och behåller den. Han reser sig igen vid 0,75 av samma takt, så han inte
+fladdrar precis på gränsen.
+
 Det fanns tidigare ett spann på 41–42° där han stod kvar på fötterna men gled
 bakåt: klättergränsen låg på 40 medan benen satt kvar till 43. Mätt 93 bildrutor
 i det läget på en 42-gradersramp — varken gående eller rullande. Två saker tog

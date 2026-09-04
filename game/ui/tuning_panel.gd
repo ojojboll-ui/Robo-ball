@@ -248,6 +248,8 @@ func _tab_roll() -> void:
 	_rows.add_child(_climb_note)
 	_slider("Brantast som boll", 30.0, 85.0, 1.0, Settings.roll_max_slope,
 		func(v: float) -> void: Settings.roll_max_slope = v, "%.0f°")
+	_slider("Benen hinner inte med över", 0.0, 4.0, 0.1, Settings.leg_max_pace,
+		func(v: float) -> void: Settings.leg_max_pace = v, "%.1f× gångfarten")
 	_slider("Blir boll över farten (0 = av)", 0.0, 900.0, 10.0, Settings.roll_speed,
 		func(v: float) -> void: Settings.roll_speed = v, "%.0f")
 

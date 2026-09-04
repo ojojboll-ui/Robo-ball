@@ -402,7 +402,22 @@ func _should_roll() -> bool:
 	# sekund, på en 42-gradersramp. Varken gående eller boll, precis som det såg ut.
 	if Settings.rb_gravity * absf(tangent().y) > Settings.walk_accel:
 		return true
+	# Och de har en högsta takt. Landar han i en backe med 582 px/s — mätt, där
+	# kullens brant börjar — är det ingen gångfart, och benen ska inte kunna äta
+	# upp den bara för att lutningen råkar ligga under gränsen ovan. Man springer
+	# inte ner för en kulle fortare än benen hinner snurra; man ramlar, eller i
+	# hans fall rullar.
+	if Settings.leg_max_pace > 0.0 \
+			and absf(ground_speed) > WALK_SPEED * Settings.walk_speed * Settings.leg_max_pace:
+		return true
 	return Settings.roll_speed > 0.0 and absf(ground_speed) > Settings.roll_speed
+
+## Takten han måste ner till för att resa sig igen. Alltid under den som fällde
+## honom, annars fladdrar han mellan lägena i samma ögonblick han rest sig.
+func _stand_up_pace() -> float:
+	if Settings.leg_max_pace <= 0.0:
+		return 1.3
+	return minf(1.3, Settings.leg_max_pace * 0.75)
 
 ## Benen ut eller in. Hysteresen finns för att han annars skulle fladdra mellan
 ## lägena på en lutning som ligger precis på gränsen.
@@ -415,7 +430,7 @@ func _update_stance() -> void:
 	if state == State.WALK and _should_roll():
 		_set_state(State.ROLL)
 	elif state == State.ROLL and slope < Settings.leg_max_slope - STAND_UP_MARGIN \
-			and absf(ground_speed) < WALK_SPEED * Settings.walk_speed * 1.3 \
+			and absf(ground_speed) < WALK_SPEED * Settings.walk_speed * _stand_up_pace() \
 			and (Settings.roll_speed <= 0.0 or absf(ground_speed) < Settings.roll_speed * 0.8):
 		_set_state(State.WALK)
 

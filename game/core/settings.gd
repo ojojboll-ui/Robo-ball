@@ -85,6 +85,10 @@ var roll_friction := 30.0      ## px/s², rullmotstånd
 ## Det är den mekanik som bär de första pusslen, innan han hittat benen: springer
 ## han fort nog blir han en boll, och då gäller andra regler.
 var roll_speed := 0.0
+## Benen har en högsta takt. Kommer han in fortare än så — efter en landning,
+## en utrullning eller en sväng — hinner de inte med, och han rullar. Anges som
+## gånger gångfarten, alltså oberoende av vad gångfarten står på. 0 stänger av.
+var leg_max_pace := 1.8
 var auto_roll := true          ## dra in benen automatiskt i branta lutningar
 var keep_ball_airborne := true ## är han boll när han lämnar marken förblir han boll
 var crest_release := true      ## släpper underlaget på krön där farten inte kan följa det
@@ -124,6 +128,7 @@ func as_dict() -> Dictionary:
 		"aim_min_deg": aim_min_deg,
 		"aim_max_deg": aim_max_deg,
 		"roll_speed": roll_speed,
+		"leg_max_pace": leg_max_pace,
 		"trajectory_preview": trajectory_preview,
 		"air_jumps": air_jumps,
 		"ledge_guard": ledge_guard,
@@ -172,6 +177,7 @@ func apply(data: Dictionary) -> void:
 	aim_min_deg = float(data.get("aim_min_deg", aim_min_deg))
 	aim_max_deg = float(data.get("aim_max_deg", aim_max_deg))
 	roll_speed = float(data.get("roll_speed", roll_speed))
+	leg_max_pace = float(data.get("leg_max_pace", leg_max_pace))
 	trajectory_preview = bool(data.get("trajectory_preview", trajectory_preview))
 	air_jumps = int(data.get("air_jumps", air_jumps))
 	ledge_guard = bool(data.get("ledge_guard", ledge_guard))

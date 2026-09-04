@@ -55,7 +55,7 @@ bläddra igenom mitt i ett speltest:
 | --- | --- |
 | Sikte | Pilens hastighet, slow motion, vinkelsteg, bågens gränser, hoppkraft, gravitation, tempoknapparna och extra hopp i luften |
 | Rörelse | Gångfart och acceleration, markfäste, hur mycket fart som följer med i landningen, studs mot väggar, knuffkraft, benens fjädring |
-| Rullning | När benen åker in (lutning och fart) med uträknad klättergräns under, indragningstakt, förberedd rullning i luften, rullmotstånd |
+| Rullning | När benen åker in (lutning, benens högsta takt och absolut fart) med uträknad klättergräns under, indragningstakt, förbli boll i luften, förberedd rullning i luften, rullmotstånd |
 | Föremål | Lådornas tyngd, tålighet, friktion, studsighet och gravitation, effekter, studsmattornas studs och bukt, samt trapetsernas grepp och dämpning |
 | Hjälp | Styrningsvariant, förhandsbana, kantskydd, spelhastighet, dubbeltrycksfilter, timeout |
 | Bana | Banval, börja om, snabbresa och återställning av alla inställningar |
