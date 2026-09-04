@@ -62,7 +62,12 @@ var crate_gravity := 1.0       ## 0.2–3.0, gravitationsskala för lösa förem
 
 ## Saknade reglage tidigare, och alla tre bidrar till hur "flytande" han känns.
 var ground_stick := 150.0      ## hur hårt han trycks mot underlaget
-var walk_accel := 900.0        ## hur snabbt benen når full gångfart
+## Sätter också hur brant han orkar gå: han klättrar så länge gravitationens
+## komponent längs backen är mindre än den här, alltså upp till
+## asin(walk_accel / rb_gravity). 980 mot 1400 ger 44,4° — strax över benens
+## gräns på 43, så det är benen som bestämmer var rullningen börjar och inte
+## ett spann däremellan där han står och glider.
+var walk_accel := 980.0        ## hur snabbt benen når full gångfart
 var leg_stiffness := 220.0     ## benfjädringens styvhet
 var leg_damping := 22.0        ## benfjädringens dämpning
 var tuck_speed := 6.5          ## hur snabbt benen viks in, högre = snabbare
@@ -234,6 +239,10 @@ func load_settings() -> void:
 		# den råkade sparas är inte ett val någon gjort.
 		if is_equal_approx(float(data.get("leg_max_slope", 0.0)), 38.0):
 			data.erase("leg_max_slope")
+		# Och gångaccelerationen: 900 räckte bara till 40° klättring mot benens
+		# 43, och glappet däremellan var ett fel man kunde se.
+		if is_equal_approx(float(data.get("walk_accel", 0.0)), 900.0):
+			data.erase("walk_accel")
 		apply(data)
 
 func notify_changed() -> void:

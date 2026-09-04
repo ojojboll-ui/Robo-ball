@@ -410,12 +410,10 @@ func _update_climb_note() -> void:
 		return
 	var ceiling := rad_to_deg(asin(clampf(Settings.walk_accel / maxf(Settings.rb_gravity, 1.0), 0.0, 1.0)))
 	var text := "Orkar gå uppför till %.0f° med nuvarande gravitation och gångacceleration." % ceiling
-	var gap := Settings.leg_max_slope - ceiling
-	if gap > 1.0:
-		text += " Mellan %.0f° och %.0f° står han kvar på benen men glider bakåt." % [
-			ceiling, Settings.leg_max_slope]
-	elif gap < -1.0:
-		text += " Benen åker in redan vid %.0f°, alltså innan han slutar orka." % Settings.leg_max_slope
+	if Settings.leg_max_slope - ceiling > 1.0:
+		text += " Över det ger benen vika av sig själva, före gränsen ovan: annars skulle han stå kvar på fötterna och glida bakåt."
+	else:
+		text += " Benen åker in innan dess, så det är de som sätter gränsen — inte kraften."
 	_climb_note.text = text
 
 func _update_tempo_note() -> void:

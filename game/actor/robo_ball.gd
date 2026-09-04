@@ -394,6 +394,14 @@ func _should_roll() -> bool:
 		return false
 	if slope_degrees() > Settings.leg_max_slope:
 		return true
+	# Benen ger också vika där de inte längre kan hålla emot: drar backen honom
+	# bakåt fortare än benen orkar driva honom framåt (g·sin θ > gångacceleration)
+	# är det ingen backe han går i, hur mycket han än ser ut att gå. Utan den här
+	# regeln fanns ett spann mellan klättergränsen och benens gräns där han stod
+	# kvar på fötterna och gled nedför — mätt 93 bildrutor, alltså halvannan
+	# sekund, på en 42-gradersramp. Varken gående eller boll, precis som det såg ut.
+	if Settings.rb_gravity * absf(tangent().y) > Settings.walk_accel:
+		return true
 	return Settings.roll_speed > 0.0 and absf(ground_speed) > Settings.roll_speed
 
 ## Benen ut eller in. Hysteresen finns för att han annars skulle fladdra mellan

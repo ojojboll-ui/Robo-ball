@@ -20,23 +20,27 @@ bana ospelbar.
 
 | Lutning | Vad som händer |
 | --- | --- |
-| 0–40° | Går uppför hela vägen |
-| 41–42° | Står kvar på benen men glider bakåt — han orkar inte, men ger sig inte |
+| 0–42° | Går uppför hela vägen |
 | 43° och brantare | Benen åker in, han rullar |
 | Över 62° | Bollen tappar greppet och faller |
+
+Det fanns tidigare ett spann på 41–42° där han stod kvar på fötterna men gled
+bakåt: klättergränsen låg på 40 medan benen satt kvar till 43. Mätt 93 bildrutor
+i det läget på en 42-gradersramp — varken gående eller rullande. Två saker tog
+bort det. Gångaccelerationen är 980 i stället för 900, vilket lyfter
+klättergränsen till 44° så att det är benen som bestämmer. Och benen ger vika av
+sig själva så snart backen drar honom bakåt fortare än de kan driva honom framåt,
+vad reglagen än står på — så spannet kan inte uppstå igen.
 
 Klättergränsen är ingen inställning utan en följd av två andra:
 
     brantaste backen han orkar = asin(gångacceleration / gravitation)
 
-Med grundvärdena 900 och 1400 blir det 40,0° — och mätningen ger 40°, med 41°
-som första lutning där han börjar tappa mark. Ändrar man tempot flyttar sig
-alltså klättergränsen, och panelens *Rullning*-flik räknar om och skriver ut den
-under reglaget för benens gräns.
-
-Att benens gräns ligger strax **över** klättergränsen är poängen med 43: benen
-åker in ungefär när klättrandet ändå var kört. Med 38 försvann benen i backar
-han fortfarande kunde gå uppför.
+Med grundvärdena 980 och 1400 blir det 44,4°, alltså strax **över** benens gräns
+på 43. Det är med flit: då är det benen som sätter gränsen för var rullningen
+börjar, inte kraften, och det finns inget spann däremellan. Ändrar man tempot
+flyttar sig klättergränsen, och panelens *Rullning*-flik räknar om och skriver
+ut den under reglaget för benens gräns.
 
 ## Hoppet
 
