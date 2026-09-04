@@ -288,13 +288,15 @@ func _tab_objects() -> void:
 	_slider("Dukens bukt (styr in mot mitten)", 0.0, 0.6, 0.05, Settings.trampoline_curve,
 		func(v: float) -> void: Settings.trampoline_curve = v, "%.2f")
 
-	_section("Trapetser och lianer")
+	_section("Stänger och lianer")
 	_check("Haka fast av sig själv", Settings.swing_grab,
 		func(v: bool) -> void: Settings.swing_grab = v)
 	_slider("Hur nära greppet han måste komma", 30.0, 160.0, 5.0, Settings.swing_grab_radius,
 		func(v: float) -> void: Settings.swing_grab_radius = v, "%.0f px")
 	_slider("Hur fort svängen dör ut", 0.0, 1.0, 0.02, Settings.swing_damping,
 		func(v: float) -> void: Settings.swing_damping = v, "%.2f")
+	_check("Slow motion medan han hänger", Settings.hang_slowmo,
+		func(v: bool) -> void: Settings.hang_slowmo = v)
 
 func _tab_help() -> void:
 	_section("Styrning")

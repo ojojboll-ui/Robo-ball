@@ -25,7 +25,8 @@ func load_level(index: int) -> void:
 	for entry: Dictionary in data.get("swings", []):
 		var swing := Swing.new()
 		swing.length = float(entry.get("length", 190.0))
-		swing.trapeze = bool(entry.get("trapeze", true))
+		swing.kind = Swing.Kind.VINE if entry.get("kind", "bar") == "vine" else Swing.Kind.BAR
+		swing.out = float(entry.get("out", -1.0))
 		swing.angle = float(entry.get("angle", 0.0))
 		swing.position = entry["pos"]
 		add_child(swing)

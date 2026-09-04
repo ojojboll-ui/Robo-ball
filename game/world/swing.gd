@@ -1,28 +1,43 @@
 extends Node2D
 class_name Swing
-## Trapets och lian: en pendel man hakar fast i och släpper när man vill.
+## Två saker att hänga i: stången och lianen.
 ##
-## Pendeln räknas ut, inte animeras: vinkelaccelerationen är −(g/L)·sin θ, samma
-## uttryck som en pendel i verkligheten, och gravitationen är spelets egen. Alltså
-## svänger en lång lian långsammare än en kort trapets av sig själv, utan att
-## någon ställer in det, och tempoknapparna i panelen ändrar svängningstiden lika
-## mycket som de ändrar hoppet.
+## **Stången** sitter fast och sticker ut vågrätt ur en vägg, som en flaggstång
+## (konceptskiss 05). RB hakar benen över den och snurrar runt den. Eftersom han
+## hänger tätt intill blir radien liten och varvet snabbt: farten han kommer in
+## med är farten han far ut med, men riktningen är hans att välja. Stången är
+## alltså ingen fartkälla utan en *riktningsväxel* — den enda mekanik vi har där
+## ett tryck kan peka farten vart som helst utan att någon fart går förlorad.
 ##
-## Fastgreppet bevarar rörelsemängd: farten han kommer in med blir vinkelfart
-## längs banan, och när han släpper blir vinkelfarten fart igen, i den riktning
-## pendeln pekar just då. Det är det som gör trapetsen till spelets tydligaste
-## lektion i rörelsemängd — och den enda mekanik hittills där *när* man släpper
-## avgör allt, medan *att inte släppa* aldrig är fel: han svänger kvar.
+## **Lianen** hänger i en punkt och svänger själv. Där är repet långt, varvet
+## långsamt, och pendeln byter höjd mot fart som en pendel ska.
+##
+## Båda räknas ut, inte animeras: vinkelaccelerationen är −(g/r)·sin θ, samma
+## uttryck som en pendel i verkligheten, och gravitationen är spelets egen. En
+## lång lian svänger därför långsammare än en kort stång utan att någon ställer
+## in det, och tempoknapparna i panelen ändrar svängningstiden lika mycket som
+## de ändrar hoppet.
+##
+## Greppet bevarar rörelsemängd: farten längs banan följer med, resten tar
+## upphängningen. Ett tryck släpper, och farten följer med ut i luften. Att inte
+## släppa är alltid tillåtet — han hänger kvar.
+
+enum Kind { BAR, VINE }
 
 const REGRAB_DELAY := 0.5
-## Greppet ritas en bit ovanför den som hänger, så att han hänger *i* det och
-## inte sitter mitt i det. Fysiken räknar fortfarande på hela längden.
+## Hur långt under stången han hänger när benen är hakade över den. Kroppen är
+## 70 px hög, så ungefär en kroppslängd — och radien avgör varvtiden: med 34 px
+## snurrade han 2,3 varv i sekunden vid ett snabbt grepp, vilket varken går att
+## läsa eller att träffa rätt i.
+const BAR_HOLD := 60.0
+## Greppet ritas en bit ovanför den som hänger, så att han hänger *i* det.
 const HOLD_ABOVE := 20.0
 
-## Avståndet från upphängningen ner till greppet.
-var length := 190.0
-## Trapets: en styv pinne man hakar benen över. Lian: ett mjukt rep som hänger.
-var trapeze := true
+var kind := Kind.BAR
+## Stången: hur långt ut ur väggen den sticker. Lianen: repets längd.
+var length := 120.0
+## Åt vilket håll stången sticker ut från sitt fäste. −1 = åt vänster.
+var out := -1.0
 var angle := 0.0        ## radianer från rakt ner, positivt åt höger
 var omega := 0.0        ## vinkelfart, radianer per sekund
 var rider: Node2D = null
@@ -35,63 +50,110 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if _cooldown > 0.0:
 		_cooldown -= delta
-	# Pendelekvationen. Att den gäller lika för tom och lastad pendel är inte
-	# en förenkling: en pendels svängningstid beror inte på massan.
-	omega += -(Settings.rb_gravity / length) * sin(angle) * delta
-	omega -= omega * Settings.swing_damping * delta
-	angle += omega * delta
+	# En fast stång rör sig inte av sig själv; bara den som hänger i den gör det.
+	if kind == Kind.VINE or rider != null:
+		omega += -(Settings.rb_gravity / radius()) * sin(angle) * delta
+		omega -= omega * Settings.swing_damping * delta
+		angle += omega * delta
 	if rider != null:
-		rider.global_position = grip()
-		rider.velocity = tangent() * omega * length
+		rider.global_position = seat()
+		rider.velocity = tangent() * omega * radius()
 	queue_redraw()
 
-func grip() -> Vector2:
-	return global_position + Vector2(sin(angle), cos(angle)) * length
+## Punkten han svänger runt.
+func pivot() -> Vector2:
+	return global_position + (Vector2(out * length, 0.0) if kind == Kind.BAR else Vector2.ZERO)
 
-## Riktningen han far iväg i om han släpper nu: vinkelrätt mot repet.
+## Avståndet från upphängningen ut till honom.
+func radius() -> float:
+	return BAR_HOLD if kind == Kind.BAR else length
+
+## Där han sitter just nu.
+func seat() -> Vector2:
+	return pivot() + Vector2(sin(angle), cos(angle)) * radius()
+
+## Var man får tag: stången griper man var man än når den, lianen i dess ände.
+func grip() -> Vector2:
+	return pivot() if kind == Kind.BAR else seat()
+
+## Riktningen han far iväg i om han släpper nu: vinkelrätt mot armen.
 func tangent() -> Vector2:
 	return Vector2(cos(angle), -sin(angle))
 
 ## Hur nära greppet han måste komma. Det är ett tillgänglighetsvärde lika mycket
-## som ett fysikvärde: den som inte kan styra i luften ska ändå få tag i trapetsen,
-## och en radie i storleksordningen hans egen kropp är skillnaden mellan en mekanik
-## som går att använda och en som bara ser bra ut.
+## som ett fysikvärde: den som inte kan styra i luften ska ändå få tag i stången,
+## och en radie i storleksordningen hans egen kropp är skillnaden mellan en
+## mekanik som går att använda och en som bara ser bra ut.
 static func grab_radius() -> float:
 	return Settings.swing_grab_radius
 
 func can_grab() -> bool:
 	return rider == null and _cooldown <= 0.0
 
-## Greppet bevarar rörelsemängden: bara farten längs banan får följa med, resten
-## tar upphängningen. Det är därför ett grepp i botten av svängen ger mest.
+## De två greppen skiljer sig, och skillnaden är hela poängen med att ha båda.
+##
+## **Lianen** är ett rep som redan hänger där det hänger. Han får det grepp
+## geometrin ger honom: bara farten längs banan följer med, resten tar
+## upphängningen. Kommer han in i repets riktning tappar han nästan allt, kommer
+## han in tvärs igenom botten av svängen behåller han allt.
+##
+## **Stången** hakar han benen över, och han hakar den på den sida han passerar.
+## Alltså sätter han sig själv där farten redan pekar rätt — vinkelrätt mot
+## stången — och behåller den. Stången blir en riktningsväxel: lika mycket fart
+## ut som in, men riktningen bestämmer han genom att välja när han släpper.
+## Att den alltid bevarar farten är ett designval, inte en fysikalisk självklarhet:
+## en stel länk hade kastat bort den del av rörelsen som pekar rakt in i fästet,
+## och mätt blev det 8 % kvar av en rak inflygning. En mekanik som straffar den
+## som träffar för rakt hör inte hemma i det här spelet.
 func grab(body: Node2D) -> void:
 	rider = body
-	omega = body.velocity.dot(tangent()) / length
-	body.global_position = grip()
+	if kind == Kind.BAR:
+		angle = _hook_angle(body.velocity)
+	else:
+		angle = _angle_of(body.global_position)
+	omega = body.velocity.dot(tangent()) / radius()
+	body.global_position = seat()
+
+## Var runt stången benen hakar fast: vinkelrätt mot farten, på den sida som
+## hamnar närmast rakt under. Då är hela farten redan tangentiell.
+func _hook_angle(v: Vector2) -> float:
+	if v.length() < 1.0:
+		return 0.0
+	var d := v.normalized()
+	var a := Vector2(-d.y, d.x)
+	var b := Vector2(d.y, -d.x)
+	var pick := a if a.y > b.y else b
+	return atan2(pick.x, pick.y)
 
 func release() -> Vector2:
-	var out := tangent() * omega * length
+	var out_velocity := tangent() * omega * radius()
 	rider = null
 	_cooldown = REGRAB_DELAY
-	return out
+	return out_velocity
+
+## Vinkeln från upphängningen ner till en punkt, mätt från rakt ner.
+func _angle_of(point: Vector2) -> float:
+	var offset := point - pivot()
+	if offset.length() < 0.001:
+		return angle
+	return atan2(offset.x, offset.y)
 
 func _draw() -> void:
-	var g := grip() - global_position
-	var hold := g - Vector2(sin(angle), cos(angle)) * HOLD_ABOVE
-	if trapeze:
-		draw_line(Vector2.ZERO, hold, Palette.GROUND_EDGE, 4.0)
-		# Själva pinnen, vinkelrätt mot repet.
-		var across := tangent() * 30.0
-		draw_line(hold - across, hold + across, Palette.GROUND_EDGE, 7.0)
+	var p := pivot() - global_position
+	if kind == Kind.BAR:
+		# Fästet i väggen och själva stången ut ur den.
+		draw_line(Vector2(0.0, -13.0), Vector2(0.0, 13.0), Palette.GROUND_EDGE, 9.0)
+		draw_line(Vector2.ZERO, p, Palette.GROUND_EDGE, 8.0)
+		draw_circle(p, 7.0, Palette.GROUND_EDGE)
 	else:
-		# Lianen ritas som en kedja korta segment som hänger efter i svängen, så
-		# att den ser mjuk ut. Den räknas fortfarande som en styv pendel — det
-		# syns bara på repet, inte på fysiken.
+		# Lianen ritas som korta segment som hänger efter i svängen, så att den
+		# ser mjuk ut. Den räknas fortfarande som en styv pendel — det syns bara
+		# på repet, inte på fysiken.
+		var reach := radius() - HOLD_ABOVE
 		var points := PackedVector2Array()
-		var reach := length - HOLD_ABOVE
 		for i in 9:
 			var t := float(i) / 8.0
 			var a := angle * (0.35 + 0.65 * t)
 			points.append(Vector2(sin(a), cos(a)) * (reach * t))
 		draw_polyline(points, Palette.GROUND_EDGE, 5.0)
-	draw_circle(Vector2.ZERO, 7.0, Palette.GROUND_EDGE)
+		draw_circle(Vector2.ZERO, 7.0, Palette.GROUND_EDGE)

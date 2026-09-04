@@ -113,9 +113,12 @@ Uppmätt i banan, med grundvärdena:
 | Studsmatta, studstal 1,0 | 300 px fall ger 290, 290, 286 px tillbaka |
 | Studsmatta utan bukt | RB vandrar av duken efter tre studsar (700 → 878 px) |
 | Studsmatta med bukt 0,25 | håller sig kvar på duken, pendlar 626–768 px |
-| Trapets, L = 200 px | svängningstid 2,4 s |
-| Lian, L = 330 px | svängningstid 3,1 s |
-| Grepp | bevarar farten längs banan; i ett brant infall blev 971 px/s till 541 (56 %) |
+| Stång, radie 60 px | behåller 100 % av farten in i greppet, oavsett infallsvinkel |
+| Lian, L = 330 px | 100 % rakt genom botten av svängen, 79 % (63 % av energin) snett in |
+| Lian, svängningstid | 3,1 s |
+| Fånga en stång med hopp rakt upp | lyckas från tre startpunkter under den, greppet efter 8–14 bildrutor |
+| Gå ut på en matta | 110 bildrutor av 260 på duken — förut vände han vid dess kant och nådde den aldrig |
+| Falla 300 px ner på en matta | tillbaka till samma höjd |
 
 Svängningstiden är 2π√(L/g) och kommer alltså ur längden, inte ur en inställning:
 ändrar man tempot i panelen ändras pendlarna lika mycket som hoppet.

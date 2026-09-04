@@ -257,14 +257,22 @@ Banan där mekaniker provas. Just nu står tre stationer där:
   gång: ingen energi skapas, ingen försvinner. Det här är fortfarande den enda mekanik
   vi hittat som *köper tid utan att stanna världen* — rytmen upprepar sig och väntar in
   spelaren, utan att någon räknar ner.
-* **Trapetsen.** En pendel man hakar fast i av sig själv och släpper med ett tryck.
-  Greppet bevarar rörelsemängd: bara farten längs banan följer med, resten tar
-  upphängningen — därför ger ett grepp i botten av svängen mest. Det är spelets
-  tydligaste lektion i rörelsemängd, och den enda mekanik hittills där *när* man
-  släpper avgör allt medan *att inte släppa* aldrig är fel: han svänger kvar.
-* **Lianen.** Samma pendel, dubbelt så lång, alltså märkbart långsammare — svängningstiden
-  är 2π√(L/g) och räknas inte fram av någon inställning utan av längden. En trapets på
-  200 px svänger på 2,4 s, en lian på 330 px på 3,1 s.
+* **Stången.** Sitter fast och sticker ut vågrätt ur en vägg, som en flaggstång
+  (konceptskiss 05). RB hakar benen över den och hänger upp och ner. Han hakar den på
+  den sida han passerar, alltså behåller han hela farten — stången är ingen fartkälla
+  utan en **riktningsväxel**, den enda mekanik vi har där ett tryck kan peka farten vart
+  som helst utan att något går förlorat. Det är också den enda mekanik hittills där
+  *när* man släpper avgör allt medan *att inte släppa* aldrig är fel: han hänger kvar.
+* **Lianen.** Ett rep som hänger och svänger själv. Där får han det grepp geometrin ger:
+  bara farten längs banan följer med, resten tar upphängningen — 100 % genom botten av
+  svängen, 79 % snett in. Svängningstiden är 2π√(L/g) och räknas inte fram av någon
+  inställning utan av längden.
+* **Banan medan han hänger.** Samma prickade kurva som vid sikte ritas medan han
+  hänger, men den kommer ur svängens fart i stället för ur hoppkraften — den blir
+  längre ju fortare han svänger och vrider sig hela varvet runt. Det är den tydligaste
+  bild vi kan ge av rörelsemängd: kurvan *är* farten, ritad. Världen går dessutom i
+  slow motion medan han hänger, av samma skäl som vid sikte: en stång kan snurra fort,
+  och spelet får inte ha tidspress man inte kan ställa in.
 
 Dubbelhoppet är värt en anmärkning, eftersom det är just den sortens förmåga som brukar
 kräva en extra knapp i andra spel. Här gör den inte det: i luften betyder ett tryck

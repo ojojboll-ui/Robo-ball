@@ -100,6 +100,7 @@ var trampoline_curve := 0.25   ## radianer, hur mycket duken buktar och styr in 
 var swing_damping := 0.12      ## hur fort en trapets eller lian tappar sin sväng
 var swing_grab := true         ## hakar fast av sig själv när han far förbi
 var swing_grab_radius := 70.0  ## px, hur nära greppet han måste komma
+var hang_slowmo := true        ## sakta ner världen medan han hänger, så släppet blir ett val
 var level_index := 0
 var panel_tab := 0            ## vilken flik i inställningspanelen som var öppen
 
@@ -161,6 +162,7 @@ func as_dict() -> Dictionary:
 		"swing_damping": swing_damping,
 		"swing_grab": swing_grab,
 		"swing_grab_radius": swing_grab_radius,
+		"hang_slowmo": hang_slowmo,
 		"level_index": level_index,
 		"panel_tab": panel_tab,
 	}
@@ -210,6 +212,7 @@ func apply(data: Dictionary) -> void:
 	swing_damping = float(data.get("swing_damping", swing_damping))
 	swing_grab = bool(data.get("swing_grab", swing_grab))
 	swing_grab_radius = float(data.get("swing_grab_radius", swing_grab_radius))
+	hang_slowmo = bool(data.get("hang_slowmo", hang_slowmo))
 	level_index = int(data.get("level_index", level_index))
 	panel_tab = int(data.get("panel_tab", panel_tab))
 	changed.emit()

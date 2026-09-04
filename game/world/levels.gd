@@ -216,60 +216,67 @@ static func _roll_test() -> Dictionary:
 ## känna på en mekanik i spelets riktiga fysik innan någon bestämmer sig — det är
 ## billigare att bygga en station här än att argumentera om den (docs/DECISIONS.md 20).
 ##
-## Stationerna står i ordning efter vad de lär ut: studs, sedan rörelsemängd i en
-## sväng, sedan en lång lian där svängningstiden märks, och sist en kedja där de
-## tre måste kombineras.
+## Två saker styr formen. Studsmattorna ligger *infällda i marken*, för en matta
+## som svävar ovanför den blir bara en kant att vända vid. Och stängerna sitter
+## fast och sticker ut ur hängande pelare, som i konceptskiss 05 — pelarna hänger
+## uppifrån och slutar en bra bit över marken, så att gången under är fri.
 static func _workshop() -> Dictionary:
 	var right := 5200.0
-	var trampolines: Array = []
+	var mats := [
+		{"pos": Vector2(700, GROUND_Y), "width": 240.0},    ## hoppa ner på den
+		{"pos": Vector2(1420, GROUND_Y), "width": 280.0},   ## under avsatsen
+		{"pos": Vector2(4300, GROUND_Y), "width": 240.0},   ## kedjans första led
+	]
+
+	# Golvet delas upp så att mattornas dukar blir marken där de ligger.
+	var floors: Array = []
+	var edge := -60.0
+	for mat: Dictionary in mats:
+		var pos: Vector2 = mat["pos"]
+		var half: float = float(mat["width"]) * 0.5
+		floors.append(Rect2(edge, GROUND_Y, pos.x - half - edge, 320))
+		edge = pos.x + half
+	floors.append(Rect2(edge, GROUND_Y, right - edge, 320))
+
+	# Trappan upp till avsatsen, så att man alltid kan ta sig upp igen.
+	floors.append(Rect2(900, 520, 130, 22))
+	floors.append(Rect2(1080, 430, 130, 22))
+	floors.append(Rect2(1300, 350, 240, 24))
+
+	# Avsats att landa på efter stängerna, och målet efter lianerna.
+	floors.append(Rect2(2650, 430, 240, 24))
+	floors.append(Rect2(4020, 360, 240, 24))
+
+	# Hängande pelare: de slutar 170 px över marken, så gången under är fri.
+	var pillars := [1980.0, 2480.0, 4640.0]
+	var walls: Array = [Rect2(-120, 240, 60, 400), Rect2(right, 180, 60, 460)]
+	for x: float in pillars:
+		walls.append(Rect2(x, 120, 44, 350))
+
 	var swings: Array = []
-
-	# 1. Studsmattorna. Den första på plan mark att bara studsa på, den andra
-	#    nedanför en avsats så att fallhöjden syns i studsen.
-	trampolines.append({"pos": Vector2(700, GROUND_Y - 46.0), "width": 240.0})
-	trampolines.append({"pos": Vector2(1180, GROUND_Y - 46.0), "width": 200.0})
-
-	# 2. Trapetserna. Två i rad, den andra längre bort än ett hopp räcker: den
-	#    når man bara med farten från den första.
-	swings.append({"pos": Vector2(1900, 190), "length": 200.0, "trapeze": true, "angle": -0.5})
-	swings.append({"pos": Vector2(2360, 190), "length": 200.0, "trapeze": true, "angle": 0.35})
-
-	# 3. Lianerna. Dubbelt så långa, alltså märkbart långsammare — samma pendel,
-	#    annan takt. De hänger stilla tills någon hakar i dem.
+	# Stängerna sticker ut åt vänster ur sina pelare, mot den som kommer därifrån.
+	# 185 px över marken: precis inom räckhåll för ett hopp rakt upp.
+	for x: float in pillars:
+		swings.append({"pos": Vector2(x, 455), "length": 120.0, "kind": "bar", "out": -1.0})
+	# Lianerna: nästan tre gånger så långa, alltså märkbart långsammare.
 	for i in 3:
-		swings.append({"pos": Vector2(2950.0 + i * 420.0, 120), "length": 330.0,
-			"trapeze": false, "angle": 0.0})
-
-	# 4. Kedjan: studsmatta upp i en trapets, trapets vidare till en lian.
-	trampolines.append({"pos": Vector2(4380, GROUND_Y - 46.0), "width": 200.0})
-	swings.append({"pos": Vector2(4700, 150), "length": 260.0, "trapeze": true, "angle": 0.0})
+		swings.append({"pos": Vector2(2950.0 + i * 420.0, 130), "length": 330.0,
+			"kind": "vine", "angle": 0.0})
 
 	return {
 		"name": "Verkstaden",
 		"right_edge": right,
-		"floors": [
-			Rect2(-60, GROUND_Y, right + 60.0, 320),
-			# Avsatsen som den andra studsmattan ligger under.
-			Rect2(1020, 380, 320, 26),
-			# Avsats att landa på efter trapetserna.
-			Rect2(2560, 430, 260, 26),
-			# Målet efter lianerna.
-			Rect2(4060, 360, 240, 26),
-		],
-		"walls": [Rect2(-120, 240, 60, 400), Rect2(right, 180, 60, 460)],
-		"ramps": [
-			# En liten ramp upp till den höga avsatsen, så att man kan ta sig
-			# tillbaka utan att kunna hoppa — aldrig en återvändsgränd.
-			ramp(880.0, 200.0, 26.0),
-		],
+		"floors": floors,
+		"walls": walls,
+		"ramps": [],
 		"crates": [],
-		"trampolines": trampolines,
+		"trampolines": mats,
 		"swings": swings,
 		"spawns": [
-			{"name": "Studsmattan", "pos": Vector2(560, GROUND_Y - 60)},
-			{"name": "Från avsatsen", "pos": Vector2(1100, 320)},
-			{"name": "Trapetserna", "pos": Vector2(1700, GROUND_Y - 60)},
+			{"name": "Mattan", "pos": Vector2(360, GROUND_Y - 60)},
+			{"name": "Avsatsen", "pos": Vector2(1400, 300)},
+			{"name": "Stängerna", "pos": Vector2(1800, GROUND_Y - 60)},
 			{"name": "Lianerna", "pos": Vector2(2800, GROUND_Y - 60)},
-			{"name": "Kedjan", "pos": Vector2(4200, GROUND_Y - 60)},
+			{"name": "Kedjan", "pos": Vector2(4150, GROUND_Y - 60)},
 		],
 	}

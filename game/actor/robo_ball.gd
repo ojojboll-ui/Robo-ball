@@ -115,6 +115,14 @@ func _physics_process(delta: float) -> void:
 func _update_legs(delta: float) -> void:
 	var grounded := state == State.WALK or state == State.AIM
 	_smooth_normal = _smooth_normal.lerp(ground_normal, minf(1.0, delta * 14.0)).normalized()
+	if state == State.HANG and _swing != null:
+		# Hängande är kroppens "upp" riktad bort från greppet — han hänger upp
+		# och ner i benen, som i konceptskiss 05.
+		var down := global_position - _swing.grip()
+		if down.length() > 0.001:
+			_smooth_normal = _smooth_normal.lerp(down.normalized(), minf(1.0, delta * 14.0)).normalized()
+		_legs.hang(self, _swing.grip(), delta)
+		return
 	if _stance < 0.08:
 		# Helt indragna — då finns inget att simulera, och kroppen sitter åter
 		# fast i bollen eftersom det *är* bollen som rullar.
@@ -523,7 +531,12 @@ func _set_state(next: State) -> void:
 	if state == State.ROLL and next != State.ROLL:
 		_legs.reset(self, _smooth_normal)
 	state = next
-	WorldClock.set_slowmo(state == State.AIM)
+	# Världen saktas också ner medan han hänger. En stång kan snurra fort — det
+	# är fysik och ska få vara det — men då blir släppet en reflexövning, och
+	# spelet får inte ha tidspress man inte kan ställa in (docs/ACCESSIBILITY.md).
+	# Slow motion är samma parameter som vid sikte, och går att stänga av.
+	WorldClock.set_slowmo(state == State.AIM
+		or (state == State.HANG and Settings.hang_slowmo))
 	state_changed.emit(state)
 
 ## Vill han vara boll just nu? Rullande alltid — men också på väg ner mot en yta
@@ -531,7 +544,7 @@ func _set_state(next: State) -> void:
 ## fötterna och tappar farten innan rullningen hinner börja; ser han backen
 ## komma hinner han vika ihop sig och anländer som den boll backen kräver.
 func _wants_ball() -> bool:
-	if state == State.ROLL or state == State.HANG:
+	if state == State.ROLL:
 		return true
 	if state != State.AIR or not Settings.auto_roll:
 		return false
@@ -665,8 +678,14 @@ func _push_things(strength: float) -> void:
 ## och därför auto-siktet kan välja åt spelaren.
 func simulate(angle_deg: float, steps: int = SIM_STEPS) -> Dictionary:
 	var a := deg_to_rad(angle_deg)
+	return simulate_from(Vector2(cos(a), -sin(a)) * Settings.jump_power, steps)
+
+## Samma kastbana, men från en fart man redan har i stället för från en vinkel.
+## Det är den som ritas medan han hänger: banan där kommer inte ur hoppkraften
+## utan ur svängens fart, och ändras därför hela tiden medan han svänger.
+func simulate_from(start_velocity: Vector2, steps: int = SIM_STEPS) -> Dictionary:
 	var pos := global_position
-	var vel := Vector2(cos(a), -sin(a)) * Settings.jump_power
+	var vel := start_velocity
 	var points := PackedVector2Array()
 	var space := get_world_2d().direct_space_state
 	for i in steps:
@@ -706,6 +725,8 @@ func _pick_best_angle() -> float:
 func _draw() -> void:
 	if state == State.AIM:
 		_draw_aim()
+	elif state == State.HANG:
+		_draw_release_arc()
 	if _stance < 0.08:
 		_draw_rolling()
 	else:
@@ -729,6 +750,33 @@ func _draw_aim() -> void:
 				continue
 			var fade := 1.0 - float(i) / float(maxi(pts.size(), 1))
 			draw_circle(to_local(pts[i]), 3.0, Color(Palette.PINK, 0.15 + 0.55 * fade))
+
+## Banan han far i om han släpper nu.
+##
+## Samma prickade linje som vid sikte, men den kommer inte ur hoppkraften utan
+## ur svängens egen fart — den blir alltså längre ju fortare han svänger och
+## vrider sig runt hela varvet medan han hänger. Det är den tydligaste bild vi
+## kan ge av rörelsemängd: kurvan *är* farten han har, ritad.
+func _draw_release_arc() -> void:
+	if not Settings.trajectory_preview or _swing == null:
+		return
+	var release := _swing.tangent() * _swing.omega * _swing.radius()
+	if release.length() < 20.0:
+		return
+	var sim := simulate_from(release)
+	var pts: PackedVector2Array = sim["points"]
+	for i in pts.size():
+		if i % 3 != 0:
+			continue
+		var fade := 1.0 - float(i) / float(maxi(pts.size(), 1))
+		draw_circle(to_local(pts[i]), 3.0, Color(Palette.PINK, 0.15 + 0.55 * fade))
+	# En liten pil i släpprikningen, så att man ser åt vilket håll det bär av.
+	var dir := release.normalized()
+	var tip := dir * 44.0
+	draw_line(Vector2.ZERO, tip, Palette.PINK, 4.0, true)
+	var back := tip - dir * 12.0
+	var side := dir.orthogonal() * 7.0
+	draw_colored_polygon(PackedVector2Array([tip, back + side, back - side]), Palette.PINK)
 
 ## Indragna ben: kroppen sjunker ner ett helt radieavstånd och blir den boll han
 ## var innan han hittade benen. Rotationen är härledd ur farten, inte animerad —

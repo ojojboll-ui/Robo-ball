@@ -56,7 +56,7 @@ bläddra igenom mitt i ett speltest:
 | Sikte | Pilens hastighet, slow motion, vinkelsteg, bågens gränser, hoppkraft, gravitation, tempoknapparna och extra hopp i luften |
 | Rörelse | Gångfart och acceleration, markfäste, hur mycket fart som följer med i landningen, studs mot väggar, knuffkraft, benens fjädring |
 | Rullning | När benen åker in (lutning, benens högsta takt och absolut fart) med uträknad klättergräns under, indragningstakt, förbli boll i luften, förberedd rullning i luften, rullmotstånd |
-| Föremål | Lådornas tyngd, tålighet, friktion, studsighet och gravitation, effekter, studsmattornas studs och bukt, samt trapetsernas grepp och dämpning |
+| Föremål | Lådornas tyngd, tålighet, friktion, studsighet och gravitation, effekter, studsmattornas studs och bukt, samt stängernas och lianernas grepp, dämpning och slow motion |
 | Hjälp | Styrningsvariant, förhandsbana, kantskydd, spelhastighet, dubbeltrycksfilter, timeout |
 | Bana | Banval, börja om, snabbresa och återställning av alla inställningar |
 
@@ -87,15 +87,28 @@ grader där man ser exakt var han slutar orka, var benen åker in och var fäste
 pendlar och rullmotståndet blir synligt; en puckelbana; och en avsats för en lång
 utrullning som slutar i en lådstapel.
 
-**Verkstaden.** Banan där nya mekaniker provas innan någon bestämmer sig för om de ska
-vara med (docs/DECISIONS.md 20). Två studsmattor — en på plan mark, en under en avsats
-så att fallhöjden syns i studsen — sedan två trapetser i rad där den andra bara går att
-nå med farten från den första, tre lianer som är dubbelt så långa och därför svänger
-märkbart långsammare, och sist en kedja där alla tre måste kombineras.
+**Verkstaden.** Banan där nya mekaniker provas innan någon bestämmer sig för om de
+ska vara med (docs/DECISIONS.md 20). Tre studsmattor infällda i marken — man går rakt
+ut på dem, och de studsar när man landar på dem uppifrån. En trappa upp till en avsats
+med en matta under, så att man kan gå av kanten och studsa tillbaka upp. Tre hängande
+pelare med fasta stänger som sticker ut vågrätt, 185 px över marken: precis inom
+räckhåll för ett hopp rakt upp. Och tre lianer, nästan tre gånger så långa som
+stängerna och därför märkbart långsammare.
 
-RB hakar fast i en trapets av sig själv när han far förbi, och ett tryck släpper: farten
-han har i svängen följer med ut i luften. Att inte trycka är alltid tillåtet — han
-svänger kvar.
+RB hakar fast av sig själv när han far förbi, och hänger då **i benen, upp och ner** —
+samma ben, samma IK och samma ritning som när han går, bara med fötterna satta i
+greppet och kroppens upp vänd åt andra hållet. Ett tryck släpper, och farten han har i
+svängen följer med ut i luften. Medan han hänger ritas **banan han skulle få om han
+släppte nu**, som ändrar sig hela tiden medan han svänger — den prickade kurvan *är*
+farten han har, ritad. Att inte trycka är alltid tillåtet: han hänger kvar, och världen
+går i slow motion så länge han gör det.
+
+Skillnaden mellan de två greppen är hela poängen med att ha båda:
+
+| | vad greppet gör med farten |
+| --- | --- |
+| **Stången** sitter fast och hakas med benen på den sida han passerar | behåller allt — en riktningsväxel, lika mycket fart ut som in |
+| **Lianen** hänger där den hänger och han får det grepp geometrin ger | behåller farten längs banan: 100 % genom botten av svängen, 79 % snett in |
 
 Snabbresa mellan stationerna finns i panelens *Bana*-flik och byggs om när banan byts.
 

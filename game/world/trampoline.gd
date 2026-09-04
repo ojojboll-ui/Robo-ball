@@ -11,16 +11,20 @@ class_name Trampoline
 ## skapas och ingen försvinner. Lägre tal låter rytmen dö ut, vilket är den
 ## ärliga fysiken för en riktig duk utan någon som pumpar i den.
 
-const THICKNESS := 14.0
+## Duken ligger i markens nivå och mattan fyller hålet i golvet under den, så
+## att man kan gå rakt ut på den. Låg den ovanför marken blev dess kant en vägg
+## som RB vände vid — han nådde aldrig fram till att studsa på den.
+const DEPTH := 320.0
 
 var width := 220.0
 var _flex := 0.0        ## hur djupt duken är nedtryckt just nu, bara för ritning
 
 func _ready() -> void:
 	var rect := RectangleShape2D.new()
-	rect.size = Vector2(width, THICKNESS)
+	rect.size = Vector2(width, DEPTH)
 	var shape := CollisionShape2D.new()
 	shape.shape = rect
+	shape.position = Vector2(0.0, DEPTH * 0.5)
 	add_child(shape)
 
 func _process(delta: float) -> void:
@@ -50,11 +54,14 @@ func bounce(body: Node2D, impact: Vector2, normal: Vector2) -> bool:
 
 func _draw() -> void:
 	var half := width * 0.5
+	# Mattan är en del av marken där den ligger, så den fyller golvets hela
+	# tjocklek — annars gapar ett hål under duken.
+	draw_rect(Rect2(-half, 0.0, width, DEPTH), Palette.GROUND)
 	var left := Vector2(-half, 0.0)
 	var right := Vector2(half, 0.0)
-	# Benen under duken.
-	draw_line(left, left + Vector2(14.0, 46.0), Palette.GROUND_EDGE, 5.0)
-	draw_line(right, right + Vector2(-14.0, 46.0), Palette.GROUND_EDGE, 5.0)
+	# Ramen på var sida, nere i marken.
+	draw_line(left, left + Vector2(0.0, 22.0), Palette.GROUND_EDGE, 6.0)
+	draw_line(right, right + Vector2(0.0, 22.0), Palette.GROUND_EDGE, 6.0)
 	# Duken, nedtryckt så mycket som senaste studsen svarade mot.
 	# Duken ritas som den skål den är: mitten hänger alltid något lägre än kanten.
 	var mid := Vector2(0.0, _flex + width * 0.5 * sin(Settings.trampoline_curve) * 0.5)

@@ -208,6 +208,29 @@ func _dangle(normal: Vector2, delta: float) -> void:
 		step_t[i] = 1.0
 		step_to[i] = feet[i]
 
+## Hängande: benen hakas över stången eller lianen och kroppen hänger under.
+##
+## Det är samma ben, samma IK och samma ritning som när han går — bara med
+## fötterna satta i greppet i stället för på marken, och med kroppens "upp"
+## vänd åt andra hållet. Att han hänger upp och ner faller alltså ut av
+## geometrin, ingenting animeras.
+func hang(rb: Node2D, grip: Vector2, delta: float) -> void:
+	body_point = rb.global_position
+	var up := (rb.global_position - grip)
+	if up.length() < 0.001:
+		up = Vector2.DOWN
+	up = up.normalized()
+	var across := Vector2(-up.y, up.x)
+	for i in 2:
+		# Fötterna sitter på var sin sida om stången, som när man hakar knäna
+		# över en gren.
+		var target := grip + across * (i * 2.0 - 1.0) * (HIP_SPREAD + 3.0)
+		feet[i] = (feet[i] as Vector2).lerp(target, minf(1.0, delta * 22.0))
+		planted[i] = true
+		step_t[i] = 1.0
+		step_to[i] = feet[i]
+		step_from[i] = feet[i]
+
 # ---------------------------------------------------------------- kroppen
 
 ## Fjädringen. Kroppen dras mot en punkt ovanför fötterna i stället för att sitta
