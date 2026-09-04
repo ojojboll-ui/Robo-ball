@@ -117,7 +117,10 @@ func _physics_process(delta: float) -> void:
 func _update_legs(delta: float) -> void:
 	var grounded := state == State.WALK or state == State.AIM
 	_smooth_normal = _smooth_normal.lerp(ground_normal, minf(1.0, delta * 14.0)).normalized()
-	if state == State.HANG and _swing != null:
+	# Hänger han kvar i något gäller hängställningen även medan han siktar. Förut
+	# reste han sig mitt i luften i samma stund han tryckte, som om han glömt att
+	# det var benen han hängde i.
+	if _swing != null and (state == State.HANG or state == State.AIM):
 		# Hängande är kroppens "upp" riktad bort från greppet — han hänger upp
 		# och ner i benen, som i konceptskiss 05.
 		var down := global_position - _swing.grip()
@@ -859,7 +862,8 @@ func _draw_rolling() -> void:
 
 func _draw_standing() -> void:
 	var normal := _smooth_normal
-	var crouch := state == State.AIM
+	# Huksittningen hör till marken. Hängande finns det inget att huka mot.
+	var crouch := state == State.AIM and _swing == null
 	var squash := 0.86 if crouch else 1.0
 	var body := to_local(_legs.body_point)
 	if crouch:

@@ -29,7 +29,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if _flex > 0.0:
-		_flex = maxf(0.0, _flex - delta * 260.0)
+		_flex = maxf(0.0, _flex - delta * 700.0)
 		queue_redraw()
 
 ## Vänder farten in i duken. Returnerar sant om studsen faktiskt blev av — en
@@ -38,7 +38,10 @@ func bounce(body: Node2D, impact: Vector2, normal: Vector2) -> bool:
 	var into := -impact.dot(normal)
 	if into < 40.0:
 		return false
-	_flex = minf(40.0, into * 0.06)
+	# Eftergiften ritas grund och kort. Den var förut både djup och långsam, och
+	# eftersom studsen sker på en enda bildruta hann han lämna duken långt innan
+	# den kommit tillbaka — då såg det ut som om han landat en bit ovanför den.
+	_flex = minf(12.0, into * 0.018)
 	queue_redraw()
 	# En duk är inte plan utan spänd till en skål, och det är därför man studsar
 	# tillbaka mot mitten i stället för att vandra av kanten. Normalen lutar
@@ -63,8 +66,12 @@ func _draw() -> void:
 	draw_line(left, left + Vector2(0.0, 22.0), Palette.GROUND_EDGE, 6.0)
 	draw_line(right, right + Vector2(0.0, 22.0), Palette.GROUND_EDGE, 6.0)
 	# Duken, nedtryckt så mycket som senaste studsen svarade mot.
-	# Duken ritas som den skål den är: mitten hänger alltid något lägre än kanten.
-	var mid := Vector2(0.0, _flex + width * 0.5 * sin(Settings.trampoline_curve) * 0.5)
+	# Duken ritas rakt över den linje han faktiskt landar på. Den ritades förut som
+	# en skål med mitten hängande långt under, och då landade han synbart i luften
+	# ovanför den — bukten finns i normalen, inte i geometrin, och får inte ritas
+	# som om den vore geometri. Djupet nedan är bara det duken ger efter vid en
+	# studs, och det försvinner igen.
+	var mid := Vector2(0.0, _flex)
 	var curve := PackedVector2Array()
 	for i in 13:
 		var t := float(i) / 12.0
