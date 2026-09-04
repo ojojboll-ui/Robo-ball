@@ -83,6 +83,14 @@ var roll_speed := 0.0
 var auto_roll := true          ## dra in benen automatiskt i branta lutningar
 var keep_ball_airborne := true ## är han boll när han lämnar marken förblir han boll
 var crest_release := true      ## släpper underlaget på krön där farten inte kan följa det
+
+# Verkstadens mekaniker. Allt här är under prövning — vilka som blir kvar i v1
+# är medvetet inte bestämt (docs/DECISIONS.md 20).
+var trampoline_bounce := 1.0   ## 1.0 = studsar tillbaka lika högt, lägre dör ut
+var trampoline_curve := 0.25   ## radianer, hur mycket duken buktar och styr in mot mitten
+var swing_damping := 0.12      ## hur fort en trapets eller lian tappar sin sväng
+var swing_grab := true         ## hakar fast av sig själv när han far förbi
+var swing_grab_radius := 70.0  ## px, hur nära greppet han måste komma
 var level_index := 0
 var panel_tab := 0            ## vilken flik i inställningspanelen som var öppen
 
@@ -138,6 +146,11 @@ func as_dict() -> Dictionary:
 		"auto_roll": auto_roll,
 		"keep_ball_airborne": keep_ball_airborne,
 		"crest_release": crest_release,
+		"trampoline_bounce": trampoline_bounce,
+		"trampoline_curve": trampoline_curve,
+		"swing_damping": swing_damping,
+		"swing_grab": swing_grab,
+		"swing_grab_radius": swing_grab_radius,
 		"level_index": level_index,
 		"panel_tab": panel_tab,
 	}
@@ -181,6 +194,11 @@ func apply(data: Dictionary) -> void:
 	auto_roll = bool(data.get("auto_roll", auto_roll))
 	keep_ball_airborne = bool(data.get("keep_ball_airborne", keep_ball_airborne))
 	crest_release = bool(data.get("crest_release", crest_release))
+	trampoline_bounce = float(data.get("trampoline_bounce", trampoline_bounce))
+	trampoline_curve = float(data.get("trampoline_curve", trampoline_curve))
+	swing_damping = float(data.get("swing_damping", swing_damping))
+	swing_grab = bool(data.get("swing_grab", swing_grab))
+	swing_grab_radius = float(data.get("swing_grab_radius", swing_grab_radius))
 	level_index = int(data.get("level_index", level_index))
 	panel_tab = int(data.get("panel_tab", panel_tab))
 	changed.emit()

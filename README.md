@@ -56,7 +56,7 @@ bläddra igenom mitt i ett speltest:
 | Sikte | Pilens hastighet, slow motion, vinkelsteg, bågens gränser, hoppkraft, gravitation, tempoknapparna och extra hopp i luften |
 | Rörelse | Gångfart och acceleration, markfäste, hur mycket fart som följer med i landningen, studs mot väggar, knuffkraft, benens fjädring |
 | Rullning | När benen åker in (lutning och fart) med uträknad klättergräns under, indragningstakt, förberedd rullning i luften, rullmotstånd |
-| Föremål | Lådornas tyngd, tålighet, friktion, studsighet och gravitation, samt effekter |
+| Föremål | Lådornas tyngd, tålighet, friktion, studsighet och gravitation, effekter, studsmattornas studs och bukt, samt trapetsernas grepp och dämpning |
 | Hjälp | Styrningsvariant, förhandsbana, kantskydd, spelhastighet, dubbeltrycksfilter, timeout |
 | Bana | Banval, börja om, snabbresa och återställning av alla inställningar |
 
@@ -74,18 +74,28 @@ ingen tillgänglighet.
 
 ## Banorna
 
-Två banor, valbara i panelen under *Bana* (eller med F3). Båda är verkstäder, inte
-nivåer, och i båda är marken sammanhängande hela vägen — RB går av sig själv, och en
+Tre banor, valbara i panelen under *Bana* (eller med F3). Alla tre är verkstäder, inte
+nivåer, och i alla tre är marken sammanhängande hela vägen — RB går av sig själv, och en
 bana där auto-gången kan leda ner i en avgrund straffar spelaren för att inte trycka.
 
 **Lekplatsen.** Lös småsten direkt vid starten, två raka ramper, en hoppbacke och en
 kvartspipa med böjda ytor, en plattformstrappa, och fem lådformationer — pyramid, tre
 enkelbreda torn, mur, en bro på pelare och en stapel högst upp i trappan.
 
-**Rullbanan.** Bara rullfysik. En vinkeltrappa med lutningar på 15, 25, 35, 45 och 55
-grader där man ser exakt var benen åker in och var fästet släpper; en skål där han
+**Rullbanan.** Bara rullfysik. En vinkeltrappa med lutningar på 15, 25, 35, 41, 45 och 55
+grader där man ser exakt var han slutar orka, var benen åker in och var fästet släpper; en skål där han
 pendlar och rullmotståndet blir synligt; en puckelbana; och en avsats för en lång
 utrullning som slutar i en lådstapel.
+
+**Verkstaden.** Banan där nya mekaniker provas innan någon bestämmer sig för om de ska
+vara med (docs/DECISIONS.md 20). Två studsmattor — en på plan mark, en under en avsats
+så att fallhöjden syns i studsen — sedan två trapetser i rad där den andra bara går att
+nå med farten från den första, tre lianer som är dubbelt så långa och därför svänger
+märkbart långsammare, och sist en kedja där alla tre måste kombineras.
+
+RB hakar fast i en trapets av sig själv när han far förbi, och ett tryck släpper: farten
+han har i svängen följer med ut i luften. Att inte trycka är alltid tillåtet — han
+svänger kvar.
 
 Snabbresa mellan stationerna finns i panelens *Bana*-flik och byggs om när banan byts.
 

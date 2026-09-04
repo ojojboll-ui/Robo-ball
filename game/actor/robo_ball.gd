@@ -20,7 +20,7 @@ class_name RoboBall
 
 signal state_changed(state: State)
 
-enum State { WALK, ROLL, AIM, AIR }
+enum State { WALK, ROLL, AIM, AIR, HANG }
 
 const RADIUS := 22.0            ## bollens radie, och kollisionscirkeln när han rullar
 ## Med benen ute är han en boll på ben, och kollisionskroppen ska säga samma sak:
@@ -59,6 +59,7 @@ var _aim_from_air := false
 var _airborne_frames := 0
 ## Lämnade han marken som boll? Då stannar han boll hela vägen genom luften.
 var _left_ground_rolling := false
+var _swing: Swing = null
 ## Farten i bildrutan innan kollisionen löstes. move_and_slide skär bort
 ## komponenten in i ytan, så efter den är rörelsen mot marken redan borta —
 ## läser landningen därifrån har den ingenting att bevara.
@@ -105,6 +106,8 @@ func _physics_process(delta: float) -> void:
 			_process_aim(delta)
 		State.AIR:
 			_process_air(delta)
+		State.HANG:
+			_process_hang(delta)
 	_update_legs(delta)
 	queue_redraw()
 
@@ -204,6 +207,65 @@ func _leaves_crest(before: Vector2, after: Vector2, delta: float) -> bool:
 	var available := Settings.rb_gravity * maxf(after.dot(Vector2.UP), 0.0) + Settings.ground_stick
 	return needed > available
 
+## Studsmatta i stället för mark. Farten som läses är den från bildrutan före
+## kollisionen, av samma skäl som landningen läser den: motorn har redan skurit
+## bort komponenten in i ytan när vi kommer hit.
+func _bounced_on_apparatus() -> bool:
+	for i in get_slide_collision_count():
+		var hit := get_slide_collision(i)
+		var collider := hit.get_collider()
+		if collider != null and collider.has_method("bounce"):
+			if collider.bounce(self, _impact_velocity, hit.get_normal()):
+				_airborne_frames = 0
+				_air_jumps_used = 0
+				return true
+	return false
+
+## Närmaste trapets eller lian inom räckhåll, eller null.
+func _swing_within_reach() -> Node2D:
+	var best: Node2D = null
+	var best_distance := Swing.grab_radius()
+	for node in get_tree().get_nodes_in_group("swing"):
+		var swing := node as Swing
+		if swing == null or not swing.can_grab():
+			continue
+		var d := global_position.distance_to(swing.grip())
+		if d < best_distance:
+			best_distance = d
+			best = swing
+	return best
+
+## Greppet tas av sig självt när han far förbi. Att kräva ett tryck för att gripa
+## *och* ett för att släppa skulle göra trapetsen till spelets enda mekanik med
+## två olika betydelser för samma signal inom en sekund — och den som bara hinner
+## trycka en gång skulle aldrig få se vad den gör.
+func _grab_swing() -> bool:
+	if not Settings.swing_grab:
+		return false
+	var swing := _swing_within_reach()
+	if swing == null:
+		return false
+	_swing = swing
+	swing.grab(self)
+	_set_state(State.HANG)
+	return true
+
+## Hängande sköter pendeln allt: den flyttar honom och sätter hans fart. Här
+## finns bara utvägen — och att inte ta den är hela tiden ett giltigt val.
+func _process_hang(_delta: float) -> void:
+	if _swing == null or _swing.rider != self:
+		_swing = null
+		_set_state(State.AIR)
+
+func _release_swing() -> void:
+	if _swing == null:
+		return
+	velocity = _swing.release()
+	_swing = null
+	_left_ground_rolling = false
+	_air_jumps_used = 0
+	_set_state(State.AIR)
+
 func _process_aim(delta: float) -> void:
 	velocity = Vector2.ZERO
 	# Pilen och tålamodet lever i riktig tid — slow motion får aldrig göra
@@ -248,8 +310,11 @@ func _process_air(delta: float) -> void:
 	# att kalla det en landning satte ner honom igen med farten vriden nedför
 	# kanten — han hann landa och lyfta tre gånger på väg ut från en avsats. Bara
 	# en rörelse *in i* ytan är en landning.
+	if _grab_swing():
+		return
 	if is_on_floor() and velocity.dot(get_floor_normal()) <= 0.0:
-		_land()
+		if not _bounced_on_apparatus():
+			_land()
 	elif is_on_wall():
 		_hit_wall_in_air()
 
@@ -362,6 +427,8 @@ func _on_signal_pressed() -> void:
 		State.AIM:
 			if Settings.control_variant == Settings.ControlVariant.CLASSIC:
 				_launch()
+		State.HANG:
+			_release_swing()
 		State.AIR:
 			# Dubbelhopp: samma två tryck som på marken, mitt i luften. RB
 			# stannar upp medan pilen svepar, så förmågan lägger till räckvidd
@@ -413,7 +480,7 @@ func _set_state(next: State) -> void:
 ## fötterna och tappar farten innan rullningen hinner börja; ser han backen
 ## komma hinner han vika ihop sig och anländer som den boll backen kräver.
 func _wants_ball() -> bool:
-	if state == State.ROLL:
+	if state == State.ROLL or state == State.HANG:
 		return true
 	if state != State.AIR or not Settings.auto_roll:
 		return false
@@ -439,13 +506,33 @@ func _incoming_slope() -> float:
 		return -1.0
 	return absf(rad_to_deg((hit["normal"] as Vector2).angle_to(Vector2.UP)))
 
+## Hur fort benen viker sig. Ju längre bortom vad de klarar underlaget är, desto
+## mindre av hans tyngd bär de — och desto snabbare ger de vika. En backe strax
+## över gränsen viker ihop dem lugnt, en riktigt brant kulle på nästan ingen tid.
+##
+## Utan det tog indragningen lika lång tid överallt, och på kullarnas flanker —
+## där han nästan står still i det ögonblicket — hann man se honom glida nedför
+## med benen halvvägs ute. Mätt på kullarna, bildrutor med benen halvvägs ute:
+## 16 på väg in före, 8 efter. Att resa sig går alltid i grundtakten och tar
+## fortfarande sina 16: det är ingen kollaps, det är ett beslut.
+func _tuck_rate(target: float) -> float:
+	if target > 0.0:
+		return Settings.tuck_speed
+	var excess := slope_degrees() - Settings.leg_max_slope
+	if Settings.roll_speed > 0.0:
+		# Rullar han för att farten är hög räknas överfarten på samma sätt: tio
+		# grader för brant och tio procent för fort ska betyda ungefär lika mycket.
+		var over_speed := absf(ground_speed) - Settings.roll_speed
+		excess = maxf(excess, over_speed / maxf(Settings.roll_speed, 1.0) * 15.0)
+	return Settings.tuck_speed * (1.0 + clampf(excess / 10.0, 0.0, 2.0))
+
 ## Kapselns höjd följer hållningen: full höjd med benen ute, två radier — alltså
 ## en cirkel — när de är indragna. Fötterna står still medan höften sjunker, så
 ## benen viker ihop sig av sig själva. Kroppen flyttas med halva höjdändringen
 ## så att kapselns undersida står kvar på marken hela vägen.
 func _update_stance_shape(delta: float) -> void:
 	var target := 0.0 if _wants_ball() else 1.0
-	_stance = move_toward(_stance, target, Settings.tuck_speed * delta)
+	_stance = move_toward(_stance, target, _tuck_rate(target) * delta)
 	var height := lerpf(RADIUS * 2.0, CAPSULE_HEIGHT, _stance)
 	var change := height - _capsule.height
 	if absf(change) > 0.001:
@@ -473,6 +560,9 @@ func respawn() -> void:
 	facing = 1
 	_air_jumps_used = 0
 	_left_ground_rolling = false
+	if _swing != null:
+		_swing.release()
+		_swing = null
 	_legs.reset(self, Vector2.UP)
 	_set_state(State.WALK)
 

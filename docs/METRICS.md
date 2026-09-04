@@ -81,6 +81,22 @@ Uppmätt genom att skicka in honom i en tunnel med sänkt tak:
 Bollen behöver alltså 46 px, den gående RB 72 — två pixlars luft utöver kroppen
 i båda fallen.
 
+## Verkstadens mekaniker
+
+Uppmätt i banan, med grundvärdena:
+
+| | mätt |
+| --- | --- |
+| Studsmatta, studstal 1,0 | 300 px fall ger 290, 290, 286 px tillbaka |
+| Studsmatta utan bukt | RB vandrar av duken efter tre studsar (700 → 878 px) |
+| Studsmatta med bukt 0,25 | håller sig kvar på duken, pendlar 626–768 px |
+| Trapets, L = 200 px | svängningstid 2,4 s |
+| Lian, L = 330 px | svängningstid 3,1 s |
+| Grepp | bevarar farten längs banan; i ett brant infall blev 971 px/s till 541 (56 %) |
+
+Svängningstiden är 2π√(L/g) och kommer alltså ur längden, inte ur en inställning:
+ändrar man tempot i panelen ändras pendlarna lika mycket som hoppet.
+
 ## Rutnät (förslag, inte beslutat)
 
 **48 px ruta.** Valet följer av tunnelmätningen: en ruta hög öppning (48) släpper

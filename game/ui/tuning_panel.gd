@@ -280,6 +280,20 @@ func _tab_objects() -> void:
 	_check("Effekter (bitar när något går sönder)", Settings.effects,
 		func(v: bool) -> void: Settings.effects = v)
 
+	_section("Studsmattor")
+	_slider("Studs tillbaka", 0.3, 1.2, 0.05, Settings.trampoline_bounce,
+		func(v: float) -> void: Settings.trampoline_bounce = v, "%.2f")
+	_slider("Dukens bukt (styr in mot mitten)", 0.0, 0.6, 0.05, Settings.trampoline_curve,
+		func(v: float) -> void: Settings.trampoline_curve = v, "%.2f")
+
+	_section("Trapetser och lianer")
+	_check("Haka fast av sig själv", Settings.swing_grab,
+		func(v: bool) -> void: Settings.swing_grab = v)
+	_slider("Hur nära greppet han måste komma", 30.0, 160.0, 5.0, Settings.swing_grab_radius,
+		func(v: float) -> void: Settings.swing_grab_radius = v, "%.0f px")
+	_slider("Hur fort svängen dör ut", 0.0, 1.0, 0.02, Settings.swing_damping,
+		func(v: float) -> void: Settings.swing_damping = v, "%.2f")
+
 func _tab_help() -> void:
 	_section("Styrning")
 	_choice("Variant", ["Klassisk", "Håll och släpp", "Auto-sikte"],

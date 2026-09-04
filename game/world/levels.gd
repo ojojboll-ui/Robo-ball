@@ -10,12 +10,14 @@ extends RefCounted
 const GROUND_Y := 640.0
 
 static func names() -> Array:
-	return ["Lekplatsen", "Rullbanan"]
+	return ["Lekplatsen", "Rullbanan", "Verkstaden"]
 
 static func build(index: int) -> Dictionary:
 	match index:
 		1:
 			return _roll_test()
+		2:
+			return _workshop()
 		_:
 			return _playground()
 
@@ -203,5 +205,71 @@ static func _roll_test() -> Dictionary:
 			{"name": "Pucklarna", "pos": Vector2(2700, GROUND_Y - 60)},
 			{"name": "Utrullningen", "pos": Vector2(3700, 250)},
 			{"name": "Kullarna", "pos": Vector2(4420, GROUND_Y - 60)},
+		],
+	}
+
+# ---------------------------------------------------------------- verkstaden
+
+## Banan där nya mekaniker provas.
+##
+## Ingenting här är bestämt som en del av spelet. Verkstaden finns för att kunna
+## känna på en mekanik i spelets riktiga fysik innan någon bestämmer sig — det är
+## billigare att bygga en station här än att argumentera om den (docs/DECISIONS.md 20).
+##
+## Stationerna står i ordning efter vad de lär ut: studs, sedan rörelsemängd i en
+## sväng, sedan en lång lian där svängningstiden märks, och sist en kedja där de
+## tre måste kombineras.
+static func _workshop() -> Dictionary:
+	var right := 5200.0
+	var trampolines: Array = []
+	var swings: Array = []
+
+	# 1. Studsmattorna. Den första på plan mark att bara studsa på, den andra
+	#    nedanför en avsats så att fallhöjden syns i studsen.
+	trampolines.append({"pos": Vector2(700, GROUND_Y - 46.0), "width": 240.0})
+	trampolines.append({"pos": Vector2(1180, GROUND_Y - 46.0), "width": 200.0})
+
+	# 2. Trapetserna. Två i rad, den andra längre bort än ett hopp räcker: den
+	#    når man bara med farten från den första.
+	swings.append({"pos": Vector2(1900, 190), "length": 200.0, "trapeze": true, "angle": -0.5})
+	swings.append({"pos": Vector2(2360, 190), "length": 200.0, "trapeze": true, "angle": 0.35})
+
+	# 3. Lianerna. Dubbelt så långa, alltså märkbart långsammare — samma pendel,
+	#    annan takt. De hänger stilla tills någon hakar i dem.
+	for i in 3:
+		swings.append({"pos": Vector2(2950.0 + i * 420.0, 120), "length": 330.0,
+			"trapeze": false, "angle": 0.0})
+
+	# 4. Kedjan: studsmatta upp i en trapets, trapets vidare till en lian.
+	trampolines.append({"pos": Vector2(4380, GROUND_Y - 46.0), "width": 200.0})
+	swings.append({"pos": Vector2(4700, 150), "length": 260.0, "trapeze": true, "angle": 0.0})
+
+	return {
+		"name": "Verkstaden",
+		"right_edge": right,
+		"floors": [
+			Rect2(-60, GROUND_Y, right + 60.0, 320),
+			# Avsatsen som den andra studsmattan ligger under.
+			Rect2(1020, 380, 320, 26),
+			# Avsats att landa på efter trapetserna.
+			Rect2(2560, 430, 260, 26),
+			# Målet efter lianerna.
+			Rect2(4060, 360, 240, 26),
+		],
+		"walls": [Rect2(-120, 240, 60, 400), Rect2(right, 180, 60, 460)],
+		"ramps": [
+			# En liten ramp upp till den höga avsatsen, så att man kan ta sig
+			# tillbaka utan att kunna hoppa — aldrig en återvändsgränd.
+			ramp(880.0, 200.0, 26.0),
+		],
+		"crates": [],
+		"trampolines": trampolines,
+		"swings": swings,
+		"spawns": [
+			{"name": "Studsmattan", "pos": Vector2(560, GROUND_Y - 60)},
+			{"name": "Från avsatsen", "pos": Vector2(1100, 320)},
+			{"name": "Trapetserna", "pos": Vector2(1700, GROUND_Y - 60)},
+			{"name": "Lianerna", "pos": Vector2(2800, GROUND_Y - 60)},
+			{"name": "Kedjan", "pos": Vector2(4200, GROUND_Y - 60)},
 		],
 	}

@@ -17,6 +17,18 @@ func load_level(index: int) -> void:
 		_add_rect(r)
 	for poly: PackedVector2Array in ramps():
 		_add_polygon(poly)
+	for entry: Dictionary in data.get("trampolines", []):
+		var pad := Trampoline.new()
+		pad.width = float(entry.get("width", 220.0))
+		pad.position = entry["pos"]
+		add_child(pad)
+	for entry: Dictionary in data.get("swings", []):
+		var swing := Swing.new()
+		swing.length = float(entry.get("length", 190.0))
+		swing.trapeze = bool(entry.get("trapeze", true))
+		swing.angle = float(entry.get("angle", 0.0))
+		swing.position = entry["pos"]
+		add_child(swing)
 	queue_redraw()
 
 func solids() -> Array:

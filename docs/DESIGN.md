@@ -239,9 +239,32 @@ synlig tidigare, och (c) gå att förstå utan text.
 | 8 | **Gummiskal** *(förslag)* | studsar i stället för att stanna, kedjehopp | höga schakt, studsbanepussel |
 | 9 | **Turbon** *(förslag)* | högre grundfart → loopar och korkskruvar går att klara | Sonic-sektionerna, rampbanor |
 
-**I v1 (ca 90 minuter) ingår 1, 2, 3 och 5:** rulla, strutsbenen, spikar och dubbelhoppet.
-De täcker horisontell, vertikal och "utanför golvet"-rörelse plus räckvidd, och gör
-kartan tre gånger större utan att lägga till en enda knapp.
+**Vilka som blir v1 är inte bestämt, och ska inte bestämmas ännu.** Det som stått här
+förut — 1, 2, 3 och 5 — är fortfarande den bästa gissningen på papperet: de täcker
+horisontell, vertikal och "utanför golvet"-rörelse plus räckvidd, och gör kartan tre
+gånger större utan att lägga till en enda knapp. Men fysiken bär mer än vi trodde när
+listan skrevs, och det är billigare att bygga en mekanik i Verkstaden och känna på den
+i spelets riktiga fysik än att argumentera om den (docs/DECISIONS.md 20). Listan låses
+när vi provat, inte innan.
+
+### 5b. Verkstaden
+
+Banan där mekaniker provas. Just nu står tre stationer där:
+
+* **Studsmattan.** Farten in i duken vänds, farten längs den lämnas i fred. Duken är
+  spänd till en skål, så den styr tillbaka mot mitten — utan den bukten vandrade RB av
+  kanten efter tre studsar. Med studstalet 1,0 studsar han tillbaka lika högt varje
+  gång: ingen energi skapas, ingen försvinner. Det här är fortfarande den enda mekanik
+  vi hittat som *köper tid utan att stanna världen* — rytmen upprepar sig och väntar in
+  spelaren, utan att någon räknar ner.
+* **Trapetsen.** En pendel man hakar fast i av sig själv och släpper med ett tryck.
+  Greppet bevarar rörelsemängd: bara farten längs banan följer med, resten tar
+  upphängningen — därför ger ett grepp i botten av svängen mest. Det är spelets
+  tydligaste lektion i rörelsemängd, och den enda mekanik hittills där *när* man
+  släpper avgör allt medan *att inte släppa* aldrig är fel: han svänger kvar.
+* **Lianen.** Samma pendel, dubbelt så lång, alltså märkbart långsammare — svängningstiden
+  är 2π√(L/g) och räknas inte fram av någon inställning utan av längden. En trapets på
+  200 px svänger på 2,4 s, en lian på 330 px på 3,1 s.
 
 Dubbelhoppet är värt en anmärkning, eftersom det är just den sortens förmåga som brukar
 kräva en extra knapp i andra spel. Här gör den inte det: i luften betyder ett tryck
