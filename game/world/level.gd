@@ -30,6 +30,11 @@ func load_level(index: int) -> void:
 		swing.angle = float(entry.get("angle", 0.0))
 		swing.position = entry["pos"]
 		add_child(swing)
+	for entry: Dictionary in data.get("enemies", []):
+		var enemy := Enemy.new()
+		enemy.kind = Enemy.Kind.RED if entry.get("kind", "blue") == "red" else Enemy.Kind.BLUE
+		enemy.position = entry["pos"]
+		add_child(enemy)
 	queue_redraw()
 
 func solids() -> Array:
@@ -53,6 +58,9 @@ func spawn_point() -> Vector2:
 		return Vector2(150, Levels.GROUND_Y - 60)
 	var first: Dictionary = points[0]
 	return first["pos"]
+
+func has_enemies() -> bool:
+	return not (data.get("enemies", []) as Array).is_empty()
 
 func right_edge() -> float:
 	return float(data.get("right_edge", 4700.0))

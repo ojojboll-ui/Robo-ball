@@ -56,7 +56,7 @@ bläddra igenom mitt i ett speltest:
 | Sikte | Pilens hastighet, slow motion, vinkelsteg, bågens gränser, hoppkraft, gravitation, tempoknapparna och extra hopp i luften |
 | Rörelse | Gångfart och acceleration, markfäste, hur mycket fart som följer med i landningen och i hoppet, studs mot väggar, knuffkraft, benens fjädring |
 | Rullning | När benen åker in (lutning, benens högsta takt och absolut fart) med uträknad klättergräns under, indragningstakt, förbli boll i luften, förberedd rullning i luften, rullmotstånd |
-| Föremål | Lådornas tyngd, tålighet, friktion, studsighet och gravitation, effekter, studsmattornas studs och bukt, samt stängernas och lianernas grepp, dämpning och slow motion |
+| Föremål | Lådornas fysik, effekter, studsmattornas studs och bukt, stängernas och lianernas grepp och dämpning, samt fiendernas fart, studsen på dem, skjutsiktet, laserns räckvidd, osårbarheten och antalet hjärtan |
 | Hjälp | Styrningsvariant, förhandsbana, kantskydd, spelhastighet, dubbeltrycksfilter, timeout |
 | Bana | Banval, börja om, snabbresa och återställning av alla inställningar |
 
@@ -74,8 +74,8 @@ ingen tillgänglighet.
 
 ## Banorna
 
-Tre banor, valbara i panelen under *Bana* (eller med F3). Alla tre är verkstäder, inte
-nivåer, och i alla tre är marken sammanhängande hela vägen — RB går av sig själv, och en
+Fyra banor, valbara i panelen under *Bana* (eller med F3). Alla är verkstäder, inte
+nivåer, och i alla är marken sammanhängande hela vägen — RB går av sig själv, och en
 bana där auto-gången kan leda ner i en avgrund straffar spelaren för att inte trycka.
 
 **Lekplatsen.** Lös småsten direkt vid starten, två raka ramper, en hoppbacke och en
@@ -110,6 +110,28 @@ Skillnaden mellan de två greppen är hela poängen med att ha båda:
 | --- | --- |
 | **Stången** sitter fast och hakas med benen på den sida han passerar | behåller allt — en riktningsväxel, lika mycket fart ut som in |
 | **Lianen** greppas var som helst längs repet — benen hakas där, kroppen hänger nedanför, precis som i stången | behåller farten längs banan: 100 % genom botten av svängen, 79 % snett in. Var man tar tag sätter pendelns längd: 2,3 s högt upp, 2,9 s långt ner |
+
+**Fienderna.** Fyrkanter med elaka ögon som går på marken. Två sorter, och skillnaden
+är hela poängen:
+
+| | hoppa på den | röra den på marken | lasern |
+| --- | --- | --- | --- |
+| **Blå** | den dör | RB tappar ett hjärta | den dör |
+| **Röd** | händer inget | RB tappar ett hjärta | den dör |
+
+Samma blå fiende är alltså farlig eller ofarlig beroende på vad RB själv gör — den
+enklaste sortens regel ett barn kan läsa av på egen hand.
+
+**Kedjan.** Varje dödad fiende öppnar siktet igen i slow motion, så länge han inte
+nuddat marken. Ett tryck räcker för att fortsätta från fiende till fiende, och den som
+inte hinner tappar bara kedjan. Räknaren syns uppe till höger från två i rad.
+
+**Lasern.** Är närmaste fiende röd blir siktet ett annat: en rak visare som går runt
+hela varvet som en klocka, och nästa tryck skickar en stråle ur ögat. Strålen stoppas
+av väggar, så en röd bakom en avsats måste man ta sig till.
+
+**Hjärtan.** Tre stycken. Tar de slut börjar banan om från början med alla fiender
+tillbaka — att förlora är att få börja om, inte att förlora något man byggt upp.
 
 Snabbresa mellan stationerna finns i panelens *Bana*-flik och byggs om när banan byts.
 

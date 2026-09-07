@@ -10,7 +10,7 @@ extends RefCounted
 const GROUND_Y := 640.0
 
 static func names() -> Array:
-	return ["Lekplatsen", "Rullbanan", "Verkstaden"]
+	return ["Lekplatsen", "Rullbanan", "Verkstaden", "Fienderna"]
 
 static func build(index: int) -> Dictionary:
 	match index:
@@ -18,6 +18,8 @@ static func build(index: int) -> Dictionary:
 			return _roll_test()
 		2:
 			return _workshop()
+		3:
+			return _enemies()
 		_:
 			return _playground()
 
@@ -274,5 +276,67 @@ static func _workshop() -> Dictionary:
 			{"name": "Stängerna", "pos": Vector2(1800, GROUND_Y - 60)},
 			{"name": "Lianerna", "pos": Vector2(2800, GROUND_Y - 60)},
 			{"name": "Kedjan", "pos": Vector2(4150, GROUND_Y - 60)},
+		],
+	}
+
+# ---------------------------------------------------------------- fienderna
+
+## Banan där fienderna provas.
+##
+## Två sorter, och de lär ut var sin sak. De **blå** går på marken och är farliga
+## att gå in i men ofarliga att landa på — samma fiende betyder alltså olika sak
+## beroende på vad RB själv gör, och det är den enklaste regel ett barn kan läsa
+## av på egen hand. De **röda** bryr sig inte om att bli hoppade på och skadar
+## alltid; dem måste man skjuta.
+##
+## Ordningen är medveten: först en ensam blå att hoppa på, sedan tre i rad så att
+## kedjan går att upptäcka, sedan en ensam röd på en avsats där man hinner se att
+## siktet blev ett annat, och till sist blandat.
+static func _enemies() -> Dictionary:
+	var right := 5200.0
+	var enemies: Array = []
+
+	# 1. En ensam blå, mitt på slätten.
+	enemies.append({"pos": Vector2(900, GROUND_Y - 40), "kind": "blue"})
+
+	# 2. Tre blå i rad — kedjan.
+	for i in 3:
+		enemies.append({"pos": Vector2(1500.0 + i * 240.0, GROUND_Y - 40), "kind": "blue"})
+
+	# 3. En röd på en avsats, ensam nog att man hinner se skjutsiktet dyka upp.
+	enemies.append({"pos": Vector2(2600, 380), "kind": "red"})
+
+	# 4. Blandat: två blå på marken och två röda ovanför dem.
+	enemies.append({"pos": Vector2(3300, GROUND_Y - 40), "kind": "blue"})
+	enemies.append({"pos": Vector2(3600, GROUND_Y - 40), "kind": "blue"})
+	enemies.append({"pos": Vector2(3450, 330), "kind": "red"})
+	enemies.append({"pos": Vector2(3900, 330), "kind": "red"})
+
+	# 5. Sista uppställningen: en röd bakom två blå, så att man måste välja ordning.
+	enemies.append({"pos": Vector2(4500, GROUND_Y - 40), "kind": "blue"})
+	enemies.append({"pos": Vector2(4650, GROUND_Y - 40), "kind": "blue"})
+	enemies.append({"pos": Vector2(4850, GROUND_Y - 40), "kind": "red"})
+
+	return {
+		"name": "Fienderna",
+		"right_edge": right,
+		"floors": [
+			Rect2(-60, GROUND_Y, right + 60.0, 320),
+			# Avsatser att möta fienderna från, och att bli beskjuten från.
+			Rect2(2450, 440, 320, 24),
+			Rect2(3350, 390, 220, 24),
+			Rect2(3820, 390, 220, 24),
+			Rect2(4300, 430, 180, 24),
+		],
+		"walls": [Rect2(-120, 240, 60, 400), Rect2(right, 180, 60, 460)],
+		"ramps": [ramp(1180.0, 220.0, 26.0), ramp(4980.0, 200.0, 26.0)],
+		"crates": [],
+		"enemies": enemies,
+		"spawns": [
+			{"name": "Start", "pos": Vector2(200, GROUND_Y - 60)},
+			{"name": "Kedjan", "pos": Vector2(1300, GROUND_Y - 60)},
+			{"name": "Den röda", "pos": Vector2(2300, GROUND_Y - 60)},
+			{"name": "Blandat", "pos": Vector2(3150, GROUND_Y - 60)},
+			{"name": "Sista", "pos": Vector2(4300, GROUND_Y - 60)},
 		],
 	}

@@ -168,6 +168,29 @@ fryses medan pilen sveper, farten väntar, och hoppet skickar iväg honom med sv
 fart plus avstampet. Man kan alltså välja riktning utan att svängen rinner bort medan
 man bestämmer sig — och den som inte trycker svänger vidare.
 
+### Fienderna
+
+Fyrkanter med elaka ögon, och två sorter som lär ut var sin sak.
+
+**Blå** går på marken. Landar RB på den ovanifrån dör den; går eller rullar han in i
+den är det han som tar skada. Samma fiende betyder alltså olika saker beroende på vad
+han själv gör — det är den enklaste sortens regel ett barn kan läsa av på egen hand,
+och den kräver ingen text.
+
+**Röd** bryr sig inte om att bli hoppad på och skadar vid varje beröring. Den går bara
+att skjuta, och därför byter siktet skepnad när en röd står närmast: i stället för
+hoppets båge kommer en rak visare som går runt hela varvet som en klocka. Att erbjuda
+hoppbågen mot en röd vore att erbjuda fel svar i just det ögonblick det gäller.
+
+**Kedjan.** Varje dödad fiende öppnar siktet igen i slow motion, så länge han inte
+nuddat marken. Det är mekaniken från Sonics rad av fiender, men med spelets egen
+signal: ett tryck räcker för att fortsätta, och den som inte hinner tappar bara kedjan
+— ingen bestraffning, ingen omstart. Precis den sortens tidspress spelet får ha,
+eftersom slow motion är en inställning och kedjan aldrig är nödvändig.
+
+**Hjärtan.** Tre. Tar de slut börjar banan om med alla fiender tillbaka. Att förlora
+är att få börja om, inte att förlora något man byggt upp (princip 4).
+
 ### Stationer
 
 Lekplatsen ska växa till en rad stationer där varje station visar en lag. Det är samtidigt

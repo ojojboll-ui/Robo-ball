@@ -9,6 +9,10 @@ class_name Hud
 var _state_label: Label
 var _hint_label: Label
 var _foot_label: Label
+var _hearts: Control
+var _chain_label: Label
+var _hearts_left := 0
+var _hearts_max := 0
 
 func _ready() -> void:
 	_state_label = _make_label(Vector2(28, 22), 34)
@@ -20,6 +24,55 @@ func _ready() -> void:
 	_foot_label.offset_bottom = -14.0
 	_foot_label.text = "Tryck var som helst för att spela · kugghjulet ställer in"
 
+	# Hjärtan uppe till höger, och kedjan strax under dem. Båda är tysta när de
+	# inte har något att säga: hjärtan syns bara på en bana med fiender, och
+	# kedjan bara medan den lever.
+	_hearts = Control.new()
+	_hearts.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_hearts.position = Vector2(-320, 22)
+	_hearts.custom_minimum_size = Vector2(220, 40)
+	_hearts.draw.connect(_draw_hearts)
+	_hearts.visible = false
+	add_child(_hearts)
+
+	_chain_label = _make_label(Vector2(0, 70), 26)
+	_chain_label.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_chain_label.position = Vector2(-320, 70)
+	_chain_label.custom_minimum_size = Vector2(220, 34)
+	_chain_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_chain_label.add_theme_color_override("font_color", Palette.PINK)
+	_chain_label.text = ""
+
+func show_hearts(left: int, most: int) -> void:
+	_hearts_left = left
+	_hearts_max = most
+	_hearts.visible = most > 0
+	_hearts.queue_redraw()
+
+func show_chain(kills: int) -> void:
+	_chain_label.text = "KEDJA ×%d" % kills if kills > 1 else ""
+
+func _draw_hearts() -> void:
+	for i in _hearts_max:
+		var at := Vector2(150.0 + i * 34.0, 16.0)
+		var filled := i < _hearts_left
+		_draw_heart(at, Palette.PINK if filled else Palette.LINE, filled)
+
+## Ett hjärta av två cirklar och en triangel — nog för gråboxen, och läsbart även
+## litet, vilket är hela kravet på en sådan här symbol.
+func _draw_heart(at: Vector2, color: Color, filled: bool) -> void:
+	var r := 7.0
+	var points := PackedVector2Array([
+		at + Vector2(-2.0 * r, -1.0), at + Vector2(0.0, 2.0 * r), at + Vector2(2.0 * r, -1.0)])
+	if filled:
+		_hearts.draw_circle(at + Vector2(-r * 0.9, -r * 0.5), r, color)
+		_hearts.draw_circle(at + Vector2(r * 0.9, -r * 0.5), r, color)
+		_hearts.draw_colored_polygon(points, color)
+	else:
+		_hearts.draw_arc(at + Vector2(-r * 0.9, -r * 0.5), r, 0.0, TAU, 12, color, 2.0)
+		_hearts.draw_arc(at + Vector2(r * 0.9, -r * 0.5), r, 0.0, TAU, 12, color, 2.0)
+		_hearts.draw_polyline(points, color, 2.0)
+
 func _make_label(pos: Vector2, size: int) -> Label:
 	var label := Label.new()
 	label.position = pos
@@ -30,7 +83,7 @@ func _make_label(pos: Vector2, size: int) -> Label:
 	add_child(label)
 	return label
 
-func update_state(state: RoboBall.State) -> void:
+func update_state(state: RoboBall.State, aim_kind: int = 0) -> void:
 	match state:
 		RoboBall.State.WALK:
 			_state_label.text = "GÅENDE"
@@ -40,6 +93,13 @@ func update_state(state: RoboBall.State) -> void:
 			_hint_label.text = "För brant för benen — tryck för att sikta"
 		RoboBall.State.AIM:
 			_state_label.text = "SIKTAR"
+			if aim_kind == RoboBall.Aim.SHOOT:
+				# Skjutsiktet är ett annat verktyg och ska sägas rakt ut: en röd
+				# fiende går inte att hoppa på, och då vore "tryck för att hoppa"
+				# ett felaktigt råd i just det ögonblick det gäller.
+				_state_label.text = "SIKTAR MED LASERN"
+				_hint_label.text = "Tryck igen för att skjuta"
+				return
 			match Settings.control_variant:
 				Settings.ControlVariant.CLASSIC:
 					_hint_label.text = "Tryck igen för att hoppa"

@@ -19,6 +19,8 @@ class_name RoboBall
 ## boll. Spelaren behöver ingen text för att förstå varför.
 
 signal state_changed(state: State)
+signal hurt
+signal chained(kills: int)
 
 enum State { WALK, ROLL, AIM, AIR, HANG }
 
@@ -59,6 +61,14 @@ var _air_jumps_used := 0
 var _aim_from_air := false
 var _aim_from_roll := false
 var _carried := Vector2.ZERO
+## Siktet har två skepnader: hoppets båge, och ett rakt skjutsikte som går runt
+## som en klocka. Vilken det blir avgörs av vad som står närmast när man trycker.
+enum Aim { JUMP, SHOOT }
+var aim_kind: Aim = Aim.JUMP
+var chain := 0                  ## hur många fiender i rad utan att nudda marken
+var _invulnerable := 0.0
+var _laser_time := 0.0
+var _laser_to := Vector2.ZERO
 var _airborne_frames := 0
 ## Lämnade han marken som boll? Då stannar han boll hela vägen genom luften.
 var _left_ground_rolling := false
@@ -111,6 +121,11 @@ func _physics_process(delta: float) -> void:
 			_process_air(delta)
 		State.HANG:
 			_process_hang(delta)
+	if _invulnerable > 0.0:
+		_invulnerable = maxf(0.0, _invulnerable - delta)
+	if _laser_time > 0.0:
+		_laser_time = maxf(0.0, _laser_time - delta)
+	_touch_enemies()
 	_update_legs(delta)
 	queue_redraw()
 
@@ -313,6 +328,12 @@ func _process_aim(delta: float) -> void:
 			_launch()
 		return
 
+	if aim_kind == Aim.SHOOT:
+		# Visaren går runt hela varvet, som en klocka. Ingen pendling: ett skott
+		# har ingen "framåt", och ett varv är lika lätt att vänta in var man än
+		# står.
+		aim_deg = fposmod(aim_deg - real * Settings.shoot_sweep * 360.0, 360.0)
+		return
 	_sweep_t += real * Settings.aim_sweep_speed * 1.6
 	# Bågen startar alltid i den ände som ligger åt det håll RB går, och pendlar
 	# därifrån. Går han åt höger börjar pilen vågrätt framåt och sveper upp och
@@ -426,6 +447,9 @@ func _hit_wall_in_air() -> void:
 func _land() -> void:
 	_airborne_frames = 0
 	_left_ground_rolling = false
+	if chain > 0:
+		chain = 0
+		chained.emit(0)
 	ground_normal = get_floor_normal()
 	# Fötterna har hängt under kroppen under fallet. Sätt ner dem på underlaget
 	# vid landningen — annars står de kvar i luften och benen ser lösa ut.
@@ -542,6 +566,10 @@ func _begin_aim() -> void:
 	_aim_from_air = state == State.AIR
 	_aim_from_roll = state == State.ROLL
 	_carried = _momentum_now()
+	# Står en röd fiende närmast blir siktet ett skjutsikte. Röda bryr sig inte om
+	# att bli hoppade på, så att erbjuda hoppbågen mot en sådan vore att erbjuda
+	# fel svar — spelet visar i stället det verktyg som faktiskt biter.
+	aim_kind = Aim.SHOOT if _nearest_enemy_is_red() else Aim.JUMP
 	if _swing != null:
 		# Pendeln fryses medan han siktar. Farten är redan sparad och kommer
 		# tillbaka i hoppet — det är därför man kan sikta mitt i en sväng utan
@@ -562,6 +590,9 @@ var _auto_angle := 90.0
 ## byggt upp. Andelen är ett reglage, och i luften gäller den inte: där finns
 ## inget att skjuta ifrån.
 func _launch() -> void:
+	if aim_kind == Aim.SHOOT:
+		_fire_laser()
+		return
 	_left_ground_rolling = false
 	if _aim_from_air:
 		_air_jumps_used += 1
@@ -573,6 +604,115 @@ func _launch() -> void:
 	ground_speed = 0.0
 	facing = 1 if velocity.x >= 0.0 else -1
 	_set_state(State.AIR)
+
+## Lasern ur ögat.
+##
+## En rak stråle från ögat i den riktning visaren pekar, som stoppas av första
+## vägg den möter och dödar den första fienden på vägen dit. Att den träffar
+## direkt och inte far i väg som ett skott är ett val för spelarens skull: det
+## som avgjorde var *när* man tryckte, och då ska svaret komma i samma ögonblick.
+func _fire_laser() -> void:
+	var dir := Vector2(cos(deg_to_rad(aim_deg)), -sin(deg_to_rad(aim_deg)))
+	var from := global_position + dir * (RADIUS + 4.0)
+	var to := from + dir * Settings.laser_reach
+	# Väggar stoppar strålen.
+	var space := get_world_2d().direct_space_state
+	var wall := space.intersect_ray(PhysicsRayQueryParameters2D.create(
+		from, to, collision_mask, [get_rid()]))
+	if not wall.is_empty():
+		to = wall["position"]
+	var hit: Enemy = null
+	var best := INF
+	for node in get_tree().get_nodes_in_group("enemy"):
+		var enemy := node as Enemy
+		if enemy == null:
+			continue
+		var point := Geometry2D.get_closest_point_to_segment(enemy.global_position, from, to)
+		if not enemy.rect().has_point(point):
+			continue
+		var d := from.distance_to(enemy.global_position)
+		if d < best:
+			best = d
+			hit = enemy
+	_laser_to = to if hit == null else hit.global_position
+	_laser_time = 0.18
+	if _swing != null:
+		_swing.frozen = false
+	_set_state(State.HANG if _swing != null else (State.AIR if _aim_from_air else _stance_for_slope()))
+	if hit != null:
+		hit.die(true)
+		_scored_a_kill()
+
+## Efter varje dödad fiende öppnas siktet igen i slow motion, så länge han inte
+## nuddat marken. Det är kedjan: en enda signal räcker för att hoppa vidare från
+## fiende till fiende, och den som inte hinner tappar bara kedjan, inget annat.
+func _scored_a_kill() -> void:
+	chain += 1
+	chained.emit(chain)
+	if Settings.chain_slowmo:
+		_aim_from_air = true
+		_begin_aim()
+
+## Närmaste fiende inom räckhåll — och är den röd?
+func _nearest_enemy_is_red() -> bool:
+	var best: Enemy = null
+	var best_distance := Settings.shoot_range
+	for node in get_tree().get_nodes_in_group("enemy"):
+		var enemy := node as Enemy
+		if enemy == null:
+			continue
+		var d := global_position.distance_to(enemy.global_position)
+		if d < best_distance:
+			best_distance = d
+			best = enemy
+	return best != null and best.kind == Enemy.Kind.RED
+
+## Möter han en fiende? Blå dör om han kommer ovanifrån i ett hopp, och skadar
+## honom om han går eller rullar in i den. Röda skadar alltid.
+func _touch_enemies() -> void:
+	var body := Rect2(global_position - Vector2(RADIUS, _capsule.height * 0.5),
+		Vector2(RADIUS * 2.0, _capsule.height))
+	for node in get_tree().get_nodes_in_group("enemy"):
+		var enemy := node as Enemy
+		if enemy == null or not body.intersects(enemy.rect()):
+			continue
+		var airborne := state == State.AIR or state == State.HANG
+		var from_above := global_position.y < enemy.top() and velocity.y > -1.0
+		if enemy.kind == Enemy.Kind.BLUE and airborne and from_above:
+			enemy.die(false)
+			global_position.y = enemy.top() - _capsule.height * 0.5 - 1.0
+			velocity = Vector2(velocity.x, -Settings.stomp_bounce)
+			_air_jumps_used = 0
+			_scored_a_kill()
+			return
+		take_damage(enemy.global_position)
+		return
+
+## En träff knuffar honom bort från den som träffade, och vänder honom.
+##
+## Utan det gick han rakt igenom fienden medan han var osårbar och fortsatte mot
+## nästa — och eftersom RB går av sig själv skulle en spelare som inte trycker
+## tappa alla hjärtan på raken. Nu backar han undan i stället, och den som inte
+## hinner trycka får åtminstone tillbaka en bit väg att göra det på.
+func take_damage(from: Vector2 = Vector2.ZERO) -> void:
+	if _invulnerable > 0.0:
+		return
+	_invulnerable = Settings.invulnerable_time
+	chain = 0
+	chained.emit(0)
+	if from != Vector2.ZERO:
+		var away := signf(global_position.x - from.x)
+		if is_zero_approx(away):
+			away = -facing
+		facing = int(away)
+		ground_speed = away * Settings.knockback
+		velocity = Vector2(away * Settings.knockback, -Settings.knockback * 0.5)
+		if state == State.WALK or state == State.ROLL:
+			_set_state(State.AIR)
+	hurt.emit()
+
+func is_invulnerable() -> bool:
+	return _invulnerable > 0.0
 
 ## Farten som följer med in i hoppet.
 func launch_carry() -> Vector2:
@@ -820,16 +960,24 @@ func _pick_best_angle() -> float:
 # ---------------------------------------------------------------- ritning
 
 func _draw() -> void:
+	_draw_laser()
+	# Siktet ritas alltid. Blinkningen efter en träff får dölja kroppen men aldrig
+	# det man siktar med: hjälpen ska finnas kvar just i det ögonblick den behövs.
 	if state == State.AIM:
 		_draw_aim()
 	elif state == State.HANG:
 		_draw_release_arc()
+	if _invulnerable > 0.0 and fmod(_invulnerable, 0.24) < 0.12:
+		return
 	if _stance < 0.08:
 		_draw_rolling()
 	else:
 		_draw_standing()
 
 func _draw_aim() -> void:
+	if aim_kind == Aim.SHOOT:
+		_draw_shot_sight()
+		return
 	var a := deg_to_rad(aim_deg)
 	var dir := Vector2(cos(a), -sin(a))
 	var origin := Vector2(0.0, -RADIUS - 16.0)
@@ -874,6 +1022,34 @@ func _draw_release_arc() -> void:
 	var back := tip - dir * 12.0
 	var side := dir.orthogonal() * 7.0
 	draw_colored_polygon(PackedVector2Array([tip, back + side, back - side]), Palette.PINK)
+
+## Skjutsiktet: en rak linje ur ögat som går runt hela varvet som en visare.
+##
+## Ingen båge och inga prickar — ett skott går rakt, och bilden ska säga just
+## det. Linjen slutar där strålen skulle ta stopp, så man ser räckvidden och
+## vilken vägg som är i vägen innan man trycker.
+func _draw_shot_sight() -> void:
+	var dir := Vector2(cos(deg_to_rad(aim_deg)), -sin(deg_to_rad(aim_deg)))
+	var from := dir * (RADIUS + 4.0)
+	var reach := Settings.laser_reach
+	var space := get_world_2d().direct_space_state
+	var wall := space.intersect_ray(PhysicsRayQueryParameters2D.create(
+		global_position + from, global_position + dir * reach, collision_mask, [get_rid()]))
+	if not wall.is_empty():
+		reach = global_position.distance_to(wall["position"])
+	var to := dir * reach
+	draw_line(from, to, Color(Palette.PINK, 0.35), 2.0, true)
+	draw_line(from, from + dir * 40.0, Palette.PINK, 5.0, true)
+	draw_circle(to, 6.0, Palette.PINK)
+
+## Själva strålen, ritad de tiondelar den syns.
+func _draw_laser() -> void:
+	if _laser_time <= 0.0:
+		return
+	var fade := _laser_time / 0.18
+	var to := to_local(_laser_to)
+	draw_line(Vector2.ZERO, to, Color(Palette.PINK, fade), 7.0 * fade + 2.0, true)
+	draw_circle(to, 10.0 * fade, Color(Palette.PINK, fade))
 
 ## Indragna ben: kroppen sjunker ner ett helt radieavstånd och blir den boll han
 ## var innan han hittade benen. Rotationen är härledd ur farten, inte animerad —

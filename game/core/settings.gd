@@ -101,6 +101,17 @@ var swing_damping := 0.12      ## hur fort en trapets eller lian tappar sin svä
 var swing_grab := true         ## hakar fast av sig själv när han far förbi
 var swing_grab_radius := 70.0  ## px, hur nära greppet han måste komma
 var swing_stretch := 1.0       ## hur mycket benen ger efter för centrifugalkraften
+
+# Fienderna. Allt här är under prövning som resten av verkstaden.
+var enemy_speed := 70.0        ## px/s, blå går i full fart, röda i 60 %
+var stomp_bounce := 520.0      ## px/s uppåt när han studsar på en blå
+var shoot_range := 700.0       ## px, så nära måste en röd vara för att siktet ska bli ett skjutsikte
+var shoot_sweep := 0.9         ## varv per sekund för skjutsiktets visare
+var laser_reach := 1400.0      ## px, hur långt lasern når
+var invulnerable_time := 1.2   ## sekunder osårbar efter en träff
+var knockback := 260.0         ## px/s bort från den som träffade
+var max_hearts := 3            ## hur många träffar han tål innan banan börjar om
+var chain_slowmo := true       ## varje dödad fiende ger nytt sikte i slow motion
 var hang_slowmo := false       ## sakta ner världen redan medan han hänger (siktet saktar ändå ner)
 ## Hur mycket av farten han redan har som följer med in i hoppet. 1.0 = allt:
 ## hoppkraften läggs ovanpå, alltså skjuter han ifrån i stället för att starta om.
@@ -167,6 +178,15 @@ func as_dict() -> Dictionary:
 		"swing_grab": swing_grab,
 		"swing_grab_radius": swing_grab_radius,
 		"swing_stretch": swing_stretch,
+		"enemy_speed": enemy_speed,
+		"stomp_bounce": stomp_bounce,
+		"shoot_range": shoot_range,
+		"shoot_sweep": shoot_sweep,
+		"laser_reach": laser_reach,
+		"invulnerable_time": invulnerable_time,
+		"knockback": knockback,
+		"max_hearts": max_hearts,
+		"chain_slowmo": chain_slowmo,
 		"hang_slowmo": hang_slowmo,
 		"momentum_carry": momentum_carry,
 		"level_index": level_index,
@@ -219,6 +239,15 @@ func apply(data: Dictionary) -> void:
 	swing_grab = bool(data.get("swing_grab", swing_grab))
 	swing_grab_radius = float(data.get("swing_grab_radius", swing_grab_radius))
 	swing_stretch = float(data.get("swing_stretch", swing_stretch))
+	enemy_speed = float(data.get("enemy_speed", enemy_speed))
+	stomp_bounce = float(data.get("stomp_bounce", stomp_bounce))
+	shoot_range = float(data.get("shoot_range", shoot_range))
+	shoot_sweep = float(data.get("shoot_sweep", shoot_sweep))
+	laser_reach = float(data.get("laser_reach", laser_reach))
+	invulnerable_time = float(data.get("invulnerable_time", invulnerable_time))
+	knockback = float(data.get("knockback", knockback))
+	max_hearts = int(data.get("max_hearts", max_hearts))
+	chain_slowmo = bool(data.get("chain_slowmo", chain_slowmo))
 	hang_slowmo = bool(data.get("hang_slowmo", hang_slowmo))
 	momentum_carry = float(data.get("momentum_carry", momentum_carry))
 	level_index = int(data.get("level_index", level_index))

@@ -12,6 +12,7 @@ var _hud: Hud
 var _panel: TuningPanel
 var _crates: Node2D
 var _camera: Camera2D
+var _hearts := 0
 
 func _ready() -> void:
 	RenderingServer.set_default_clear_color(Palette.BACKDROP)
@@ -24,6 +25,8 @@ func _ready() -> void:
 
 	_rb = RoboBall.new()
 	_rb.state_changed.connect(_on_state_changed)
+	_rb.hurt.connect(_on_hurt)
+	_rb.chained.connect(_on_chained)
 	add_child(_rb)
 
 	_camera = Camera2D.new()
@@ -48,10 +51,13 @@ func _ready() -> void:
 
 func load_level(index: int) -> void:
 	_level.load_level(index)
+	_hearts = Settings.max_hearts
 	_camera.limit_right = int(_level.right_edge() + 60.0)
 	_build_crates()
 	_rb.teleport_to(_level.spawn_point())
-	_hud.update_state(_rb.state)
+	_hud.update_state(_rb.state, _rb.aim_kind)
+	_hud.show_hearts(_hearts, Settings.max_hearts if _level.has_enemies() else 0)
+	_hud.show_chain(0)
 
 func _build_crates() -> void:
 	for child in _crates.get_children():
@@ -63,7 +69,19 @@ func _build_crates() -> void:
 		_crates.add_child(crate)
 
 func _on_state_changed(state: RoboBall.State) -> void:
-	_hud.update_state(state)
+	_hud.update_state(state, _rb.aim_kind)
+
+## Ett hjärta per träff, och när de är slut börjar banan om från början — med
+## alla fiender tillbaka. Att förlora är alltså att få börja om, inte att
+## förlora något man byggt upp (docs/DESIGN.md princip 4).
+func _on_hurt() -> void:
+	_hearts -= 1
+	_hud.show_hearts(_hearts, Settings.max_hearts)
+	if _hearts <= 0:
+		load_level(Settings.level_index)
+
+func _on_chained(kills: int) -> void:
+	_hud.show_chain(kills)
 
 func _restart() -> void:
 	_build_crates()
@@ -85,7 +103,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			Settings.control_variant = (Settings.control_variant + 1) % 3
 			Settings.notify_changed()
 			Settings.save_settings()
-			_hud.update_state(_rb.state)
+			_hud.update_state(_rb.state, _rb.aim_kind)
 		KEY_F3:
 			Settings.level_index = (Settings.level_index + 1) % Levels.names().size()
 			Settings.save_settings()

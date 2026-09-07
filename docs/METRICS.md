@@ -120,6 +120,22 @@ Hopp på 45° ur en rullning, hoppkraft 700:
 Ju fortare han rullar, desto flackare och längre blir hoppet — han skjuter ifrån i
 stället för att starta om. I luften gäller medföljningen inte.
 
+## Fienderna
+
+| | mätt |
+| --- | --- |
+| Fyrkantens storlek | 42 × 42 px |
+| Gångfart, blå / röd | 70 / 42 px/s |
+| Studs när han landar på en blå | 520 px/s uppåt |
+| Skjutsiktet dyker upp när en röd är närmare än | 700 px |
+| Laserns räckvidd | 1400 px, stoppas av väggar |
+| Osårbar efter en träff | 1,2 s |
+
+Kontrollerat i banan: ett fall på en blå dödar den och ger kedja 1 med 520 px/s uppåt;
+att gå in i samma sorts fiende på marken kostar ett hjärta och fienden överlever; en
+laser med fri sikt dödar en röd och ger också kedja 1; och en röd bakom en avsats
+skyddas av avsatsen — strålen tar stopp i väggen.
+
 ## Tak och tunnlar
 
 Uppmätt genom att skicka in honom i en tunnel med sänkt tak:

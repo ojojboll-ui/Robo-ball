@@ -302,6 +302,26 @@ func _tab_objects() -> void:
 	_check("Slow motion redan medan han hänger", Settings.hang_slowmo,
 		func(v: bool) -> void: Settings.hang_slowmo = v)
 
+	_section("Fienderna")
+	_slider("Fiendernas gångfart", 20.0, 200.0, 5.0, Settings.enemy_speed,
+		func(v: float) -> void: Settings.enemy_speed = v, "%.0f")
+	_slider("Studs när han landar på en", 200.0, 900.0, 20.0, Settings.stomp_bounce,
+		func(v: float) -> void: Settings.stomp_bounce = v, "%.0f")
+	_slider("Så nära måste en röd vara för skjutsiktet", 200.0, 1400.0, 50.0, Settings.shoot_range,
+		func(v: float) -> void: Settings.shoot_range = v, "%.0f px")
+	_slider("Skjutsiktets varvtid", 0.2, 2.0, 0.05, Settings.shoot_sweep,
+		func(v: float) -> void: Settings.shoot_sweep = v, "%.2f varv/s")
+	_slider("Laserns räckvidd", 400.0, 2400.0, 50.0, Settings.laser_reach,
+		func(v: float) -> void: Settings.laser_reach = v, "%.0f px")
+	_slider("Osårbar efter en träff", 0.0, 4.0, 0.1, Settings.invulnerable_time,
+		func(v: float) -> void: Settings.invulnerable_time = v, "%.1f s")
+	_slider("Knuff bakåt vid träff", 0.0, 600.0, 20.0, Settings.knockback,
+		func(v: float) -> void: Settings.knockback = v, "%.0f")
+	_slider("Antal hjärtan", 1.0, 9.0, 1.0, float(Settings.max_hearts),
+		func(v: float) -> void: Settings.max_hearts = int(v), "%.0f")
+	_check("Nytt sikte i slow motion efter varje dödad fiende", Settings.chain_slowmo,
+		func(v: bool) -> void: Settings.chain_slowmo = v)
+
 func _tab_help() -> void:
 	_section("Styrning")
 	_choice("Variant", ["Klassisk", "Håll och släpp", "Auto-sikte"],
