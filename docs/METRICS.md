@@ -125,16 +125,25 @@ stället för att starta om. I luften gäller medföljningen inte.
 | | mätt |
 | --- | --- |
 | Fyrkantens storlek | 42 × 42 px |
-| Gångfart, blå / röd | 70 / 42 px/s |
+| Gångfart, blå | 70 px/s |
+| Rödas flygbana | svep 600 px i sidled (2 × spannet), våg 140 px, toppfart 186 px/s |
 | Studs när han landar på en blå | 520 px/s uppåt |
+| En träff räknas som anfall efter landning i | 0,12 s (`ATTACK_GRACE`) |
 | Skjutsiktet dyker upp när en röd är närmare än | 700 px |
 | Laserns räckvidd | 1400 px, stoppas av väggar |
 | Osårbar efter en träff | 1,2 s |
 
 Kontrollerat i banan: ett fall på en blå dödar den och ger kedja 1 med 520 px/s uppåt;
 att gå in i samma sorts fiende på marken kostar ett hjärta och fienden överlever; en
-laser med fri sikt dödar en röd och ger också kedja 1; och en röd bakom en avsats
-skyddas av avsatsen — strålen tar stopp i väggen.
+laser med fri sikt dödar en flygande röd och ger också kedja 1; och en röd bakom en
+avsats skyddas av avsatsen — strålen tar stopp i väggen.
+
+**Ett flackt hopp rakt in i sidan** mätte 700 px/s i sidled mot en blå: han nådde den i
+samma bildruta som han nuddade marken, och innan `ATTACK_GRACE` fanns hann läget hinna
+bli RULLAR före träffen — fienden överlevde och det kostade ett hjärta. Samma försök nu:
+fienden dör, hjärtan 3 → 3, kedja 1. Det är samma rotorsak som väggarna och kanterna:
+ett beslut om en krock får inte läsas ur ett tillstånd som rörelsen i samma bildruta
+redan hunnit ändra.
 
 ## Tak och tunnlar
 

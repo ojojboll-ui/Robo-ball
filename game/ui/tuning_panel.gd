@@ -303,7 +303,7 @@ func _tab_objects() -> void:
 		func(v: bool) -> void: Settings.hang_slowmo = v)
 
 	_section("Fienderna")
-	_slider("Fiendernas gångfart", 20.0, 200.0, 5.0, Settings.enemy_speed,
+	_slider("Fiendernas fart (röda flyger fortare)", 20.0, 200.0, 5.0, Settings.enemy_speed,
 		func(v: float) -> void: Settings.enemy_speed = v, "%.0f")
 	_slider("Studs när han landar på en", 200.0, 900.0, 20.0, Settings.stomp_bounce,
 		func(v: float) -> void: Settings.stomp_bounce = v, "%.0f")

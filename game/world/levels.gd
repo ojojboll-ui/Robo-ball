@@ -283,60 +283,50 @@ static func _workshop() -> Dictionary:
 
 ## Banan där fienderna provas.
 ##
-## Två sorter, och de lär ut var sin sak. De **blå** går på marken och är farliga
-## att gå in i men ofarliga att landa på — samma fiende betyder alltså olika sak
-## beroende på vad RB själv gör, och det är den enklaste regel ett barn kan läsa
-## av på egen hand. De **röda** bryr sig inte om att bli hoppade på och skadar
-## alltid; dem måste man skjuta.
+## Två sorter, och de lär ut var sin sak — men de hålls isär tills var och en
+## sitter för sig. Första halvan är bara **blå**: de går på marken, dör av att
+## RB kommer flygande, och skadar den som går eller rullar in i dem. Samma
+## fiende betyder alltså olika saker beroende på vad han själv gör, vilket är
+## den enklaste regel ett barn kan läsa av på egen hand.
 ##
-## Ordningen är medveten: först en ensam blå att hoppa på, sedan tre i rad så att
-## kedjan går att upptäcka, sedan en ensam röd på en avsats där man hinner se att
-## siktet blev ett annat, och till sist blandat.
+## Andra halvan är bara **röd**: de flyger fram och tillbaka längs en sinusvåg,
+## bryr sig inte om att bli hoppade på och skadar vid varje beröring. Där finns
+## inga avsatser i vägen — vågen ska synas hel, och den enda vägen förbi är
+## lasern.
 static func _enemies() -> Dictionary:
 	var right := 5200.0
 	var enemies: Array = []
 
-	# 1. En ensam blå, mitt på slätten.
+	# Blå halvan. Först en ensam att hoppa på, sedan tre i rad — kedjan.
 	enemies.append({"pos": Vector2(900, GROUND_Y - 40), "kind": "blue"})
-
-	# 2. Tre blå i rad — kedjan.
 	for i in 3:
 		enemies.append({"pos": Vector2(1500.0 + i * 240.0, GROUND_Y - 40), "kind": "blue"})
+	enemies.append({"pos": Vector2(2400, GROUND_Y - 40), "kind": "blue"})
 
-	# 3. En röd på en avsats, ensam nog att man hinner se skjutsiktet dyka upp.
-	enemies.append({"pos": Vector2(2600, 380), "kind": "red"})
-
-	# 4. Blandat: två blå på marken och två röda ovanför dem.
-	enemies.append({"pos": Vector2(3300, GROUND_Y - 40), "kind": "blue"})
-	enemies.append({"pos": Vector2(3600, GROUND_Y - 40), "kind": "blue"})
-	enemies.append({"pos": Vector2(3450, 330), "kind": "red"})
-	enemies.append({"pos": Vector2(3900, 330), "kind": "red"})
-
-	# 5. Sista uppställningen: en röd bakom två blå, så att man måste välja ordning.
-	enemies.append({"pos": Vector2(4500, GROUND_Y - 40), "kind": "blue"})
-	enemies.append({"pos": Vector2(4650, GROUND_Y - 40), "kind": "blue"})
-	enemies.append({"pos": Vector2(4850, GROUND_Y - 40), "kind": "red"})
+	# Röda halvan: fritt luftrum, inga avsatser. Först en ensam i ögonhöjd, sedan
+	# två högre upp med olika våglängd så att man ser att banan är en våg.
+	enemies.append({"pos": Vector2(3200, 420), "kind": "red", "span": 300.0, "wave": 70.0})
+	enemies.append({"pos": Vector2(3950, 330), "kind": "red", "span": 380.0, "wave": 110.0})
+	enemies.append({"pos": Vector2(4700, 400), "kind": "red", "span": 240.0, "wave": 140.0})
 
 	return {
 		"name": "Fienderna",
 		"right_edge": right,
 		"floors": [
 			Rect2(-60, GROUND_Y, right + 60.0, 320),
-			# Avsatser att möta fienderna från, och att bli beskjuten från.
-			Rect2(2450, 440, 320, 24),
-			Rect2(3350, 390, 220, 24),
-			Rect2(3820, 390, 220, 24),
-			Rect2(4300, 430, 180, 24),
+			# Avsatser hör till den blå halvan: något att möta dem från ovanifrån.
+			Rect2(1180, 470, 200, 24),
+			Rect2(2050, 430, 200, 24),
 		],
 		"walls": [Rect2(-120, 240, 60, 400), Rect2(right, 180, 60, 460)],
-		"ramps": [ramp(1180.0, 220.0, 26.0), ramp(4980.0, 200.0, 26.0)],
+		"ramps": [ramp(700.0, 200.0, 26.0)],
 		"crates": [],
 		"enemies": enemies,
 		"spawns": [
 			{"name": "Start", "pos": Vector2(200, GROUND_Y - 60)},
 			{"name": "Kedjan", "pos": Vector2(1300, GROUND_Y - 60)},
-			{"name": "Den röda", "pos": Vector2(2300, GROUND_Y - 60)},
-			{"name": "Blandat", "pos": Vector2(3150, GROUND_Y - 60)},
-			{"name": "Sista", "pos": Vector2(4300, GROUND_Y - 60)},
+			{"name": "Röda halvan", "pos": Vector2(2900, GROUND_Y - 60)},
+			{"name": "Höga vågen", "pos": Vector2(3700, GROUND_Y - 60)},
+			{"name": "Sista", "pos": Vector2(4450, GROUND_Y - 60)},
 		],
 	}

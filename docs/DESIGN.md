@@ -172,15 +172,27 @@ man bestämmer sig — och den som inte trycker svänger vidare.
 
 Fyrkanter med elaka ögon, och två sorter som lär ut var sin sak.
 
-**Blå** går på marken. Landar RB på den ovanifrån dör den; går eller rullar han in i
-den är det han som tar skada. Samma fiende betyder alltså olika saker beroende på vad
-han själv gör — det är den enklaste sortens regel ett barn kan läsa av på egen hand,
-och den kräver ingen text.
+**Blå** går på marken. Är RB i ett hopp dör den — *var på den* han träffar spelar
+ingen roll, en flack båge rakt in i sidan räknas lika mycket som en landning uppifrån.
+Går eller rullar han in i den är det i stället han som tar skada. Samma fiende betyder
+alltså olika saker beroende på vad han själv gör — det är den enklaste sortens regel
+ett barn kan läsa av på egen hand, och den kräver ingen text.
 
-**Röd** bryr sig inte om att bli hoppad på och skadar vid varje beröring. Den går bara
-att skjuta, och därför byter siktet skepnad när en röd står närmast: i stället för
-hoppets båge kommer en rak visare som går runt hela varvet som en klocka. Att erbjuda
-hoppbågen mot en röd vore att erbjuda fel svar i just det ögonblick det gäller.
+Regeln frågar inte bara vad han gör i just den bildrutan. Ett flackt hopp landar ofta
+i samma bildruta som det når fienden, och då hann han bli rullande innan träffen
+räknades — samma rörelse blev alltså ibland en träff och ibland en skada, beroende på
+en hundradels sekund ingen kan se. Därför räknas en träff som anfall en kort stund
+efter landningen också (`ATTACK_GRACE`, 0,12 s).
+
+**Röd** flyger fram och tillbaka längs en sinusvåg, bryr sig inte om att bli hoppad på
+och skadar vid varje beröring. Att den *flyger* är inte pynt: den går inte att nå med
+benen, och det är just det som gör lasern nödvändig i stället för valfri. Därför byter
+siktet skepnad när en röd står närmast: i stället för hoppets båge kommer en rak visare
+som går runt hela varvet som en klocka. Att erbjuda hoppbågen mot en röd vore att
+erbjuda fel svar i just det ögonblick det gäller.
+
+Sorterna hålls än så länge isär, en halva var av banan. Blandade lär de ut två saker
+samtidigt, och då lär de inte ut någon: först ska hoppet sitta, sedan lasern.
 
 **Kedjan.** Varje dödad fiende öppnar siktet igen i slow motion, så länge han inte
 nuddat marken. Det är mekaniken från Sonics rad av fiender, men med spelets egen

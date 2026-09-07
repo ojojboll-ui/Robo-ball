@@ -103,7 +103,7 @@ var swing_grab_radius := 70.0  ## px, hur nära greppet han måste komma
 var swing_stretch := 1.0       ## hur mycket benen ger efter för centrifugalkraften
 
 # Fienderna. Allt här är under prövning som resten av verkstaden.
-var enemy_speed := 70.0        ## px/s, blå går i full fart, röda i 60 %
+var enemy_speed := 70.0        ## px/s, blå går i den farten, röda flyger i 150 %
 var stomp_bounce := 520.0      ## px/s uppåt när han studsar på en blå
 var shoot_range := 700.0       ## px, så nära måste en röd vara för att siktet ska bli ett skjutsikte
 var shoot_sweep := 0.9         ## varv per sekund för skjutsiktets visare

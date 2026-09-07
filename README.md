@@ -111,16 +111,22 @@ Skillnaden mellan de två greppen är hela poängen med att ha båda:
 | **Stången** sitter fast och hakas med benen på den sida han passerar | behåller allt — en riktningsväxel, lika mycket fart ut som in |
 | **Lianen** greppas var som helst längs repet — benen hakas där, kroppen hänger nedanför, precis som i stången | behåller farten längs banan: 100 % genom botten av svängen, 79 % snett in. Var man tar tag sätter pendelns längd: 2,3 s högt upp, 2,9 s långt ner |
 
-**Fienderna.** Fyrkanter med elaka ögon som går på marken. Två sorter, och skillnaden
-är hela poängen:
+**Fienderna.** Fyrkanter med elaka ögon. Två sorter, och skillnaden är hela poängen:
 
-| | hoppa på den | röra den på marken | lasern |
+| | träffa den i ett hopp | röra den på marken | lasern |
 | --- | --- | --- | --- |
-| **Blå** | den dör | RB tappar ett hjärta | den dör |
-| **Röd** | händer inget | RB tappar ett hjärta | den dör |
+| **Blå**, går på marken | den dör | RB tappar ett hjärta | den dör |
+| **Röd**, flyger i en sinusvåg | händer inget | RB tappar ett hjärta | den dör |
 
 Samma blå fiende är alltså farlig eller ofarlig beroende på vad RB själv gör — den
-enklaste sortens regel ett barn kan läsa av på egen hand.
+enklaste sortens regel ett barn kan läsa av på egen hand. Och det räcker att han är i
+ett hopp: en flack båge rakt in i sidan räknas lika mycket som en landning uppifrån,
+och även en träff strax efter landningen räknas, så att en hundradels sekund inte
+avgör om samma rörelse blev en träff eller en skada.
+
+Banan håller sorterna isär: blå i första halvan, röda i den andra, där luftrummet är
+fritt från avsatser. Blandade lär de ut två saker samtidigt, och då lär de inte ut
+någon.
 
 **Kedjan.** Varje dödad fiende öppnar siktet igen i slow motion, så länge han inte
 nuddat marken. Ett tryck räcker för att fortsätta från fiende till fiende, och den som

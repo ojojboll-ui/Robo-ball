@@ -44,6 +44,11 @@ const GROUND_SNAP := 20.0      ## hur långt motorn får dra ner honom mot marke
 ## den kraften lättar han från ytan var trettonde bildruta och spelet fladdrar
 ## mellan "går" och "i luften". Den avgör också hur väl han följer med över ett
 ## krön: räcker den inte, lyfter han, precis som han ska.
+## Hur länge efter att ha lämnat luften en träff fortfarande räknas som ett
+## anfall. Utan den avgörs ett hopp rakt in i sidan av en fiende av vilken
+## bildruta foten råkade nudka marken i — landar han en hundradel innan han når
+## fienden blir samma rörelse plötsligt en skada i stället för en träff.
+const ATTACK_GRACE := 0.12
 const SIM_STEP := 1.0 / 45.0
 const SIM_STEPS := 70
 
@@ -67,6 +72,8 @@ enum Aim { JUMP, SHOOT }
 var aim_kind: Aim = Aim.JUMP
 var chain := 0                  ## hur många fiender i rad utan att nudda marken
 var _invulnerable := 0.0
+## Tid sedan han senast var i luften. Se ATTACK_GRACE.
+var _since_air := 999.0
 var _laser_time := 0.0
 var _laser_to := Vector2.ZERO
 var _airborne_frames := 0
@@ -112,6 +119,13 @@ func _physics_process(delta: float) -> void:
 	# så tappar han fästet helt och faller.
 	floor_max_angle = deg_to_rad(Settings.roll_max_slope)
 	_update_stance_shape(delta)
+	# Mätt *före* rörelsen: landar han i samma bildruta som han når en fiende är
+	# det ändå hoppet som bar honom dit.
+	if state == State.AIR or state == State.HANG \
+			or (state == State.AIM and _aim_from_air):
+		_since_air = 0.0
+	else:
+		_since_air += delta
 	match state:
 		State.WALK, State.ROLL:
 			_process_ground(delta)
@@ -676,12 +690,27 @@ func _touch_enemies() -> void:
 		var enemy := node as Enemy
 		if enemy == null or not body.intersects(enemy.rect()):
 			continue
-		var airborne := state == State.AIR or state == State.HANG
-		var from_above := global_position.y < enemy.top() and velocity.y > -1.0
-		if enemy.kind == Enemy.Kind.BLUE and airborne and from_above:
+		# Är han i luften är han farlig. Kravet att träffen skulle komma *ovanifrån*
+		# var mitt eget påhitt och gjorde ett hopp rakt in i sidan av en blå till
+		# en skada — men den som hoppar mot en fiende har gjort just det spelet
+		# ber om, och ska inte straffas för att bågen råkade bli flack.
+		#
+		# Och det räcker inte att fråga vad han gör *nu*: ett flackt hopp landar
+		# ofta i samma bildruta som det når fienden, och då hade han redan hunnit
+		# bli rullande när träffen räknades. Därför gäller anfallet en kort stund
+		# efter landningen också (ATTACK_GRACE).
+		if enemy.kind == Enemy.Kind.BLUE and _since_air <= ATTACK_GRACE:
 			enemy.die(false)
-			global_position.y = enemy.top() - _capsule.height * 0.5 - 1.0
+			var above := global_position.y < enemy.top()
+			if above:
+				global_position.y = enemy.top() - _capsule.height * 0.5 - 1.0
+			# Hann han nudka marken är farten fortfarande tangentiell. Lyft över
+			# den till en riktig luftfart, annars studsar han inte alls.
+			if state == State.WALK or state == State.ROLL:
+				velocity = tangent() * ground_speed
+				_set_state(State.AIR)
 			velocity = Vector2(velocity.x, -Settings.stomp_bounce)
+			_since_air = 0.0
 			_air_jumps_used = 0
 			_scored_a_kill()
 			return

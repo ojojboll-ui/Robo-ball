@@ -8,8 +8,10 @@ class_name Enemy
 ##   rullar han in i den på marken är det han som tar skada — samma fiende är
 ##   alltså farlig eller ofarlig beroende på vad han själv gör, vilket är den
 ##   enklaste sortens regel ett barn kan läsa av på egen hand.
-## * **Röd** bryr sig inte om att bli hoppad på och skadar RB så fort den nuddar
-##   honom. Den går bara att skjuta.
+## * **Röd** flyger fram och tillbaka längs en sinusvåg, bryr sig inte om att bli
+##   hoppad på och skadar RB så fort den nuddar honom. Den går bara att skjuta.
+##   Att den flyger är inte pynt: den kan inte nås med benen, och det är just det
+##   som gör lasern nödvändig i stället för valfri.
 ##
 ## Fienderna ligger i ett eget kollisionslager: de går på världens golv och
 ## väggar, men RB åker aldrig in i dem som i en låda. Vad en beröring betyder
@@ -21,16 +23,26 @@ const SIZE := Vector2(42.0, 42.0)
 const GRAVITY := 1400.0
 ## Hur långt fram den känner efter mark innan den vänder vid en kant.
 const LEDGE_PROBE := 30.0
+## Röda flyger fortare än blå går. Faktorn sätter deras *toppfart* i förhållande
+## till fartreglaget: en som svävar i exakt gånghastighet ser inte ut att flyga,
+## den ser ut att ha fastnat.
+const FLY_PACE := 1.5
 
 signal killed(enemy: Enemy, by_laser: bool)
 
 var kind := Kind.BLUE
 var facing := -1
+## Röda: hur långt åt varje håll den flyger, och hur hög vågen är.
+var span := 300.0
+var wave := 80.0
+var _origin := Vector2.ZERO
+var _t := 0.0
 var _dead := false
 var _blink := 0.0
 
 func _ready() -> void:
 	add_to_group("enemy")
+	_origin = position
 	collision_layer = 2
 	collision_mask = 1
 	var shape := CollisionShape2D.new()
@@ -44,13 +56,34 @@ func _physics_process(delta: float) -> void:
 		return
 	if _blink > 0.0:
 		_blink = maxf(0.0, _blink - delta)
-	var speed: float = Settings.enemy_speed * (1.0 if kind == Kind.BLUE else 0.6)
-	velocity.x = facing * speed
+	if kind == Kind.RED:
+		_fly(delta)
+	else:
+		_walk(delta)
+	queue_redraw()
+
+## Blå: går på marken, vänder vid väggar och vid kanter.
+func _walk(delta: float) -> void:
+	velocity.x = facing * Settings.enemy_speed
 	velocity.y += GRAVITY * delta
 	move_and_slide()
 	if is_on_wall() or (is_on_floor() and not _ground_ahead()):
 		facing = -facing
-	queue_redraw()
+
+## Röd: flyger fram och tillbaka längs en sinusvåg.
+##
+## Sidled svänger som en sinus, vilket ger mjuka vändlägen i stället för tvära
+## kast, och höjden är en sinus *av läget i sidled* — alltså är banan i rummet en
+## riktig våg som den följer åt båda hållen, inte en slinga. Vinkelfarten skalas
+## mot spannet så att reglaget för fiendernas fart betyder px/s även här.
+func _fly(delta: float) -> void:
+	_t += delta * Settings.enemy_speed * FLY_PACE / maxf(span, 1.0)
+	var x := sin(_t) * span
+	var y := sin(x / maxf(span, 1.0) * PI * 2.0) * wave
+	var to := _origin + Vector2(x, y)
+	velocity = (to - position) / maxf(delta, 0.0001)
+	position = to
+	facing = 1 if cos(_t) >= 0.0 else -1
 
 ## Finns det mark framför fötterna? Annars vänder den, av samma skäl som RB gör
 ## det: en fiende som går ner i en avgrund är en fiende spelaren aldrig möter.

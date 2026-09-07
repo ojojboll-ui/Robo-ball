@@ -33,6 +33,8 @@ func load_level(index: int) -> void:
 	for entry: Dictionary in data.get("enemies", []):
 		var enemy := Enemy.new()
 		enemy.kind = Enemy.Kind.RED if entry.get("kind", "blue") == "red" else Enemy.Kind.BLUE
+		enemy.span = float(entry.get("span", 300.0))
+		enemy.wave = float(entry.get("wave", 80.0))
 		enemy.position = entry["pos"]
 		add_child(enemy)
 	queue_redraw()
