@@ -30,6 +30,10 @@ const REGRAB_DELAY := 0.5
 ## snurrade han 2,3 varv i sekunden vid ett snabbt grepp, vilket varken går att
 ## läsa eller att träffa rätt i.
 const BAR_HOLD := 60.0
+## Hur långt upp mot fästet man som minst kan greppa en lian.
+const VINE_MIN_HOLD := 70.0
+## Hur mycket benen ger efter för centrifugalkraften när han snurrar fort.
+const STRETCH := 20.0
 ## Greppet ritas en bit ovanför den som hänger, så att han hänger *i* det.
 const HOLD_ABOVE := 20.0
 
@@ -43,6 +47,12 @@ var omega := 0.0        ## vinkelfart, radianer per sekund
 var rider: Node2D = null
 ## Sant medan han siktar: pendeln står stilla och farten väntar i hoppet.
 var frozen := false
+## Avståndet från fästet ut till honom när han greppade. På en lian sätts det av
+## *var* på repet han tog tag — högt upp ger en kort, snabb pendel, långt ner en
+## lång och långsam. Det är hela skillnaden mellan två grepp i samma lian.
+var hold := 0.0
+## Vad benen sträckt sig till just nu, av centrifugalkraften.
+var _stretch := 0.0
 
 var _cooldown := 0.0
 
@@ -54,13 +64,38 @@ func _physics_process(delta: float) -> void:
 		_cooldown -= delta
 	# En fast stång rör sig inte av sig själv; bara den som hänger i den gör det.
 	if not frozen and (kind == Kind.VINE or rider != null):
+		_apply_stretch(delta)
 		omega += -(Settings.rb_gravity / radius()) * sin(angle) * delta
 		omega -= omega * Settings.swing_damping * delta
 		angle += omega * delta
+		# Vinkeln hålls inom ett varv. Utan det räknade den bara uppåt — mätt
+		# 1243 grader efter några sekunders snurrande — och då blev repet ritat
+		# som en härva och hittade aldrig tillbaka till sitt viloläge.
+		angle = wrapf(angle, -PI, PI)
 	if rider != null:
 		rider.global_position = seat()
 		rider.velocity = tangent() * omega * radius()
 	queue_redraw()
+
+## Benen ger efter för centrifugalkraften.
+##
+## Ju fortare han snurrar desto hårdare dras kroppen utåt, och benen sträcks. Den
+## uttänjning som centrifugalkraften ger jämfört med tyngden är ω²r/g, alltså
+## exakt det talet — och när radien ändras bevaras rörelsemängdsmomentet L = r²ω,
+## precis som när en konståkare drar in armarna. Sträcker han ut sig går varvet
+## alltså långsammare, drar han in sig går det fortare, av sig självt.
+func _apply_stretch(delta: float) -> void:
+	if rider == null:
+		_stretch = maxf(0.0, _stretch - delta * 60.0)
+		return
+	var base := maxf(hold, 1.0)
+	var pull := omega * omega * base / maxf(Settings.rb_gravity, 1.0)
+	var target := clampf(pull, 0.0, 1.0) * STRETCH * Settings.swing_stretch
+	var before := radius()
+	_stretch = lerpf(_stretch, target, minf(1.0, delta * 6.0))
+	var after := radius()
+	if after > 0.01 and absf(after - before) > 0.001:
+		omega *= (before * before) / (after * after)
 
 ## Punkten han svänger runt.
 func pivot() -> Vector2:
@@ -68,15 +103,32 @@ func pivot() -> Vector2:
 
 ## Avståndet från upphängningen ut till honom.
 func radius() -> float:
+	return (hold if hold > 0.0 else _default_hold()) + _stretch
+
+func _default_hold() -> float:
 	return BAR_HOLD if kind == Kind.BAR else length
 
 ## Där han sitter just nu.
 func seat() -> Vector2:
 	return pivot() + Vector2(sin(angle), cos(angle)) * radius()
 
-## Var man får tag: stången griper man var man än når den, lianen i dess ände.
+## Var man får tag. Stången griper man var man än når den. Lianen griper man
+## *var som helst längs repet* — den punkt på repet som är närmast honom.
 func grip() -> Vector2:
 	return pivot() if kind == Kind.BAR else seat()
+
+## Närmaste greppunkt på repet till en given plats, och hur långt ut den ligger.
+func grab_point(from: Vector2) -> Dictionary:
+	if kind == Kind.BAR:
+		return {"point": pivot(), "hold": BAR_HOLD}
+	var dir := Vector2(sin(angle), cos(angle))
+	var along := clampf((from - pivot()).dot(dir), VINE_MIN_HOLD, length)
+	return {"point": pivot() + dir * along, "hold": along}
+
+## Hur nära repet han är som närmast — grepp om lianen mäts mot hela repet, inte
+## bara mot dess ände. Det är det som gör att var man tar tag betyder något.
+func distance_to_rope(from: Vector2) -> float:
+	return from.distance_to((grab_point(from)["point"] as Vector2))
 
 ## Riktningen han far iväg i om han släpper nu: vinkelrätt mot armen.
 func tangent() -> Vector2:
@@ -110,9 +162,13 @@ func can_grab() -> bool:
 func grab(body: Node2D) -> void:
 	rider = body
 	frozen = false
+	_stretch = 0.0
 	if kind == Kind.BAR:
+		hold = BAR_HOLD
 		angle = _hook_angle(body.velocity)
 	else:
+		# Lianen: han tar tag där han är, och radien blir avståndet dit.
+		hold = float(grab_point(body.global_position)["hold"])
 		angle = _angle_of(body.global_position)
 	omega = body.velocity.dot(tangent()) / radius()
 	body.global_position = seat()
@@ -132,6 +188,7 @@ func release() -> Vector2:
 	var out_velocity := tangent() * omega * radius()
 	rider = null
 	frozen = false
+	hold = 0.0
 	_cooldown = REGRAB_DELAY
 	return out_velocity
 
@@ -153,11 +210,12 @@ func _draw() -> void:
 		# Lianen ritas som korta segment som hänger efter i svängen, så att den
 		# ser mjuk ut. Den räknas fortfarande som en styv pendel — det syns bara
 		# på repet, inte på fysiken.
-		var reach := radius() - HOLD_ABOVE
+		# Repet ritas i sin fulla längd även när han hänger en bit upp på det: det
+		# är ju hela repet som finns där, och nedanför honom dinglar resten.
 		var points := PackedVector2Array()
-		for i in 9:
-			var t := float(i) / 8.0
+		for i in 13:
+			var t := float(i) / 12.0
 			var a := angle * (0.35 + 0.65 * t)
-			points.append(Vector2(sin(a), cos(a)) * (reach * t))
+			points.append(Vector2(sin(a), cos(a)) * (length * t))
 		draw_polyline(points, Palette.GROUND_EDGE, 5.0)
 		draw_circle(Vector2.ZERO, 7.0, Palette.GROUND_EDGE)

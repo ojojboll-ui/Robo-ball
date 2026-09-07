@@ -295,6 +295,8 @@ func _tab_objects() -> void:
 		func(v: bool) -> void: Settings.swing_grab = v)
 	_slider("Hur nära greppet han måste komma", 30.0, 160.0, 5.0, Settings.swing_grab_radius,
 		func(v: float) -> void: Settings.swing_grab_radius = v, "%.0f px")
+	_slider("Benens eftergift i svängen", 0.0, 2.0, 0.05, Settings.swing_stretch,
+		func(v: float) -> void: Settings.swing_stretch = v, "%.2f")
 	_slider("Hur fort svängen dör ut", 0.0, 1.0, 0.02, Settings.swing_damping,
 		func(v: float) -> void: Settings.swing_damping = v, "%.2f")
 	_check("Slow motion redan medan han hänger", Settings.hang_slowmo,

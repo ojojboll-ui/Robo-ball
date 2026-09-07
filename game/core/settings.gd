@@ -100,6 +100,7 @@ var trampoline_curve := 0.25   ## radianer, hur mycket duken buktar och styr in 
 var swing_damping := 0.12      ## hur fort en trapets eller lian tappar sin sväng
 var swing_grab := true         ## hakar fast av sig själv när han far förbi
 var swing_grab_radius := 70.0  ## px, hur nära greppet han måste komma
+var swing_stretch := 1.0       ## hur mycket benen ger efter för centrifugalkraften
 var hang_slowmo := false       ## sakta ner världen redan medan han hänger (siktet saktar ändå ner)
 ## Hur mycket av farten han redan har som följer med in i hoppet. 1.0 = allt:
 ## hoppkraften läggs ovanpå, alltså skjuter han ifrån i stället för att starta om.
@@ -165,6 +166,7 @@ func as_dict() -> Dictionary:
 		"swing_damping": swing_damping,
 		"swing_grab": swing_grab,
 		"swing_grab_radius": swing_grab_radius,
+		"swing_stretch": swing_stretch,
 		"hang_slowmo": hang_slowmo,
 		"momentum_carry": momentum_carry,
 		"level_index": level_index,
@@ -216,6 +218,7 @@ func apply(data: Dictionary) -> void:
 	swing_damping = float(data.get("swing_damping", swing_damping))
 	swing_grab = bool(data.get("swing_grab", swing_grab))
 	swing_grab_radius = float(data.get("swing_grab_radius", swing_grab_radius))
+	swing_stretch = float(data.get("swing_stretch", swing_stretch))
 	hang_slowmo = bool(data.get("hang_slowmo", hang_slowmo))
 	momentum_carry = float(data.get("momentum_carry", momentum_carry))
 	level_index = int(data.get("level_index", level_index))

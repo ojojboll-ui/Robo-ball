@@ -145,13 +145,21 @@ Uppmätt i banan, med grundvärdena:
 | Studsmatta med bukt 0,25 | håller sig kvar på duken, pendlar 626–768 px |
 | Stång, radie 60 px | behåller 100 % av farten in i greppet, oavsett infallsvinkel |
 | Lian, L = 330 px | 100 % rakt genom botten av svängen, 79 % (63 % av energin) snett in |
-| Lian, svängningstid | 3,1 s |
+| Lian, grepp 180 px ner | svängningstid 2,3 s |
+| Lian, grepp 300 px ner | svängningstid 2,9 s |
+| Benens eftergift, ω = 2 / 4 rad/s | 4,1 / 8,4 px längre radie |
 | Fånga en stång med hopp rakt upp | lyckas från tre startpunkter under den, greppet efter 8–14 bildrutor |
 | Gå ut på en matta | 110 bildrutor av 260 på duken — förut vände han vid dess kant och nådde den aldrig |
 | Falla 300 px ner på en matta | tillbaka till samma höjd |
 
 Svängningstiden är 2π√(L/g) och kommer alltså ur längden, inte ur en inställning:
-ändrar man tempot i panelen ändras pendlarna lika mycket som hoppet.
+ändrar man tempot i panelen ändras pendlarna lika mycket som hoppet. På en lian är
+det *var man tar tag* som sätter längden — högt upp ger en kort och snabb pendel,
+långt ner en lång och långsam.
+
+Benen ger dessutom efter för centrifugalkraften: uttänjningen följer ω²r/g, och när
+radien ändras bevaras rörelsemängdsmomentet r²ω, precis som när en konståkare drar
+in armarna. Sträcker han ut sig går varvet långsammare, av sig självt.
 
 ## Rutnät (förslag, inte beslutat)
 

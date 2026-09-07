@@ -54,6 +54,7 @@ var body_lift := 13.0
 ## minne tippar leden fram och tillbaka. Det syntes som att benen böjde sig åt
 ## fel håll under fall.
 var _side := [1.0, 1.0]
+var _foot_vel := [Vector2.ZERO, Vector2.ZERO]
 var _body_vel := Vector2.ZERO
 var _ready := false
 
@@ -197,16 +198,33 @@ func _begin_step(rb: Node2D, normal: Vector2, i: int, stride: float, speed: floa
 ## Markerade vi dem som stegande med stegtiden slut skulle nästa markbildruta
 ## flytta foten till *förra* stegets slutpunkt — som mycket väl kan ligga tvärs
 ## över banan. Det var felet som gjorde benen jättelånga vid landning.
-func _dangle(normal: Vector2, delta: float, fall_speed: float) -> void:
+## I luften hänger benen i sig själva.
+##
+## Fötterna dras mot sitt viloläge under höften av en fjäder och bromsas av en
+## dämpning — alltså slänger de efter kroppen, svänger förbi och pendlar in, i
+## stället för att glida mot en punkt i en fast takt. Att de får släpa är hela
+## poängen: det är benen som visar vad kroppen gjort. Fjädern är stark nog att de
+## hinner med i ett fall (utan den blev de stående rakt upp som antenner), och
+## sträckan är hårt kapad vid vad benet når.
+const DANGLE_SPRING := 190.0
+const DANGLE_DAMP := 11.0
+
+func _dangle(normal: Vector2, delta: float, _fall_speed: float) -> void:
 	var t := Vector2(-normal.y, normal.x)
-	# Fötterna följer kroppen fortare ju fortare kroppen rör sig. Med en fast takt
-	# hann de inte med i ett snabbt fall: kroppen sjönk ifrån dem och benen blev
-	# stående rakt upp som antenner, tydligast i ögonblicket han mötte en
-	# studsmatta. Farten i taktens nämnare gör att de hänger med i alla hastigheter.
-	var follow := minf(1.0, delta * (16.0 + fall_speed * 0.09))
 	for i in 2:
 		var rest := body_point - normal * (body_height - 6.0) + t * (i * 2.0 - 1.0) * HIP_SPREAD
-		feet[i] = (feet[i] as Vector2).lerp(rest, follow)
+		var foot: Vector2 = feet[i]
+		var vel: Vector2 = _foot_vel[i]
+		vel += (rest - foot) * DANGLE_SPRING * delta
+		vel *= exp(-DANGLE_DAMP * delta)
+		foot += vel * delta
+		var hip := body_point - normal * 10.0 + t * (i * 2.0 - 1.0) * HIP_SPREAD
+		var reach := foot - hip
+		if reach.length() > REACH:
+			foot = hip + reach.normalized() * REACH
+			vel = vel.slide(reach.normalized())
+		_foot_vel[i] = vel
+		feet[i] = foot
 		planted[i] = true
 		step_t[i] = 1.0
 		step_to[i] = feet[i]

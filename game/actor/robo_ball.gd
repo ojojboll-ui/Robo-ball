@@ -124,13 +124,18 @@ func _update_legs(delta: float) -> void:
 	# Hänger han kvar i något gäller hängställningen även medan han siktar. Förut
 	# reste han sig mitt i luften i samma stund han tryckte, som om han glömt att
 	# det var benen han hängde i.
-	if _swing != null and (state == State.HANG or state == State.AIM):
+	if _swing != null and state == State.HANG:
 		# Hängande är kroppens "upp" riktad bort från greppet — han hänger upp
 		# och ner i benen, som i konceptskiss 05.
 		var down := global_position - _swing.grip()
 		if down.length() > 0.001:
 			_smooth_normal = _smooth_normal.lerp(down.normalized(), minf(1.0, delta * 14.0)).normalized()
 		_legs.hang(self, _swing.grip(), delta)
+		return
+	# Siktet fryser världen, och då ska benen frysa med. Ställningen han står,
+	# hänger eller flyger i när man trycker är den han behåller medan pilen
+	# sveper — allt annat blir en ny pose ur tomma intet.
+	if state == State.AIM:
 		return
 	if _stance < 0.08:
 		# Helt indragna — då finns inget att simulera, och kroppen sitter åter
@@ -256,7 +261,9 @@ func _swing_within_reach() -> Node2D:
 		var swing := node as Swing
 		if swing == null or not swing.can_grab():
 			continue
-		var d := global_position.distance_to(swing.grip())
+		# Lianen mäts mot hela repet, inte bara mot dess ände: han ska kunna ta tag
+		# var som helst längs den, och var han tar tag avgör pendelns längd.
+		var d := swing.distance_to_rope(global_position)
 		if d < best_distance:
 			best_distance = d
 			best = swing
