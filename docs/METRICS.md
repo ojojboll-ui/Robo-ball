@@ -145,8 +145,9 @@ Uppmätt i banan, med grundvärdena:
 | Studsmatta med bukt 0,25 | håller sig kvar på duken, pendlar 626–768 px |
 | Stång, radie 60 px | behåller 100 % av farten in i greppet, oavsett infallsvinkel |
 | Lian, L = 330 px | 100 % rakt genom botten av svängen, 79 % (63 % av energin) snett in |
-| Lian, grepp 180 px ner | svängningstid 2,3 s |
-| Lian, grepp 300 px ner | svängningstid 2,9 s |
+| Lian, hakad 120 px ner | svängningstid 2,3 s |
+| Lian, hakad 240 px ner | svängningstid 2,9 s |
+| Kroppen under haken | 60 px, lika i stång och lian |
 | Benens eftergift, ω = 2 / 4 rad/s | 4,1 / 8,4 px längre radie |
 | Fånga en stång med hopp rakt upp | lyckas från tre startpunkter under den, greppet efter 8–14 bildrutor |
 | Gå ut på en matta | 110 bildrutor av 260 på duken — förut vände han vid dess kant och nådde den aldrig |
@@ -155,7 +156,8 @@ Uppmätt i banan, med grundvärdena:
 Svängningstiden är 2π√(L/g) och kommer alltså ur längden, inte ur en inställning:
 ändrar man tempot i panelen ändras pendlarna lika mycket som hoppet. På en lian är
 det *var man tar tag* som sätter längden — högt upp ger en kort och snabb pendel,
-långt ner en lång och långsam.
+långt ner en lång och långsam. Kroppen hänger en kroppslängd nedanför haken i
+båda fallen: han hänger i benen, inte med kroppen mitt i repet.
 
 Benen ger dessutom efter för centrifugalkraften: uttänjningen följer ω²r/g, och när
 radien ändras bevaras rörelsemängdsmomentet r²ω, precis som när en konståkare drar

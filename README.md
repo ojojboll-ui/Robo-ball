@@ -109,7 +109,7 @@ Skillnaden mellan de två greppen är hela poängen med att ha båda:
 | | vad greppet gör med farten |
 | --- | --- |
 | **Stången** sitter fast och hakas med benen på den sida han passerar | behåller allt — en riktningsväxel, lika mycket fart ut som in |
-| **Lianen** greppas var som helst längs repet, och han får det grepp geometrin ger | behåller farten längs banan: 100 % genom botten av svängen, 79 % snett in. Var man tar tag sätter pendelns längd: 2,3 s högt upp, 2,9 s långt ner |
+| **Lianen** greppas var som helst längs repet — benen hakas där, kroppen hänger nedanför, precis som i stången | behåller farten längs banan: 100 % genom botten av svängen, 79 % snett in. Var man tar tag sätter pendelns längd: 2,3 s högt upp, 2,9 s långt ner |
 
 Snabbresa mellan stationerna finns i panelens *Bana*-flik och byggs om när banan byts.
 

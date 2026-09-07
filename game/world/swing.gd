@@ -47,10 +47,12 @@ var omega := 0.0        ## vinkelfart, radianer per sekund
 var rider: Node2D = null
 ## Sant medan han siktar: pendeln står stilla och farten väntar i hoppet.
 var frozen := false
-## Avståndet från fästet ut till honom när han greppade. På en lian sätts det av
-## *var* på repet han tog tag — högt upp ger en kort, snabb pendel, långt ner en
-## lång och långsam. Det är hela skillnaden mellan två grepp i samma lian.
-var hold := 0.0
+## Var på armen benen är hakade, räknat från fästet. På en stång är det fästet
+## självt; på en lian den punkt av repet han tog tag i — högt upp ger en kort,
+## snabb pendel, långt ner en lång och långsam. Det är hela skillnaden mellan två
+## grepp i samma lian. Kroppen hänger alltid BAR_HOLD nedanför den punkten, precis
+## som i stången: han hänger *i benen*, inte med kroppen mitt i repet.
+var hook := 0.0
 ## Vad benen sträckt sig till just nu, av centrifugalkraften.
 var _stretch := 0.0
 
@@ -88,7 +90,7 @@ func _apply_stretch(delta: float) -> void:
 	if rider == null:
 		_stretch = maxf(0.0, _stretch - delta * 60.0)
 		return
-	var base := maxf(hold, 1.0)
+	var base := maxf(hook + BAR_HOLD, 1.0)
 	var pull := omega * omega * base / maxf(Settings.rb_gravity, 1.0)
 	var target := clampf(pull, 0.0, 1.0) * STRETCH * Settings.swing_stretch
 	var before := radius()
@@ -101,29 +103,34 @@ func _apply_stretch(delta: float) -> void:
 func pivot() -> Vector2:
 	return global_position + (Vector2(out * length, 0.0) if kind == Kind.BAR else Vector2.ZERO)
 
-## Avståndet från upphängningen ut till honom.
+## Avståndet från upphängningen ner till hans kropp: dit benen är hakade, plus
+## en kroppslängd till.
 func radius() -> float:
-	return (hold if hold > 0.0 else _default_hold()) + _stretch
+	return hook + BAR_HOLD + _stretch
 
-func _default_hold() -> float:
-	return BAR_HOLD if kind == Kind.BAR else length
+## Riktningen ut från fästet just nu.
+func arm() -> Vector2:
+	return Vector2(sin(angle), cos(angle))
 
-## Där han sitter just nu.
+## Där benen är hakade.
+func hook_point() -> Vector2:
+	return pivot() + arm() * hook
+
+## Där kroppen hänger just nu.
 func seat() -> Vector2:
-	return pivot() + Vector2(sin(angle), cos(angle)) * radius()
+	return pivot() + arm() * radius()
 
-## Var man får tag. Stången griper man var man än når den. Lianen griper man
-## *var som helst längs repet* — den punkt på repet som är närmast honom.
+## Var benen sitter fast — och därmed vad de ritas mot. Stången griper man var man
+## än når den, lianen var som helst längs repet.
 func grip() -> Vector2:
-	return pivot() if kind == Kind.BAR else seat()
+	return hook_point()
 
 ## Närmaste greppunkt på repet till en given plats, och hur långt ut den ligger.
 func grab_point(from: Vector2) -> Dictionary:
 	if kind == Kind.BAR:
-		return {"point": pivot(), "hold": BAR_HOLD}
-	var dir := Vector2(sin(angle), cos(angle))
-	var along := clampf((from - pivot()).dot(dir), VINE_MIN_HOLD, length)
-	return {"point": pivot() + dir * along, "hold": along}
+		return {"point": pivot(), "hook": 0.0}
+	var along := clampf((from - pivot()).dot(arm()), VINE_MIN_HOLD, length)
+	return {"point": pivot() + arm() * along, "hook": along}
 
 ## Hur nära repet han är som närmast — grepp om lianen mäts mot hela repet, inte
 ## bara mot dess ände. Det är det som gör att var man tar tag betyder något.
@@ -164,11 +171,11 @@ func grab(body: Node2D) -> void:
 	frozen = false
 	_stretch = 0.0
 	if kind == Kind.BAR:
-		hold = BAR_HOLD
+		hook = 0.0
 		angle = _hook_angle(body.velocity)
 	else:
-		# Lianen: han tar tag där han är, och radien blir avståndet dit.
-		hold = float(grab_point(body.global_position)["hold"])
+		# Lianen: han hakar benen där han når repet, och kroppen hamnar nedanför.
+		hook = float(grab_point(body.global_position)["hook"])
 		angle = _angle_of(body.global_position)
 	omega = body.velocity.dot(tangent()) / radius()
 	body.global_position = seat()
@@ -188,7 +195,7 @@ func release() -> Vector2:
 	var out_velocity := tangent() * omega * radius()
 	rider = null
 	frozen = false
-	hold = 0.0
+	hook = 0.0
 	_cooldown = REGRAB_DELAY
 	return out_velocity
 
