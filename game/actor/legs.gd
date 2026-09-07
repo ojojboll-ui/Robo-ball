@@ -78,7 +78,7 @@ func update(rb: Node2D, normal: Vector2, speed: float, grounded: bool, delta: fl
 	if grounded:
 		_step(rb, normal, speed, delta)
 	else:
-		_dangle(normal, delta)
+		_dangle(normal, delta, (rb.get("velocity") as Vector2).length())
 	_carry_body(rb, normal, delta)
 
 # ---------------------------------------------------------------- stegen
@@ -197,13 +197,16 @@ func _begin_step(rb: Node2D, normal: Vector2, i: int, stride: float, speed: floa
 ## Markerade vi dem som stegande med stegtiden slut skulle nästa markbildruta
 ## flytta foten till *förra* stegets slutpunkt — som mycket väl kan ligga tvärs
 ## över banan. Det var felet som gjorde benen jättelånga vid landning.
-func _dangle(normal: Vector2, delta: float) -> void:
+func _dangle(normal: Vector2, delta: float, fall_speed: float) -> void:
 	var t := Vector2(-normal.y, normal.x)
+	# Fötterna följer kroppen fortare ju fortare kroppen rör sig. Med en fast takt
+	# hann de inte med i ett snabbt fall: kroppen sjönk ifrån dem och benen blev
+	# stående rakt upp som antenner, tydligast i ögonblicket han mötte en
+	# studsmatta. Farten i taktens nämnare gör att de hänger med i alla hastigheter.
+	var follow := minf(1.0, delta * (16.0 + fall_speed * 0.09))
 	for i in 2:
 		var rest := body_point - normal * (body_height - 6.0) + t * (i * 2.0 - 1.0) * HIP_SPREAD
-		# Snabbt: släpar fötterna efter kroppen under ett långt hopp hamnar de
-		# bakom höften, och då blir ledens sida obestämd.
-		feet[i] = (feet[i] as Vector2).lerp(rest, minf(1.0, delta * 16.0))
+		feet[i] = (feet[i] as Vector2).lerp(rest, follow)
 		planted[i] = true
 		step_t[i] = 1.0
 		step_to[i] = feet[i]

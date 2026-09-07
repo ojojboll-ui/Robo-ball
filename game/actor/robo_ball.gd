@@ -115,7 +115,11 @@ func _physics_process(delta: float) -> void:
 	queue_redraw()
 
 func _update_legs(delta: float) -> void:
-	var grounded := state == State.WALK or state == State.AIM
+	# Siktar han mitt i luften står han inte på något. Benen räknade förut siktet
+	# som "på marken" oavsett var han var, och letade fotfäste på en mark som inte
+	# fanns — det var därför han ställde sig upp i en grundställning mitt i ett
+	# hopp i samma stund man tryckte.
+	var grounded := state == State.WALK or (state == State.AIM and not _aim_from_air)
 	_smooth_normal = _smooth_normal.lerp(ground_normal, minf(1.0, delta * 14.0)).normalized()
 	# Hänger han kvar i något gäller hängställningen även medan han siktar. Förut
 	# reste han sig mitt i luften i samma stund han tryckte, som om han glömt att
@@ -605,6 +609,12 @@ func _set_state(next: State) -> void:
 func _wants_ball() -> bool:
 	if state == State.ROLL:
 		return true
+	# En studsmatta möter han som boll. Med benen ute hänger den ritade kroppen
+	# 26 px över den linje kapseln faktiskt tar i, och det syntes som att han
+	# studsade en bit ovanför duken. En boll som studsar mot en duk tar i där
+	# bollen är — och det är dessutom vad en studs *är*.
+	if state == State.AIR and _heading_for_trampoline():
+		return true
 	# Siktar han mitt i en rullning stannar han boll. Att resa sig för att sikta
 	# och sedan sätta sig igen är både fult och fel: farten han rullar med är
 	# kvar, och det är den han skjuter ifrån med.
@@ -622,14 +632,28 @@ func _wants_ball() -> bool:
 	return _incoming_slope() > Settings.leg_max_slope
 
 ## Lutningen på det han är på väg att träffa, eller -1 om han inte ser något.
-func _incoming_slope() -> float:
+## Är det en studsmatta han är på väg ner i? Samma blick framåt som används för
+## att förbereda en rullning, fast efter något som studsar.
+func _heading_for_trampoline() -> bool:
+	var hit := _look_ahead()
+	if hit.is_empty():
+		return false
+	var collider: Object = hit.get("collider")
+	return collider != null and collider.has_method("bounce")
+
+func _look_ahead() -> Dictionary:
 	if velocity.length() < 1.0:
-		return -1.0
-	var ahead := velocity * Settings.tuck_lookahead
+		return {}
+	# Lite längre fram än rullningens blick: indragningen tar sin tid, och en
+	# matta ska mötas som boll och inte halvvägs.
+	var ahead := velocity * maxf(Settings.tuck_lookahead, 0.25)
 	var space := get_world_2d().direct_space_state
 	var query := PhysicsRayQueryParameters2D.create(
 		global_position, global_position + ahead, collision_mask, [get_rid()])
-	var hit := space.intersect_ray(query)
+	return space.intersect_ray(query)
+
+func _incoming_slope() -> float:
+	var hit := _look_ahead()
 	if hit.is_empty():
 		return -1.0
 	return absf(rad_to_deg((hit["normal"] as Vector2).angle_to(Vector2.UP)))
@@ -862,8 +886,9 @@ func _draw_rolling() -> void:
 
 func _draw_standing() -> void:
 	var normal := _smooth_normal
-	# Huksittningen hör till marken. Hängande finns det inget att huka mot.
-	var crouch := state == State.AIM and _swing == null
+	# Huksittningen hör till marken. Hängande eller mitt i ett hopp finns det
+	# inget att huka mot, och då behåller han ställningen han redan hade.
+	var crouch := state == State.AIM and _swing == null and not _aim_from_air
 	var squash := 0.86 if crouch else 1.0
 	var body := to_local(_legs.body_point)
 	if crouch:
