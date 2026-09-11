@@ -359,6 +359,73 @@ static func _slope(from: Vector2, to: Vector2) -> PackedVector2Array:
 		pts.append(Vector2(lerpf(from.x, to.x, t), from.y + (to.y - from.y) * sin(t * PI * 0.5)))
 	return pts
 
+## Skålen: avsatsen som rullar över i en backe, en rundad botten och en uppstuds.
+##
+## Formen är inte pynt utan tre krav ur fysiken:
+##
+## 1. **Avsatsen övergår i backen.** Han kommer inte gående — RB går aldrig ner
+##    för något brantare än ungefär 33°, och kantskyddet vänder honom. Men den
+##    som *rullar* lyder inget kantskydd, och rullar han över ett krön med stor
+##    radie sitter han kvar i ytan hela vägen ner. Ett hopp ner i skålen provades
+##    först och visade sig omöjligt att bygga: hur fort han råkade rulla avgjorde
+##    var han landade, och landade han för långt ner slog han i botten och tappade
+##    allt. Med ett krön i stället spelar farten ingen roll för vägen, bara för
+##    hur högt han till slut kastas.
+## 2. **Botten är en båge och inte ett hörn.** Ett hörn hade kastat bort den del
+##    av farten som pekar in i den nya ytan — i 45° är det 71 % av allt han har.
+## 3. **Uppstudsen är konkav.** En konkav yta släpper honom aldrig; den trycker
+##    honom in i sig. Han följer den alltså tills bollen tappar greppet vid
+##    Settings.roll_max_slope (62°) och kastas ut i just den riktningen. Det är
+##    hela mekaniken: farten han samlat i backen pekar *uppåt* när han lämnar
+##    rampen. Ett hopp kan aldrig göra det åt honom — hoppkraften läggs till den
+##    fart han redan har, och står han still finns ingen uppåtfart att lägga den
+##    till. Därför går flaggan bara att nå via rampen.
+## En cirkelbåge, med gott om punkter. Antalet är inte en smaksak: krönet mäts
+## av spelet som hur mycket underlagets lutning ändrar sig medan han rör sig, och
+## med glesa punkter kommer hela ändringen i ett enda hopp. Då ser en mjuk kurva
+## ut som ett tvärt hörn, och han släpper ytan i onödan — mätt lyfte han från ett
+## krön med radien 400 px i 665 px/s, där den verkliga gränsen ligger vid 190.
+##
+## `crest` vänder på bågen: falskt ger en dal med medelpunkten
+## ovanför ytan, sant ett krön med medelpunkten under.
+static func _arc(center: Vector2, radius: float, from_deg: float, to_deg: float,
+		steps: int, crest := false) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	var flip := -1.0 if crest else 1.0
+	for i in steps + 1:
+		var phi := deg_to_rad(lerpf(from_deg, to_deg, float(i) / float(steps)))
+		pts.append(center + Vector2(sin(phi), cos(phi) * flip) * radius)
+	return pts
+
+## Gör en yta till en solid remsa med jämn tjocklek. Skålen är alltså en ramp och
+## inte ett massivt berg: under den går det att gå, och det är där den som missar
+## hamnar (princip 4 — aldrig en återvändsgränd).
+static func _ramp_body(raw: PackedVector2Array, thickness: float) -> PackedVector2Array:
+	# Dubblettpunkter måste bort först. En båge som börjar där föregående del
+	# slutade ger ett segment med längden noll, och runt det viker undersidan
+	# tillbaka över sig själv — polygonen korsar sig själv och motorn vägrar
+	# bygga den. Felet syns bara som "Convex decomposing failed".
+	var surface := PackedVector2Array()
+	for p in raw:
+		if surface.is_empty() or surface[surface.size() - 1].distance_to(p) > 0.5:
+			surface.append(p)
+	var out := PackedVector2Array(surface)
+	# Undersidan läggs vinkelrätt mot ytan och inte rakt ner. Rakt ner fungerar
+	# bara så länge ytan är flack: i 62° flyttar 110 px nedåt kanten bara 52 px
+	# åt sidan, och då korsar undersidan ovansidan — polygonen blir omöjlig att
+	# dela upp och motorn vägrar bygga den.
+	for i in range(surface.size() - 1, -1, -1):
+		# Ändpunkterna får en lodrät kant. En vinkelrät kant på en 45-graders
+		# läpp lämnar en liten hylla utanför rampen, och mätt blev RB stående på
+		# den i stället för att falla ner — en hylla som inte syns är en
+		# återvändsgränd som inte går att förstå.
+		if i == 0 or i == surface.size() - 1:
+			out.append(surface[i] + Vector2(0.0, thickness))
+			continue
+		var tangent := (surface[i + 1] - surface[i - 1]).normalized()
+		out.append(surface[i] + Vector2(-tangent.y, tangent.x) * thickness)
+	return out
+
 ## Överhänget vid starten: en balkong vars undersida svänger ner till marken i en
 ## kvartscirkel. Den stänger vägen åt vänster utan att se ut som en osynlig mur,
 ## och den är samtidigt skyddsnätet för den som missar stången ovanför: den som
@@ -384,17 +451,22 @@ static func _overhang(foot: float, out_to: float, top: float) -> PackedVector2Ar
 ## från — marken bär hela banan, det stora blocket ligger under gapet till tornet
 ## och balkongen under stången. Ingen väg kan alltså köra fast (princip 4).
 static func _climb() -> Dictionary:
-	var right := 3270.0
+	var right := 5400.0
 
-	var plateau := PackedVector2Array([Vector2(1520.0, -520.0), Vector2(1830.0, -520.0)])
-	plateau.append_array(_slope(Vector2(1830.0, -520.0), Vector2(2030.0, -380.0)))
-	plateau.append_array(PackedVector2Array([
-		Vector2(2450.0, -380.0), Vector2(2450.0, -180.0), Vector2(1520.0, -180.0)]))
+	# Avsatsen och skålen är en och samma yta: plant, krön, backe, botten, uppstuds.
+	# Krönets radie är räknad och inte vald: han släpper ytan när v²/r går över
+	# tyngden plus markfästet (1550), och han kommer in i som mest ~800 px/s —
+	# alltså krävs minst 800²/1550 = 413 px. 700 ger marginal även om någon
+	# skruvar upp hoppkraften i panelen.
+	var surface := PackedVector2Array([Vector2(2400.0, -380.0), Vector2(2800.0, -380.0)])
+	surface.append_array(_arc(Vector2(2800.0, 320.0), 700.0, 0.0, 42.0, 60, true))
+	surface.append_array(_arc(Vector2(3841.0, 60.0), 190.0, -42.0, 45.0, 30))
+	surface.append(Vector2(4549.0, -380.0))
 
 	return {
 		"name": "Klättringen",
 		"right_edge": right,
-		"top_edge": -620.0,
+		"top_edge": -640.0,
 		"floors": [
 			Rect2(100, GROUND_Y, right - 40.0, 320),
 			# Nedersta farleden: tre trappsteg och två avsatser upp till blocket.
@@ -403,37 +475,40 @@ static func _climb() -> Dictionary:
 			Rect2(1240, 577, 190, 63),
 			Rect2(1530, 488, 190, 60),
 			Rect2(1830, 399, 190, 60),
-			# Blocket går ända fram till tornets fot, så att den som missar sista
-			# hoppet landar på det i stället för i en grop utan utgång.
-			Rect2(2120, 310, 800, 330),
+			# Blocket: en fribärande avsats, inte ett berg. Den som missar ett hopp
+			# landar på den och kan ta sig vidare via stängerna — och under den
+			# löper marken hela vägen, så ingen väg kan köra fast.
+			Rect2(2120, 310, 680, 110),
 			# Översta farleden.
 			Rect2(560, -250, 190, 90),
 			Rect2(880, -340, 190, 70),
 			Rect2(1200, -430, 190, 70),
-			# Flaggtornet: bred topp på smal fot, alltså ett överhäng åt vänster.
-			# Det går bara att nå uppifrån, aldrig genom att klättra.
-			Rect2(2620, -440, 500, 280),
-			Rect2(2920, -160, 200, 800),
+			# Platån. Krönet är ett avstamp: härifrån hoppar han ner på avsatsen.
+			Rect2(1520, -520, 830, 340),
+			# Flaggtornet. Toppen ligger 680 px över blocket och 1200 px från
+			# avsatsen: dubbelhoppet når 338, längsta hopp 346.
+			Rect2(4640, -430, 460, 250),
+			Rect2(4900, -180, 200, 820),
 		],
 		"walls": [Rect2(120, -150, 310, 790)],
-		"ramps": [_overhang(295.0, 830.0, 78.0), plateau],
+		"ramps": [_overhang(295.0, 980.0, 78.0), _ramp_body(surface, 70.0)],
 		"crates": [],
 		"swings": [
 			{"pos": Vector2(480, -130), "kind": "bar", "length": 0.0},
-			{"pos": Vector2(1100, -120), "kind": "vine", "length": 290.0},
-			{"pos": Vector2(1330, -120), "kind": "vine", "length": 290.0},
-			{"pos": Vector2(1560, -120), "kind": "vine", "length": 290.0},
-			{"pos": Vector2(1770, 160), "kind": "bar", "length": 0.0},
-			{"pos": Vector2(1980, 170), "kind": "bar", "length": 0.0},
+			{"pos": Vector2(1250, -120), "kind": "vine", "length": 290.0},
+			{"pos": Vector2(1500, -120), "kind": "vine", "length": 290.0},
+			{"pos": Vector2(1740, 160), "kind": "bar", "length": 0.0},
+			{"pos": Vector2(1960, 170), "kind": "bar", "length": 0.0},
 		],
-		"flag": Vector2(2820, -440),
+		"flag": Vector2(4820, -430),
 		"spawns": [
 			{"name": "Start", "pos": Vector2(400, 580)},
 			{"name": "Trappan", "pos": Vector2(1590, 420)},
-			{"name": "Stängerna", "pos": Vector2(2180, 250)},
+			{"name": "Stängerna", "pos": Vector2(2200, 250)},
 			{"name": "Balkongen", "pos": Vector2(600, 20)},
 			{"name": "Pelartoppen", "pos": Vector2(250, -210)},
-			{"name": "Platån", "pos": Vector2(1620, -580)},
-			{"name": "Flaggan", "pos": Vector2(2720, -500)},
+			{"name": "Platån", "pos": Vector2(2000, -580)},
+			{"name": "Avsatsen", "pos": Vector2(2500, -440)},
+			{"name": "Flaggan", "pos": Vector2(4740, -490)},
 		],
 	}

@@ -85,21 +85,27 @@ en konceptskiss. Tre farleder ovanpå varandra, och man går dem i sicksack:
 
 1. **Nedersta, åt höger.** Tre trappsteg längs marken och två avsatser upp till det
    stora blocket. Bara hopp.
-2. **Mellersta, åt vänster.** Tillbaka genom två stänger och tre lianer, och sista
+2. **Mellersta, åt vänster.** Tillbaka genom två stänger och två lianer, och sista
    svinget landar på balkongen vid vänsterpelaren. Bara grepp.
-3. **Översta, åt höger.** Upp för avsatserna till platån, ett hopp ner i dess backe —
-   den är brantare än benen klarar, så han blir boll och *rullar* — och så ett avstamp
-   från avsatsen över gapet till flaggtornet.
+3. **Översta, åt höger.** Upp för avsatserna till platån, ett hopp ner på avsatsen — och
+   sedan behöver man inte trycka mer. Han rullar av avsatsens krön ner i **rampen**,
+   genom botten och upp för uppstudsen, och kastas därifrån upp till flaggan.
 
 Samma bana tre gånger i tre höjder, och varje varv byter mekanik: hoppa, svinga, rulla.
 Flaggan står på tornet, och RB når den genom att gå in i den — inget sista precist
 tryck, eftersom han går av sig själv. Då small det konfetti, och banan börjar om.
 
-Sista hoppet går att klara **stillastående** på avsatsen, utan att ha gjort något annat
-rätt först. Men den som tar backen ner från platån och kommer in rullande i 666 px/s får
-ett dubbelt så brett siktfönster — farten är en belöning, inte ett krav. Varje hopp i
-farleden är uppmätt: hur många av siktets vinklar som faktiskt landar rätt står i
-docs/METRICS.md. Och varje miss faller ner i en farled man kan ta sig vidare
+**Flaggan går inte att hoppa till.** Den står 50 px över avsatsen men 1840 px från den,
+och 740 px över blocket — hoppet når 346 px långt eller 169 px högt, dubbelhoppet 338 px
+rakt upp. Enda vägen dit är farten ur rampen, och det är hela poängen med den:
+hoppkraften läggs till den fart han *redan* har, så står han still finns ingen uppåtfart
+att lägga den till. En ramp kan peka farten uppåt. Ett hopp kan det inte.
+
+Hela finalen är mätt i ett stycke — ett tryck på platåns krön och sedan ingenting alls:
+20°–40° tar honom hela vägen till flaggan på 3,3–3,7 sekunder. Kommer han in i skålen
+långsammare än ungefär 650 px/s tar farten slut i uppstudsen och han rullar tillbaka ner,
+utan skada, och kan försöka igen. Varje hopp i farleden är uppmätt: hur många av siktets
+vinklar som faktiskt landar rätt står i docs/METRICS.md. Och varje miss faller ner i en farled man kan ta sig vidare
 från — marken bär hela banan, blocket ligger under gapet till tornet, balkongen under
 stången. Ingen väg kan köra fast.
 

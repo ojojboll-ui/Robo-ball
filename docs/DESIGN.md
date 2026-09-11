@@ -256,6 +256,16 @@ samlar på sig i backen pekar *framåt* och inte uppåt. Avsatsen ligger därfö
 skissen, och tornet lägre. Tornets lilla hylla på vänstersidan är borta: under
 överhänget är den en återvändsgränd.
 
+Finalen byggdes om en gång till när den provspelades: flaggan skulle **inte** gå att
+hoppa till, utan kräva rampen. Det visade sig vara ett fysikkrav och inte en
+banändring. Hoppkraften läggs till den fart han redan har, och står han still på marken
+finns ingen uppåtfart att lägga den till — därför kan ett hopp aldrig ge mer än 169 px
+höjd, hur mycket fart han än har med sig i sidled. En ramp kan däremot peka farten
+uppåt. Flaggan står nu 740 px över marken under den och 1840 px från närmaste avsats i
+samma höjd, alltså utom räckhåll för både hopp och dubbelhopp, och skålen är den enda
+vägen dit. Måtten på hur en sådan ramp måste byggas — krönets radie, punkttätheten,
+uppstudsens vinkel och läppens höjd — står i docs/METRICS.md.
+
 En tredje sak lärde banan ut om spelet självt: **RB går aldrig ner för en brant backe.**
 Kantskyddet känner efter mark strax framför fötterna, och lutar det mer än ungefär 33°
 finns ingen mark att känna — då vänder han, precis som vid en avgrund. En brant backe

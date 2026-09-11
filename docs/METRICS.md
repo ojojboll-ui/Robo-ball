@@ -154,7 +154,7 @@ mätningen, för de påverkar siffrorna:
 
 * **Avstampet ligger ungefär två kroppslängder från kanten.** Var han står när man
   trycker spelar roll — vid kanten når hoppet längre — och han går fram och tillbaka på
-  avsatsen, så spelaren kan välja. Mätningen tar alltså ett normalt läge, inte det bästa.
+  avsatsen, så spelaren kan välja. Mätningen tar ett normalt läge, inte det bästa.
 * **Alla svinghopp är mätta ur ett dött häng**, alltså utan någon sväng alls. Det är det
   svåraste fallet; med fart i pendeln blir fönstren större.
 
@@ -166,26 +166,25 @@ mätningen, för de påverkar siffrorna:
 | steg 3 → avsats 1 | 50°–80° (4) |
 | avsats 1 → avsats 2 | 50°–70° (3) |
 | avsats 2 → blocket | 50°–70° (3) |
-| blocket → stång 2 | 100°–140° (5) |
+| blocket → stång 2 | 100°–150° (6) |
 | stång 2 → stång 1 | 120°–140° (3) |
-| stång 1 → lian 3 | 120°–140° (3) |
-| lian 3 → lian 2 | 110°–170° (6) |
-| lian 2 → lian 1 | 110°–170° (6) |
+| stång 1 → lian 2 | 120°–150° (4) |
+| lian 2 → lian 1 | 110°–160° (6) |
 | lian 1 → balkongen | 120°–140° (3) |
-| balkongen → stången i pelaren | 70°–120° (6) |
+| balkongen → stången i pelaren | 90°–120° (4) |
 | stången → pelartoppen | 100°–120° (3) |
 | pelartoppen → avsats A | 50°–80° (4) |
 | A → B | 50°–80° (4) |
 | B → C | 50°–80° (4) |
 | C → platån | 50°–80° (4) |
-| platåns krön → avsatsen | 20°–70° (6) |
-| avsatsen → tornet, **stillastående** | 40°–70° (4) |
-| avsatsen → tornet, **med fart** (666 px/s) | 40°–90° (6) |
+| **platåns krön → flaggan** (hela rampen, utan fler tryck) | **20°–40° (3 av 6)** |
 
-Sista hoppet är mätt på två sätt med flit. Det ska gå att klara utan att ha gjort något
-annat rätt först — och det gör det, stillastående på avsatsen — men den som tar backen
-ner från platån och kommer in rullande i 666 px/s får ett dubbelt så brett fönster. Så
-ska en bana vara: farten är en belöning, inte ett krav.
+Sista raden är hela finalen mätt i ett stycke: ett tryck på platåns krön, och sedan
+ingenting alls. Han landar rullande på avsatsen, rullar över krönet ner i skålen, upp
+för uppstudsen och flyger till flaggan — 3,3 till 3,7 sekunder från tryck till flagga.
+Med ett flackare hopp (20°) kommer han in i skålen i 788 px/s, med ett brantare (40°) i
+673. Under ungefär 650 px/s tar farten slut i uppstudsen och han rullar tillbaka ner —
+ingen skada skedd, han hamnar på blocket eller på avsatsen igen och kan försöka om.
 
 Tre hopp i första utkastet mätte noll eller en vinkel av nio, och alla tre av samma
 skäl: höjdskillnaden låg för nära hoppets tak. Räckvidden faller brant när hoppet ska
@@ -194,9 +193,33 @@ inget alls över 169 px. Tumregeln banan är byggd efter: **stiger hoppet 100 px
 vara högst 180 px, stiger det 50 px högst 240 px.**
 
 En detalj värd att skriva ner: vad som räknas är kroppens *mitt*, inte fötterna. Att
-landa på en avsats kräver 35 px mer stigning än avståndet till kanten antyder, och det
-var precis den skillnaden som gjorde hoppet från stången till pelartoppen omöjligt i
-första utkastet.
+landa på en avsats kräver 35 px mer stigning än avståndet till kanten antyder.
+
+## Rampen: att bygga fart som ett hopp inte kan ge
+
+Flaggan står 50 px över avsatsen och 1840 px från den, och 740 px över blocket. Den går
+alltså inte att hoppa till från någonstans — hoppet når 346 px långt eller 169 px högt,
+och dubbelhoppet 338 px rakt upp. Enda vägen dit är rampen, och det är hela poängen:
+**hoppkraften läggs till den fart han redan har, så står han still på marken finns ingen
+uppåtfart att lägga den till.** En ramp kan däremot peka farten uppåt.
+
+Fyra saker mättes fram under bygget, och alla fyra gäller varje ramp vi bygger härefter:
+
+| | |
+| --- | --- |
+| Krönets radie | minst **v²/1550** px, annars lättar han. Vid 800 px/s alltså 413 px; skålens krön har 700 |
+| Bågens punkttäthet | krönet mäts som hur mycket lutningen ändrar sig **per bildruta**. Med glesa punkter kommer hela ändringen på en gång, och en mjuk kurva läses som ett tvärt hörn: mätt lyfte han från en 400-radie i 665 px/s, där gränsen ligger vid 190 |
+| Uppstudsens vinkel | 62° kastar honom nästan rakt upp — hög båge, men han landar där han startade. **45°** ger halva farten uppåt och halva framåt, alltså en båge som når någonstans |
+| Läppens höjd | varje 100 px läppen ligger **under** avsatsen sänker toppen av bågen 22 px. Skålens läpp ligger därför i exakt samma höjd som avsatsen, som i en riktig halfpipe |
+
+Mätt genom skålen vid 788 px/s in: **1528 px/s i botten**, 650 px/s kvar vid läppen, och
+bågen toppar 103 px över läppen, 152 px ut. Det låter lite, men det är tillräckligt:
+tornet står 91 px bort och dess topp 50 px över läppen.
+
+Och en sak till, som inte är fysik utan geometri: **rampens ändkanter måste vara
+lodräta.** En vinkelrät kant på en 45-graders läpp lämnar en liten hylla utanför rampen,
+och mätt blev RB stående på den i stället för att falla ner — en osynlig hylla är en
+återvändsgränd som ingen kan förstå.
 
 ## Backar som går att ta sig ner för
 

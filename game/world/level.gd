@@ -10,7 +10,13 @@ class_name Level
 var data: Dictionary = {}
 
 func load_level(index: int) -> void:
+	# Ta ut dem ur trädet *innan* de frigörs. queue_free() städar först i slutet
+	# av bildrutan, så en nod som bara köats ligger kvar som barn ända tills dess
+	# — och då kan flag() och has_enemies() svara med den gamla banans saker i
+	# samma ögonblick som den nya byggs. Mätt: målflaggan pekade efter en omstart
+	# på en redan frigjord flagga, som dessutom redan var tagen.
 	for child in get_children():
+		remove_child(child)
 		child.queue_free()
 	data = Levels.build(index)
 	for r: Rect2 in solids():
