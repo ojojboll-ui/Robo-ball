@@ -9,8 +9,10 @@ class_name Flag
 
 signal reached
 
-const POLE := 110.0            ## stångens höjd över marken
-const CLOTH := Vector2(64.0, 40.0)
+## Stången är hög med flit: flaggan ska synas över allt annat i banan, också
+## från platån som ligger högre än tornet den står på.
+const POLE := 180.0
+const CLOTH := Vector2(76.0, 46.0)
 
 var taken := false
 var _wave := 0.0

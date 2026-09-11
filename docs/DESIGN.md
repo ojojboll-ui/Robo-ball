@@ -253,8 +253,16 @@ Två saker i skissen gick inte att bygga rakt av, och båda av samma skäl. Back
 platån var ritad hela vägen ner till marknivå, och därifrån är tornet 300 px upp — mer
 än ett hopp kan klättra oavsett hur mycket fart han har med sig, eftersom farten han
 samlar på sig i backen pekar *framåt* och inte uppåt. Avsatsen ligger därför högre än i
-skissen, och gapet är bredare, så att bågen får plats att stiga. Tornets lilla hylla på
-vänstersidan är borta: under överhänget är den en återvändsgränd.
+skissen, och tornet lägre. Tornets lilla hylla på vänstersidan är borta: under
+överhänget är den en återvändsgränd.
+
+En tredje sak lärde banan ut om spelet självt: **RB går aldrig ner för en brant backe.**
+Kantskyddet känner efter mark strax framför fötterna, och lutar det mer än ungefär 33°
+finns ingen mark att känna — då vänder han, precis som vid en avgrund. En brant backe
+går alltså bara att komma ner för genom att hoppa ner i den, och det är i sin ordning:
+det är ett tryck, och ett tryck är vad spelet handlar om. Men det måste vara ritat så.
+Platåns krön är därför ett avstamp och inte en utförsåkning, och backen nedanför är
+brant nog (48°) att han blir boll i samma ögonblick han landar i den.
 
 ## 4b. Fysikkänsla
 

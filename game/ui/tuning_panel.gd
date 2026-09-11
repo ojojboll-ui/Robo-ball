@@ -363,6 +363,42 @@ func _tab_level() -> void:
 	_rows.add_child(_travel)
 	_rebuild_travel()
 
+	_section("Dela inställningar")
+	# Ett speltest görs på någon annans dator, och de värden som visade sig bäst
+	# sitter då i den datorns webbläsare — inte här. Knappen lägger hela profilen
+	# på urklipp som text, så att den går att klistra in var som helst.
+	# Rutan visar samma text som läggs på urklipp, av en enkel anledning: urklipp
+	# i en webbläsare kan nekas utan att säga till, och på en telefon är en
+	# skärmbild ofta det enklaste sättet ändå. Då ska det finnas något att ta bild
+	# på.
+	var shown := TextEdit.new()
+	shown.editable = false
+	shown.custom_minimum_size = Vector2(0, 260)
+	shown.add_theme_font_size_override("font_size", 15)
+	shown.add_theme_color_override("font_readonly_color", Palette.INK)
+	var box := StyleBoxFlat.new()
+	box.bg_color = Palette.SHELL
+	box.set_corner_radius_all(8)
+	box.set_content_margin_all(10)
+	shown.add_theme_stylebox_override("read_only", box)
+	shown.add_theme_stylebox_override("normal", box)
+	shown.visible = false
+	var copy := Button.new()
+	copy.text = "Visa och kopiera mina inställningar"
+	copy.custom_minimum_size = Vector2(0, 58)
+	copy.add_theme_font_size_override("font_size", 20)
+	copy.pressed.connect(func() -> void:
+		var text := JSON.stringify(Settings.as_dict(), "  ")
+		shown.text = text
+		shown.visible = true
+		DisplayServer.clipboard_set(text)
+		copy.text = "Kopierat — eller ta en skärmbild av rutan"
+		await get_tree().create_timer(3.0).timeout
+		if is_instance_valid(copy):
+			copy.text = "Visa och kopiera mina inställningar")
+	_rows.add_child(copy)
+	_rows.add_child(shown)
+
 	_section("Nollställ")
 	# Nollställning hör hemma i ett verktyg för speltest: nästa barn ska kunna
 	# börja från samma utgångsläge utan att någon minns vad som skruvats på.

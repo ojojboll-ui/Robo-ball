@@ -24,8 +24,8 @@ var names := {}
 func _ready() -> void:
 	main = load("res://main/main.tscn").instantiate()
 	add_child(main)
-	Settings.level_index = 4
-	main.call("load_level", 4)
+	Settings.level_index = 0
+	main.call("load_level", 0)
 	await get_tree().process_frame
 	rb = main.get("_rb")
 	level = main.get("_level")
@@ -37,23 +37,26 @@ func _ready() -> void:
 
 	var legs: Array[Dictionary] = [
 		{"k": "mark", "n": "start → F", "at": Vector2(400, 560), "f": 1, "to": "F", "lo": 10},
-		{"k": "mark", "n": "F → G", "at": Vector2(600, 520), "f": 1, "to": "G", "lo": 10},
-		{"k": "mark", "n": "G → H", "at": Vector2(840, 520), "f": 1, "to": "H", "lo": 10},
-		{"k": "mark", "n": "H → D", "at": Vector2(1080, 520), "f": 1, "to": "D", "lo": 20},
-		{"k": "mark", "n": "D → E", "at": Vector2(1310, 410), "f": 1, "to": "E", "lo": 20},
-		{"k": "mark", "n": "E → blocket", "at": Vector2(1550, 335), "f": 1, "to": "blocket", "lo": 20},
-		{"k": "grab", "n": "blocket → stång 4", "at": Vector2(1790, 260), "f": -1, "to": 4, "lo": 90, "hi": 170},
-		{"k": "hang", "n": "stång 4 → stång 3", "from": 4, "to": 3, "lo": 100, "hi": 170},
-		{"k": "hang", "n": "stång 3 → lian 2", "from": 3, "to": 2, "lo": 100, "hi": 170},
+		{"k": "mark", "n": "F → G", "at": Vector2(640, 520), "f": 1, "to": "G", "lo": 10},
+		{"k": "mark", "n": "G → H", "at": Vector2(980, 520), "f": 1, "to": "H", "lo": 10},
+		{"k": "mark", "n": "H → D", "at": Vector2(1320, 520), "f": 1, "to": "D", "lo": 20},
+		{"k": "mark", "n": "D → E", "at": Vector2(1610, 430), "f": 1, "to": "E", "lo": 20},
+		{"k": "mark", "n": "E → blocket", "at": Vector2(1910, 345), "f": 1, "to": "blocket", "lo": 20},
+		{"k": "grab", "n": "blocket → stång 5", "at": Vector2(2170, 260), "f": -1, "to": 5, "lo": 90, "hi": 170},
+		{"k": "hang", "n": "stång 5 → stång 4", "from": 5, "to": 4, "lo": 100, "hi": 170},
+		{"k": "hang", "n": "stång 4 → lian 3", "from": 4, "to": 3, "lo": 100, "hi": 170},
+		{"k": "hang", "n": "lian 3 → lian 2", "from": 3, "to": 2, "lo": 100, "hi": 170},
 		{"k": "hang", "n": "lian 2 → lian 1", "from": 2, "to": 1, "lo": 100, "hi": 170},
 		{"k": "hangtop", "n": "lian 1 → balkongen", "from": 1, "to": "balkongen", "lo": 100, "hi": 170},
 		{"k": "mark", "n": "balkongen → stång 0", "at": Vector2(500, 30), "f": -1, "to": 0, "lo": 50, "hi": 130, "swing": true},
 		{"k": "hangtop", "n": "stång 0 → pelartoppen", "from": 0, "to": "pelartoppen", "lo": 80, "hi": 170},
-		{"k": "mark", "n": "pelartoppen → A", "at": Vector2(250, -200), "f": 1, "to": "A", "lo": 20},
-		{"k": "mark", "n": "A → B", "at": Vector2(590, -300), "f": 1, "to": "B", "lo": 20},
-		{"k": "mark", "n": "B → C", "at": Vector2(820, -390), "f": 1, "to": "C", "lo": 20},
-		{"k": "mark", "n": "C → platån", "at": Vector2(1050, -480), "f": 1, "to": "platån", "lo": 20},
-		{"k": "final", "n": "platån → flaggtornet"},
+		{"k": "mark", "n": "pelartoppen → A", "at": Vector2(320, -200), "f": 1, "to": "A", "lo": 20},
+		{"k": "mark", "n": "A → B", "at": Vector2(640, -300), "f": 1, "to": "B", "lo": 20},
+		{"k": "mark", "n": "B → C", "at": Vector2(960, -390), "f": 1, "to": "C", "lo": 20},
+		{"k": "mark", "n": "C → platån", "at": Vector2(1280, -480), "f": 1, "to": "platån", "lo": 20},
+		{"k": "mark", "n": "platåkrönet → avsatsen", "at": Vector2(1750, -580), "f": 1, "to": "avsatsen", "lo": 20},
+		{"k": "mark", "n": "avsatsen → tornet (stillastående)", "at": Vector2(2340, -420), "f": 1, "to": "torntopp", "lo": 20},
+		{"k": "final", "n": "avsatsen → tornet (med fart)"},
 	]
 	var args := OS.get_cmdline_user_args()
 	var first := int(args[0]) if args.size() > 0 else 0
@@ -82,6 +85,11 @@ func _ready() -> void:
 
 ## Ett hopp från mark till mark: ställ honom på avstampet, låt honom gå fram,
 ## tryck, sikta, tryck — och se var han hamnar.
+##
+## Avstampet ligger ungefär två kroppslängder från avsatsens kant. Var han står
+## när man trycker spelar roll — vid kanten når hoppet längre — och han går fram
+## och tillbaka på avsatsen, så spelaren kan välja. Mätningen tar alltså inte
+## bästa läget utan ett normalt.
 func _leg(label: String, from: Vector2, face: int, target: String, lo: int, hi: int) -> void:
 	var hits: Array = []
 	var landed := {}
@@ -121,24 +129,33 @@ func _hang_top(label: String, from_index: int, target: String, lo: int, hi: int)
 	var landed := {}
 	for deg in range(lo, hi + 1, 10):
 		var at := await _run_hang(from_index, float(deg), 180, -1)
+		print("     %3d° -> %s (%.0f, %.0f)" % [deg, at, rb.global_position.x, rb.global_position.y])
 		landed[deg] = at
 		if at == target:
 			hits.append(deg)
 	print("%-26s %s" % [label, _window(hits, landed)])
 
-## Sista hoppet: han rullar ner för platåns backe och skjuter ifrån på avsatsen.
+## Sista hoppet, hela sekvensen som en spelare gör den: ett tryck på platåns krön
+## som kastar honom ner i backen, och ett andra tryck på avsatsen när han rullar.
 func _final() -> void:
 	var hits: Array = []
 	var landed := {}
-	for deg in range(55, 96, 5):
-		_reset(Vector2(1350, -580), 1)
-		var speed := 0.0
-		var waited := 0
-		for i in 400:
+	for deg in range(20, 96, 10):
+		_reset(Vector2(1750, -580), 1)
+		for i in 30:
 			await get_tree().physics_frame
-			waited = i
-			if rb.global_position.x > 1750.0 and rb.global_position.x < 1960.0 \
-					and rb.state != RoboBall.State.AIR and rb.state != RoboBall.State.AIM:
+		# Hoppet ner i backen: 40° är mitt i fönstret som mätts upp separat.
+		InputSignal.pressed.emit()
+		InputSignal.released.emit()
+		await get_tree().physics_frame
+		rb.aim_deg = 40.0
+		InputSignal.pressed.emit()
+		InputSignal.released.emit()
+		var speed := 0.0
+		for i in 300:
+			await get_tree().physics_frame
+			if rb.global_position.x > 2370.0 and rb.state != RoboBall.State.AIR \
+					and rb.state != RoboBall.State.AIM:
 				speed = absf(rb.ground_speed)
 				break
 		InputSignal.pressed.emit()
@@ -148,12 +165,11 @@ func _final() -> void:
 		InputSignal.pressed.emit()
 		InputSignal.released.emit()
 		var at := await _settle(240, -1)
-		print("     %3d° -> %s  (x=%.0f, fart %.0f efter %d rutor)" % [
-			deg, at, rb.global_position.x, speed, waited])
+		print("     %3d° -> %s  (fart in %.0f px/s)" % [deg, at, speed])
 		landed[deg] = at
 		if at == "torntopp":
 			hits.append(deg)
-	print("%-26s %s" % ["platån → flaggtornet", _window(hits, landed)])
+	print("%-26s %s" % ["avsatsen → tornet (med fart)", _window(hits, landed)])
 
 func _window(hits: Array, landed: Dictionary) -> String:
 	if hits.is_empty():
@@ -232,10 +248,12 @@ func _where() -> String:
 		if absf(feet - r.position.y) < 30.0 and x > r.position.x - 30.0 \
 				and x < r.position.x + r.size.x + 30.0:
 			return str(key)
-	if feet < -490.0 and x > 1220.0 and x < 2020.0:
+	if absf(feet + 380.0) < 30.0 and x > 1900.0 and x < 2480.0:
+		return "avsatsen"
+	if feet < -490.0 and x > 1490.0 and x < 2360.0:
 		return "platån"
-	if feet < -110.0 and x < 460.0:
+	if absf(feet + 150.0) < 30.0 and x < 460.0:
 		return "pelartoppen"
-	if feet < 130.0 and x > 280.0 and x < 720.0:
+	if absf(feet - 78.0) < 30.0 and x > 280.0 and x < 870.0:
 		return "balkongen"
 	return "annat (%.0f, %.0f)" % [x, feet]

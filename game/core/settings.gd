@@ -117,6 +117,8 @@ var hang_slowmo := false       ## sakta ner världen redan medan han hänger (si
 ## hoppkraften läggs ovanpå, alltså skjuter han ifrån i stället för att starta om.
 var momentum_carry := 1.0
 var level_index := 0
+## Vilken ordning banlistan hade när profilen sparades. Se load_settings.
+const LEVEL_ORDER := 2
 var panel_tab := 0            ## vilken flik i inställningspanelen som var öppen
 
 ## Grundvärdena fångas innan sparfilen läses, så att panelen kan återställa allt
@@ -190,6 +192,7 @@ func as_dict() -> Dictionary:
 		"hang_slowmo": hang_slowmo,
 		"momentum_carry": momentum_carry,
 		"level_index": level_index,
+		"level_order": LEVEL_ORDER,
 		"panel_tab": panel_tab,
 	}
 
@@ -293,6 +296,12 @@ func load_settings() -> void:
 		# siktet som saktar ner, så en sparad etta är en inställning vi övergett.
 		if bool(data.get("hang_slowmo", false)):
 			data.erase("hang_slowmo")
+		# Banlistan bytte ordning när Klättringen lades först. En sparad profil
+		# pekar på ett nummer, inte på ett namn, så utan den här flytten hamnar
+		# den som senast spelade Verkstaden plötsligt i en annan bana.
+		if int(data.get("level_order", 1)) < LEVEL_ORDER:
+			var old := int(data.get("level_index", 0))
+			data["level_index"] = 0 if old == 4 else old + 1
 		apply(data)
 
 func notify_changed() -> void:

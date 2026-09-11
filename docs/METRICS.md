@@ -147,51 +147,74 @@ redan hunnit ändra.
 
 ## Klättringen: farledens siktfönster
 
-Banan är byggd efter en konceptskiss och sedan **mätt**: ett verktyg ställer RB på varje
-avstamp, sveper siktet genom alla vinklar och räknar hur många som faktiskt landar där
-de ska. Nio vinklar provades per hopp (var tionde grad), och alla svinghopp mättes ur
-ett *dött häng* — alltså utan någon sväng alls, vilket är det svåraste fallet. Med fart
-i pendeln är fönstren större.
+Banan är byggd efter en konceptskiss och sedan **mätt**: ett verktyg (`_route.tscn`)
+ställer RB på varje avstamp, sveper siktet genom alla vinklar och räknar hur många som
+faktiskt landar där de ska. Nio vinklar per hopp (var tionde grad). Två saker om
+mätningen, för de påverkar siffrorna:
+
+* **Avstampet ligger ungefär två kroppslängder från kanten.** Var han står när man
+  trycker spelar roll — vid kanten når hoppet längre — och han går fram och tillbaka på
+  avsatsen, så spelaren kan välja. Mätningen tar alltså ett normalt läge, inte det bästa.
+* **Alla svinghopp är mätta ur ett dött häng**, alltså utan någon sväng alls. Det är det
+  svåraste fallet; med fart i pendeln blir fönstren större.
 
 | Hopp | vinklar som landar rätt |
 | --- | --- |
-| start → steg 1 | 20°–80° (4 av 9) |
-| steg 1 → steg 2 | 10°–80° (3) |
-| steg 2 → steg 3 | 10°–80° (3) |
-| steg 3 → avsats 1 | 60°–80° (3) |
-| avsats 1 → avsats 2 | 40°–80° (3) |
+| start → steg 1 | 20°–80° (6 av 9) |
+| steg 1 → steg 2 | 20°–80° (7) |
+| steg 2 → steg 3 | 20°–80° (7) |
+| steg 3 → avsats 1 | 50°–80° (4) |
+| avsats 1 → avsats 2 | 50°–70° (3) |
 | avsats 2 → blocket | 50°–70° (3) |
 | blocket → stång 2 | 100°–140° (5) |
 | stång 2 → stång 1 | 120°–140° (3) |
-| stång 1 → lian 2 | 120°–140° (3) |
+| stång 1 → lian 3 | 120°–140° (3) |
+| lian 3 → lian 2 | 110°–170° (6) |
 | lian 2 → lian 1 | 110°–170° (6) |
 | lian 1 → balkongen | 120°–140° (3) |
 | balkongen → stången i pelaren | 70°–120° (6) |
 | stången → pelartoppen | 100°–120° (3) |
-| pelartoppen → avsats A | 50°–70° (3) |
+| pelartoppen → avsats A | 50°–80° (4) |
 | A → B | 50°–80° (4) |
 | B → C | 50°–80° (4) |
 | C → platån | 50°–80° (4) |
-| platån → flaggtornet | 60°–95° (7 av 9, mätt var femte grad) |
+| platåns krön → avsatsen | 20°–70° (6) |
+| avsatsen → tornet, **stillastående** | 40°–70° (4) |
+| avsatsen → tornet, **med fart** (666 px/s) | 40°–90° (6) |
 
-Sista hoppet är bredast av alla, och det är ingen tillfällighet: han kommer in på
-avsatsen i **585 px/s** efter att ha rullat ner för platåns backe, och med all den
-farten i bågen räcker nästan vilken brant vinkel som helst. Backen är därför 51° brant —
-strax över benens gräns, så att han *rullar* ner för den. En flackare backe hade han
-gått ner för i gångfart, och då hade sista hoppet inte gått att göra alls.
+Sista hoppet är mätt på två sätt med flit. Det ska gå att klara utan att ha gjort något
+annat rätt först — och det gör det, stillastående på avsatsen — men den som tar backen
+ner från platån och kommer in rullande i 666 px/s får ett dubbelt så brett fönster. Så
+ska en bana vara: farten är en belöning, inte ett krav.
 
 Tre hopp i första utkastet mätte noll eller en vinkel av nio, och alla tre av samma
 skäl: höjdskillnaden låg för nära hoppets tak. Räckvidden faller brant när hoppet ska
 stiga — 346 px rakt fram, men bara omkring 230 px om det samtidigt ska upp 100 px, och
-inget alls över 169 px. Ett hopp som *precis* går att göra på pappret har alltså ett
-fönster på några grader, vilket i slow motion är någon tiondels sekund. Tumregeln banan
-är byggd efter: **stiger hoppet 100 px får gapet vara högst 180 px, stiger det 50 px
-högst 240 px.**
+inget alls över 169 px. Tumregeln banan är byggd efter: **stiger hoppet 100 px får gapet
+vara högst 180 px, stiger det 50 px högst 240 px.**
 
 En detalj värd att skriva ner: vad som räknas är kroppens *mitt*, inte fötterna. Att
 landa på en avsats kräver 35 px mer stigning än avståndet till kanten antyder, och det
 var precis den skillnaden som gjorde hoppet från stången till pelartoppen omöjligt i
 första utkastet.
+
+## Backar som går att ta sig ner för
+
+Två regler föll ut av banbygget, och båda gäller alla banor vi bygger härefter.
+
+**Han går aldrig ner för något brantare än ungefär 33°.** Kantskyddet känner efter mark
+34 px framåt och 22 px ner; lutar underlaget mer än så finns ingen mark att känna, och
+då vänder han — precis som vid en avgrund. Det betyder att en backe brantare än 33°
+bara går att komma ner för genom att *hoppa* ner i den. Kantskyddet går att stänga av i
+panelen, men en bana får inte kräva det.
+
+**Bygg aldrig en gångbar backe mellan 33° och 43° av många korta segment.** Där går han
+på benen, alltså som en kapsel, och en kapsel kan haka fast i hörnen mellan segmenten:
+mätt blev han stående på en 40,8-graders bit av platåns backe med full gångfart och kom
+ingenstans, bildruta efter bildruta. Som boll är han en cirkel och rullar över samma
+hörn utan att märka dem. Platåns backe börjar därför på 48° direkt vid krönet — då är
+han boll från första ögonblicket — och planar ut nedtill, så att farten pekar vågrätt
+när han lämnar avsatsen.
 
 ## Tak och tunnlar
 
