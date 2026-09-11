@@ -145,6 +145,54 @@ fienden dör, hjärtan 3 → 3, kedja 1. Det är samma rotorsak som väggarna oc
 ett beslut om en krock får inte läsas ur ett tillstånd som rörelsen i samma bildruta
 redan hunnit ändra.
 
+## Klättringen: farledens siktfönster
+
+Banan är byggd efter en konceptskiss och sedan **mätt**: ett verktyg ställer RB på varje
+avstamp, sveper siktet genom alla vinklar och räknar hur många som faktiskt landar där
+de ska. Nio vinklar provades per hopp (var tionde grad), och alla svinghopp mättes ur
+ett *dött häng* — alltså utan någon sväng alls, vilket är det svåraste fallet. Med fart
+i pendeln är fönstren större.
+
+| Hopp | vinklar som landar rätt |
+| --- | --- |
+| start → steg 1 | 20°–80° (4 av 9) |
+| steg 1 → steg 2 | 10°–80° (3) |
+| steg 2 → steg 3 | 10°–80° (3) |
+| steg 3 → avsats 1 | 60°–80° (3) |
+| avsats 1 → avsats 2 | 40°–80° (3) |
+| avsats 2 → blocket | 50°–70° (3) |
+| blocket → stång 2 | 100°–140° (5) |
+| stång 2 → stång 1 | 120°–140° (3) |
+| stång 1 → lian 2 | 120°–140° (3) |
+| lian 2 → lian 1 | 110°–170° (6) |
+| lian 1 → balkongen | 120°–140° (3) |
+| balkongen → stången i pelaren | 70°–120° (6) |
+| stången → pelartoppen | 100°–120° (3) |
+| pelartoppen → avsats A | 50°–70° (3) |
+| A → B | 50°–80° (4) |
+| B → C | 50°–80° (4) |
+| C → platån | 50°–80° (4) |
+| platån → flaggtornet | 60°–95° (7 av 9, mätt var femte grad) |
+
+Sista hoppet är bredast av alla, och det är ingen tillfällighet: han kommer in på
+avsatsen i **585 px/s** efter att ha rullat ner för platåns backe, och med all den
+farten i bågen räcker nästan vilken brant vinkel som helst. Backen är därför 51° brant —
+strax över benens gräns, så att han *rullar* ner för den. En flackare backe hade han
+gått ner för i gångfart, och då hade sista hoppet inte gått att göra alls.
+
+Tre hopp i första utkastet mätte noll eller en vinkel av nio, och alla tre av samma
+skäl: höjdskillnaden låg för nära hoppets tak. Räckvidden faller brant när hoppet ska
+stiga — 346 px rakt fram, men bara omkring 230 px om det samtidigt ska upp 100 px, och
+inget alls över 169 px. Ett hopp som *precis* går att göra på pappret har alltså ett
+fönster på några grader, vilket i slow motion är någon tiondels sekund. Tumregeln banan
+är byggd efter: **stiger hoppet 100 px får gapet vara högst 180 px, stiger det 50 px
+högst 240 px.**
+
+En detalj värd att skriva ner: vad som räknas är kroppens *mitt*, inte fötterna. Att
+landa på en avsats kräver 35 px mer stigning än avståndet till kanten antyder, och det
+var precis den skillnaden som gjorde hoppet från stången till pelartoppen omöjligt i
+första utkastet.
+
 ## Tak och tunnlar
 
 Uppmätt genom att skicka in honom i en tunnel med sänkt tak:

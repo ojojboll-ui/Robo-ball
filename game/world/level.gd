@@ -30,6 +30,10 @@ func load_level(index: int) -> void:
 		swing.angle = float(entry.get("angle", 0.0))
 		swing.position = entry["pos"]
 		add_child(swing)
+	if data.has("flag"):
+		var flag := Flag.new()
+		flag.position = data["flag"]
+		add_child(flag)
 	for entry: Dictionary in data.get("enemies", []):
 		var enemy := Enemy.new()
 		enemy.kind = Enemy.Kind.RED if entry.get("kind", "blue") == "red" else Enemy.Kind.BLUE
@@ -61,11 +65,23 @@ func spawn_point() -> Vector2:
 	var first: Dictionary = points[0]
 	return first["pos"]
 
+## Målflaggan, om banan har en. De flesta banor är verkstäder utan mål.
+func flag() -> Flag:
+	for child in get_children():
+		if child is Flag:
+			return child
+	return null
+
 func has_enemies() -> bool:
 	return not (data.get("enemies", []) as Array).is_empty()
 
 func right_edge() -> float:
 	return float(data.get("right_edge", 4700.0))
+
+## Banans tak: hur högt kameran får följa med. Utan det klipptes toppen av en hög
+## bana bort och RB hamnade utanför bilden när han stod som högst.
+func top_edge() -> float:
+	return float(data.get("top_edge", -40.0))
 
 func _add_rect(r: Rect2) -> void:
 	var rect := RectangleShape2D.new()

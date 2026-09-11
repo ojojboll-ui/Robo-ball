@@ -681,11 +681,15 @@ func _nearest_enemy_is_red() -> bool:
 			best = enemy
 	return best != null and best.kind == Enemy.Kind.RED
 
+## Ytan han tar upp just nu: bollen bred, och kapselns höjd när benen är ute.
+func body_rect() -> Rect2:
+	return Rect2(global_position - Vector2(RADIUS, _capsule.height * 0.5),
+		Vector2(RADIUS * 2.0, _capsule.height))
+
 ## Möter han en fiende? Blå dör om han kommer ovanifrån i ett hopp, och skadar
 ## honom om han går eller rullar in i den. Röda skadar alltid.
 func _touch_enemies() -> void:
-	var body := Rect2(global_position - Vector2(RADIUS, _capsule.height * 0.5),
-		Vector2(RADIUS * 2.0, _capsule.height))
+	var body := body_rect()
 	for node in get_tree().get_nodes_in_group("enemy"):
 		var enemy := node as Enemy
 		if enemy == null or not body.intersects(enemy.rect()):

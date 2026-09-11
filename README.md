@@ -74,9 +74,10 @@ ingen tillgänglighet.
 
 ## Banorna
 
-Fyra banor, valbara i panelen under *Bana* (eller med F3). Alla är verkstäder, inte
-nivåer, och i alla är marken sammanhängande hela vägen — RB går av sig själv, och en
-bana där auto-gången kan leda ner i en avgrund straffar spelaren för att inte trycka.
+Fem banor, valbara i panelen under *Bana* (eller med F3). De fyra första är verkstäder,
+inte nivåer; den femte är den första riktiga banan, med ett mål. I alla är marken
+sammanhängande hela vägen — RB går av sig själv, och en bana där auto-gången kan leda
+ner i en avgrund straffar spelaren för att inte trycka.
 
 **Lekplatsen.** Lös småsten direkt vid starten, två raka ramper, en hoppbacke och en
 kvartspipa med böjda ytor, en plattformstrappa, och fem lådformationer — pyramid, tre
@@ -138,6 +139,26 @@ av väggar, så en röd bakom en avsats måste man ta sig till.
 
 **Hjärtan.** Tre stycken. Tar de slut börjar banan om från början med alla fiender
 tillbaka — att förlora är att få börja om, inte att förlora något man byggt upp.
+
+**Klättringen.** Den första banan med ett *mål* i stället för en verkstad, byggd efter
+en konceptskiss. Tre farleder ovanpå varandra, och man går dem i sicksack:
+
+1. **Nedersta, åt höger.** Tre trappsteg längs marken och två avsatser upp till det
+   stora blocket. Bara hopp.
+2. **Mellersta, åt vänster.** Tillbaka genom två stänger och två lianer, och sista
+   svinget landar på balkongen vid vänsterpelaren. Bara grepp.
+3. **Översta, åt höger.** Upp för avsatserna till platån, ner för dess backe — den är
+   brantare än benen klarar, så han *rullar* och får fart — och så ett avstamp från
+   avsatsen över gapet till flaggtornet.
+
+Samma bana tre gånger i tre höjder, och varje varv byter mekanik: hoppa, svinga, rulla.
+Flaggan står på tornet, och RB når den genom att gå in i den — inget sista precist
+tryck, eftersom han går av sig själv. Då small det konfetti, och banan börjar om.
+
+Varje hopp i farleden är uppmätt: hur många av siktets vinklar som faktiskt landar rätt
+står i docs/METRICS.md. Och varje miss faller ner i en farled man kan ta sig vidare
+från — marken bär hela banan, blocket ligger under gapet till tornet, balkongen under
+stången. Ingen väg kan köra fast.
 
 Snabbresa mellan stationerna finns i panelens *Bana*-flik och byggs om när banan byts.
 

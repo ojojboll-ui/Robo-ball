@@ -11,6 +11,7 @@ var _hint_label: Label
 var _foot_label: Label
 var _hearts: Control
 var _chain_label: Label
+var _goal_label: Label
 var _hearts_left := 0
 var _hearts_max := 0
 
@@ -43,11 +44,26 @@ func _ready() -> void:
 	_chain_label.add_theme_color_override("font_color", Palette.PINK)
 	_chain_label.text = ""
 
+	_goal_label = _make_label(Vector2.ZERO, 76)
+	_goal_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_goal_label.anchor_right = 1.0
+	_goal_label.offset_top = 180.0
+	_goal_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_goal_label.add_theme_color_override("font_color", Palette.PINK)
+	_goal_label.add_theme_constant_override("outline_size", 10)
+	_goal_label.text = "MÅLET!"
+	_goal_label.visible = false
+
 func show_hearts(left: int, most: int) -> void:
 	_hearts_left = left
 	_hearts_max = most
 	_hearts.visible = most > 0
 	_hearts.queue_redraw()
+
+## Målet. Stort och mitt i bilden — det är det enda tillfälle spelet har där
+## något ska ta över skärmen, och den som inte läser ska ändå se att det small.
+func show_goal(on: bool) -> void:
+	_goal_label.visible = on
 
 func show_chain(kills: int) -> void:
 	_chain_label.text = "KEDJA ×%d" % kills if kills > 1 else ""

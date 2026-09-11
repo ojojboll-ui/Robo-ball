@@ -10,7 +10,7 @@ extends RefCounted
 const GROUND_Y := 640.0
 
 static func names() -> Array:
-	return ["Lekplatsen", "Rullbanan", "Verkstaden", "Fienderna"]
+	return ["Lekplatsen", "Rullbanan", "Verkstaden", "Fienderna", "Klättringen"]
 
 static func build(index: int) -> Dictionary:
 	match index:
@@ -20,6 +20,8 @@ static func build(index: int) -> Dictionary:
 			return _workshop()
 		3:
 			return _enemies()
+		4:
+			return _climb()
 		_:
 			return _playground()
 
@@ -328,5 +330,100 @@ static func _enemies() -> Dictionary:
 			{"name": "Röda halvan", "pos": Vector2(2900, GROUND_Y - 60)},
 			{"name": "Höga vågen", "pos": Vector2(3700, GROUND_Y - 60)},
 			{"name": "Sista", "pos": Vector2(4450, GROUND_Y - 60)},
+		],
+	}
+
+# ---------------------------------------------------------------- klättringen
+
+## Mjuk backe mellan två höjder: brant i mitten, flack i båda ändarna.
+##
+## Lutningen mitt i blir (höjdskillnaden · π/2) / bredden, alltså ungefär 51° med
+## måtten nedan — med flit strax över benens gräns på 43°, för det är den enda
+## anledningen till att han *rullar* ner för den. En flackare backe hade han gått
+## ner för i gångfart, och då finns ingen fart att skjuta ifrån med i botten.
+static func _slope(from: Vector2, to: Vector2) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	var steps := 14
+	for i in range(1, steps + 1):
+		var t := float(i) / float(steps)
+		var ease := 0.5 - 0.5 * cos(t * PI)
+		pts.append(Vector2(lerpf(from.x, to.x, t), from.y + (to.y - from.y) * ease))
+	return pts
+
+## Överhänget vid starten: en balkong vars undersida svänger ner till marken i en
+## kvartscirkel. Den stänger vägen åt vänster utan att se ut som en osynlig mur,
+## och den är samtidigt skyddsnätet för den som missar stången ovanför: den som
+## faller landar på balkongen i stället för på marken.
+static func _overhang(foot: float, out_to: float, top: float) -> PackedVector2Array:
+	var pts := PackedVector2Array([Vector2(foot, top), Vector2(out_to, top)])
+	var steps := 12
+	for i in range(1, steps + 1):
+		var a := PI * 0.5 * float(i) / float(steps)
+		pts.append(Vector2(
+			out_to - (out_to - foot) * sin(a), top + (GROUND_Y - top) * (1.0 - cos(a))))
+	return pts
+
+## Banan ur konceptskissen: tre farleder ovanpå varandra, och målet är flaggan.
+##
+## Nedersta farleden går åt höger längs marken, den mellersta tillbaka åt vänster
+## genom stänger och lianer, och den översta åt höger igen längs avsatserna till
+## platån — därifrån rullar han ner för backen och skjuter ifrån mot flaggtornet.
+## Sicksacken är hela poängen: samma bana används tre gånger i tre höjder, och
+## varje varv byter mekanik (hoppa, svinga, rulla).
+##
+## Missar han ett hopp faller han alltid ner i en farled han kan ta sig vidare
+## från — marken bär hela banan, det stora blocket ligger under gapet till tornet
+## och balkongen under stången. Ingen väg kan alltså köra fast (princip 4).
+static func _climb() -> Dictionary:
+	var right := 2900.0
+
+	var plateau := PackedVector2Array([Vector2(1250.0, -520.0), Vector2(1510.0, -520.0)])
+	plateau.append_array(_slope(Vector2(1510.0, -520.0), Vector2(1690.0, -380.0)))
+	plateau.append_array(PackedVector2Array([
+		Vector2(1990.0, -380.0), Vector2(1990.0, -180.0), Vector2(1250.0, -180.0)]))
+
+	return {
+		"name": "Klättringen",
+		"right_edge": right,
+		"top_edge": -590.0,
+		"floors": [
+			Rect2(100, GROUND_Y, right - 40.0, 320),
+			# Nedersta farleden: tre trappsteg och två avsatser upp till blocket.
+			Rect2(560, 577, 130, 63),
+			Rect2(800, 577, 130, 63),
+			Rect2(1040, 577, 130, 63),
+			Rect2(1270, 465, 130, 60),
+			Rect2(1510, 390, 130, 60),
+			# Blocket går ända fram till tornets fot, så att den som missar sista
+			# hoppet landar på det i stället för i en grop utan utgång.
+			Rect2(1740, 310, 720, 330),
+			# Översta farleden.
+			Rect2(560, -250, 130, 90),
+			Rect2(790, -340, 130, 70),
+			Rect2(1020, -430, 130, 70),
+			# Flaggtornet: bred topp på smal fot, alltså ett överhäng åt vänster.
+			# Det går bara att nå uppifrån, aldrig genom att klättra.
+			Rect2(2200, -480, 460, 280),
+			Rect2(2460, -200, 200, 840),
+		],
+		"walls": [Rect2(120, -150, 310, 790)],
+		"ramps": [_overhang(295.0, 680.0, 78.0), plateau],
+		"crates": [],
+		"swings": [
+			{"pos": Vector2(480, -130), "kind": "bar", "length": 0.0},
+			{"pos": Vector2(950, -120), "kind": "vine", "length": 290.0},
+			{"pos": Vector2(1180, -120), "kind": "vine", "length": 290.0},
+			{"pos": Vector2(1390, 160), "kind": "bar", "length": 0.0},
+			{"pos": Vector2(1600, 170), "kind": "bar", "length": 0.0},
+		],
+		"flag": Vector2(2430, -480),
+		"spawns": [
+			{"name": "Start", "pos": Vector2(400, 580)},
+			{"name": "Trappan", "pos": Vector2(1320, 400)},
+			{"name": "Stängerna", "pos": Vector2(1800, 250)},
+			{"name": "Balkongen", "pos": Vector2(550, 20)},
+			{"name": "Pelartoppen", "pos": Vector2(250, -210)},
+			{"name": "Platån", "pos": Vector2(1350, -580)},
+			{"name": "Flaggan", "pos": Vector2(2330, -540)},
 		],
 	}

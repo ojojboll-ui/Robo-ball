@@ -228,6 +228,34 @@ rätt, utan att förlora något. Det är en trygg zon som ändå rör på sig �
 mekanik vi hittills har som ger tid utan att stanna världen. Låt mattan deformeras i
 proportion till kraften, så blir avläsningen synlig.
 
+### Banbygge: farleden mäts, den antas inte
+
+Klättringen (bana 5) är den första banan med ett mål i stället för en verkstad, och den
+är byggd efter en konceptskiss: tre farleder ovanpå varandra som gås i sicksack — åt
+höger längs marken, tillbaka åt vänster genom grepp, och åt höger igen längs avsatserna
+till platån och vidare till flaggan. Samma sträcka tre gånger i tre höjder, och varje
+våning byter mekanik: hoppa, svinga, rulla.
+
+Det viktiga är inte banan utan **hur den byggdes**. Ett hopp som "ser rimligt ut" i en
+skiss är inte ett hopp som går att göra: RB:s hopp når 346 px långt eller 169 px högt,
+aldrig båda, och ett mått som ligger nära taket ger ett siktfönster på några få grader —
+alltså en tiondels sekund för den som ska hinna trycka. Därför skrevs ett verktyg som
+*spelar* farleden: för varje hopp ställs RB på avstampet, siktet sveps genom alla
+vinklar, och det räknas hur många av dem som faktiskt landar där de ska. Utfallet står i
+docs/METRICS.md, hopp för hopp.
+
+Tre hopp i första utkastet visade sig omöjliga eller nära nog — inte uppenbart för
+ögat, men noll respektive en vinkel av nio i mätningen. Geometrin flyttades tills varje
+hopp hade ett fönster på minst tre vinklar av nio, och först då var banan klar. Det är
+samma hållning som resten av projektet: siffran avgör, inte känslan av att det borde gå.
+
+Två saker i skissen gick inte att bygga rakt av, och båda av samma skäl. Backen ner från
+platån var ritad hela vägen ner till marknivå, och därifrån är tornet 300 px upp — mer
+än ett hopp kan klättra oavsett hur mycket fart han har med sig, eftersom farten han
+samlar på sig i backen pekar *framåt* och inte uppåt. Avsatsen ligger därför högre än i
+skissen, och gapet är bredare, så att bågen får plats att stiga. Tornets lilla hylla på
+vänstersidan är borta: under överhänget är den en återvändsgränd.
+
 ## 4b. Fysikkänsla
 
 Tre olika fysikbeteenden som måste samexistera (se TECH.md för implementation):
