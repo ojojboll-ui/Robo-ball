@@ -256,6 +256,14 @@ samlar på sig i backen pekar *framåt* och inte uppåt. Avsatsen ligger därfö
 skissen, och tornet lägre. Tornets lilla hylla på vänstersidan är borta: under
 överhänget är den en återvändsgränd.
 
+Rampen byggdes om ytterligare en gång, med en brantare backe och en rundare skål, och
+det gav den viktigaste insikten av alla: **en brant backe går inte att hålla sig kvar
+i.** Han släpper underlaget när v²/r går över tyngden plus markfästet, och för att följa
+en kurva ända ner till 60° i 790 px/s krävs en radie på över 4000 px. Alltså *ska* han
+lämna krönet och flyga. Backen nedanför får då formen av hans egen kastbana — en parabel
+räknad ur farten vid krönet — så att han landar tangentiellt och nästan ingen fart går
+förlorad. Det är precis så en riktig hoppbacke är byggd, och av exakt samma skäl.
+
 Finalen byggdes om en gång till när den provspelades: flaggan skulle **inte** gå att
 hoppa till, utan kräva rampen. Det visade sig vara ett fysikkrav och inte en
 banändring. Hoppkraften läggs till den fart han redan har, och står han still på marken

@@ -343,10 +343,14 @@ func _process_aim(delta: float) -> void:
 		return
 
 	if aim_kind == Aim.SHOOT:
-		# Visaren går runt hela varvet, som en klocka. Ingen pendling: ett skott
-		# har ingen "framåt", och ett varv är lika lätt att vänta in var man än
-		# står.
-		aim_deg = fposmod(aim_deg - real * Settings.shoot_sweep * 360.0, 360.0)
+		# Visaren sveper det övre halvvarvet fram och tillbaka, precis som
+		# hoppbågen gör — samma rörelse att läsa av och att vänta in, i stället
+		# för två. Den börjar också åt samma håll som RB går. Ett helt varv var
+		# det förut, och den halvan som pekade ner i marken var bortkastad
+		# väntan: det finns inget att skjuta där.
+		_sweep_t += real * Settings.shoot_sweep * TAU
+		var shot := 0.5 - 0.5 * cos(_sweep_t)
+		aim_deg = lerpf(0.0, 180.0, shot) if facing > 0 else lerpf(180.0, 0.0, shot)
 		return
 	_sweep_t += real * Settings.aim_sweep_speed * 1.6
 	# Bågen startar alltid i den ände som ligger åt det håll RB går, och pendlar

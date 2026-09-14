@@ -56,7 +56,7 @@ bläddra igenom mitt i ett speltest:
 | Sikte | Pilens hastighet, slow motion, vinkelsteg, bågens gränser, hoppkraft, gravitation, tempoknapparna och extra hopp i luften |
 | Rörelse | Gångfart och acceleration, markfäste, hur mycket fart som följer med i landningen och i hoppet, studs mot väggar, knuffkraft, benens fjädring |
 | Rullning | När benen åker in (lutning, benens högsta takt och absolut fart) med uträknad klättergräns under, indragningstakt, förbli boll i luften, förberedd rullning i luften, rullmotstånd |
-| Föremål | Lådornas fysik, effekter, studsmattornas studs och bukt, stängernas och lianernas grepp och dämpning, samt fiendernas fart, studsen på dem, skjutsiktet, laserns räckvidd, osårbarheten och antalet hjärtan |
+| Föremål | Lådornas fysik, effekter, studsmattornas studs och bukt, stängernas och lianernas grepp och dämpning, samt fiendernas fart, studsen på dem, skjutsiktets sveptakt, laserns räckvidd, osårbarheten och antalet hjärtan |
 | Hjälp | Styrningsvariant, förhandsbana, kantskydd, spelhastighet, dubbeltrycksfilter, timeout |
 | Bana | Banval, börja om, snabbresa och återställning av alla inställningar |
 
@@ -87,9 +87,10 @@ en konceptskiss. Tre farleder ovanpå varandra, och man går dem i sicksack:
    stora blocket. Bara hopp.
 2. **Mellersta, åt vänster.** Tillbaka genom två stänger och två lianer, och sista
    svinget landar på balkongen vid vänsterpelaren. Bara grepp.
-3. **Översta, åt höger.** Upp för avsatserna till platån, ett hopp ner på avsatsen — och
-   sedan behöver man inte trycka mer. Han rullar av avsatsens krön ner i **rampen**,
-   genom botten och upp för uppstudsen, och kastas därifrån upp till flaggan.
+3. **Översta, åt höger.** Upp för fyra avsatser till platån, ett hopp ner på rampens
+   avsats — och sedan behöver man inte trycka mer. Han rullar över krönet, faller genom
+   den branta nedslagsbacken, svänger runt i skålens botten och kastas ut ur uppstudsen
+   i en lång båge till flaggplatån.
 
 Samma bana tre gånger i tre höjder, och varje varv byter mekanik: hoppa, svinga, rulla.
 Flaggan står på tornet, och RB når den genom att gå in i den — inget sista precist
@@ -102,9 +103,9 @@ hoppkraften läggs till den fart han *redan* har, så står han still finns inge
 att lägga den till. En ramp kan peka farten uppåt. Ett hopp kan det inte.
 
 Hela finalen är mätt i ett stycke — ett tryck på platåns krön och sedan ingenting alls:
-20°–40° tar honom hela vägen till flaggan på 3,3–3,7 sekunder. Kommer han in i skålen
-långsammare än ungefär 650 px/s tar farten slut i uppstudsen och han rullar tillbaka ner,
-utan skada, och kan försöka igen. Varje hopp i farleden är uppmätt: hur många av siktets
+**varje vinkel mellan 20° och 60° tar honom hela vägen** till flaggan, på 3,3–4,4
+sekunder. Det är den mest förlåtande delen av banan, vilket är precis rätt för det som
+är själva belöningen. Varje hopp i farleden är uppmätt: hur många av siktets
 vinklar som faktiskt landar rätt står i docs/METRICS.md. Och varje miss faller ner i en farled man kan ta sig vidare
 från — marken bär hela banan, blocket ligger under gapet till tornet, balkongen under
 stången. Ingen väg kan köra fast.
@@ -163,8 +164,9 @@ någon.
 nuddat marken. Ett tryck räcker för att fortsätta från fiende till fiende, och den som
 inte hinner tappar bara kedjan. Räknaren syns uppe till höger från två i rad.
 
-**Lasern.** Är närmaste fiende röd blir siktet ett annat: en rak visare som går runt
-hela varvet som en klocka, och nästa tryck skickar en stråle ur ögat. Strålen stoppas
+**Lasern.** Är närmaste fiende röd blir siktet ett annat: en rak visare som sveper det
+övre halvvarvet fram och tillbaka — samma rörelse som hoppbågen, och åt samma håll som
+RB går — och nästa tryck skickar en stråle ur ögat. Strålen stoppas
 av väggar, så en röd bakom en avsats måste man ta sig till.
 
 **Hjärtan.** Tre stycken. Tar de slut börjar banan om från början med alla fiender

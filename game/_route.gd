@@ -31,18 +31,30 @@ func _ready() -> void:
 	level = main.get("_level")
 	var floors: Array = level.data["floors"]
 	var labels := ["marken", "F", "G", "H", "D", "E", "blocket", "A", "B", "C",
-		"platån", "torntopp", "tornfot"]
+		"C2", "platån", "flaggplatån", "flaggfot"]
 	for i in floors.size():
 		names[labels[i]] = floors[i]
 
 	var legs: Array[Dictionary] = [
-		{"k": "grab", "n": "blocket → stång 4", "at": Vector2(2170, 260), "f": -1, "to": 4, "lo": 90, "hi": 170},
-		{"k": "hang", "n": "stång 4 → stång 3", "from": 4, "to": 3, "lo": 100, "hi": 170},
-		{"k": "hang", "n": "stång 3 → lian 2", "from": 3, "to": 2, "lo": 100, "hi": 170},
-		{"k": "hang", "n": "lian 2 → lian 1", "from": 2, "to": 1, "lo": 100, "hi": 170},
-		{"k": "hangtop", "n": "lian 1 → balkongen", "from": 1, "to": "balkongen", "lo": 100, "hi": 170},
+		{"k": "mark", "n": "start → F", "at": Vector2(400, 560), "f": 1, "to": "F", "lo": 10},
+		{"k": "mark", "n": "F → G", "at": Vector2(690, 520), "f": 1, "to": "G", "lo": 10},
+		{"k": "mark", "n": "G → H", "at": Vector2(1130, 520), "f": 1, "to": "H", "lo": 10},
+		{"k": "mark", "n": "H → D", "at": Vector2(1570, 520), "f": 1, "to": "D", "lo": 20},
+		{"k": "mark", "n": "D → E", "at": Vector2(1910, 430), "f": 1, "to": "E", "lo": 20},
+		{"k": "mark", "n": "E → blocket", "at": Vector2(2250, 360), "f": 1, "to": "blocket", "lo": 20},
+		{"k": "grab", "n": "blocket → stång 5", "at": Vector2(2490, 280), "f": -1, "to": 5, "lo": 90, "hi": 170},
+		{"k": "hang", "n": "stång 5 → stång 4", "from": 5, "to": 4, "lo": 100, "hi": 170},
+		{"k": "hang", "n": "stång 4 → lian 3", "from": 4, "to": 3, "lo": 100, "hi": 170},
+		{"k": "hang", "n": "lian 3 → lian 2", "from": 3, "to": 2, "lo": 100, "hi": 170},
+		{"k": "hang", "n": "lian 2 → stång 1", "from": 2, "to": 1, "lo": 100, "hi": 170},
+		{"k": "hangtop", "n": "stång 1 → balkongen", "from": 1, "to": "balkongen", "lo": 100, "hi": 170},
 		{"k": "mark", "n": "balkongen → stång 0", "at": Vector2(600, 30), "f": -1, "to": 0, "lo": 50, "hi": 130, "swing": true},
 		{"k": "hangtop", "n": "stång 0 → pelartoppen", "from": 0, "to": "pelartoppen", "lo": 80, "hi": 170},
+		{"k": "mark", "n": "pelartoppen → A", "at": Vector2(320, -200), "f": 1, "to": "A", "lo": 20},
+		{"k": "mark", "n": "A → B", "at": Vector2(690, -300), "f": 1, "to": "B", "lo": 20},
+		{"k": "mark", "n": "B → C", "at": Vector2(1060, -390), "f": 1, "to": "C", "lo": 20},
+		{"k": "mark", "n": "C → C2", "at": Vector2(1430, -480), "f": 1, "to": "C2", "lo": 20},
+		{"k": "mark", "n": "C2 → platån", "at": Vector2(1800, -570), "f": 1, "to": "platån", "lo": 20},
 	]
 	var args := OS.get_cmdline_user_args()
 	var first := int(args[0]) if args.size() > 0 else 0
@@ -234,12 +246,10 @@ func _where() -> String:
 		if absf(feet - r.position.y) < 30.0 and x > r.position.x - 30.0 \
 				and x < r.position.x + r.size.x + 30.0:
 			return str(key)
-	if absf(feet + 380.0) < 30.0 and x > 1900.0 and x < 2480.0:
-		return "avsatsen"
-	if feet < -490.0 and x > 1490.0 and x < 2360.0:
-		return "platån"
+	if absf(feet + 470.0) < 30.0 and x > 2980.0 and x < 3400.0:
+		return "rampen"
 	if absf(feet + 150.0) < 30.0 and x < 460.0:
 		return "pelartoppen"
-	if absf(feet - 78.0) < 30.0 and x > 280.0 and x < 1020.0:
+	if absf(feet - 78.0) < 30.0 and x > 280.0 and x < 1240.0:
 		return "balkongen"
 	return "annat (%.0f, %.0f)" % [x, feet]

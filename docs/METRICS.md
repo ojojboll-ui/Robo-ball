@@ -160,61 +160,66 @@ mätningen, för de påverkar siffrorna:
 
 | Hopp | vinklar som landar rätt |
 | --- | --- |
-| start → steg 1 | 20°–80° (6 av 9) |
-| steg 1 → steg 2 | 20°–80° (7) |
-| steg 2 → steg 3 | 20°–80° (7) |
+| start → steg 1 | 20°–80° (7 av 9) |
+| steg 1 → steg 2 | 20°–70° (6) |
+| steg 2 → steg 3 | 20°–70° (6) |
 | steg 3 → avsats 1 | 50°–80° (4) |
 | avsats 1 → avsats 2 | 50°–70° (3) |
-| avsats 2 → blocket | 50°–70° (3) |
-| blocket → stång 2 | 100°–150° (6) |
-| stång 2 → stång 1 | 120°–140° (3) |
-| stång 1 → lian 2 | 120°–150° (4) |
-| lian 2 → lian 1 | 110°–160° (6) |
-| lian 1 → balkongen | 120°–140° (3) |
+| avsats 2 → blocket | 40°–70° (4) |
+| blocket → stång 3 | 100°–140° (5) |
+| stång 3 → stång 2 | 120°–140° (3) |
+| stång 2 → lian 2 | 120°–150° (4) |
+| lian 2 → lian 1 | 110°–170° (7) |
+| lian 1 → stång 1 | 110°–170° (6) |
+| stång 1 → balkongen | 110°–160° (6) |
 | balkongen → stången i pelaren | 90°–120° (4) |
 | stången → pelartoppen | 100°–120° (3) |
 | pelartoppen → avsats A | 50°–80° (4) |
 | A → B | 50°–80° (4) |
 | B → C | 50°–80° (4) |
-| C → platån | 50°–80° (4) |
-| **platåns krön → flaggan** (hela rampen, utan fler tryck) | **20°–40° (3 av 6)** |
+| C → D | 50°–80° (4) |
+| D → platån | 50°–80° (4) |
+| **platåns krön → flaggan** (hela rampen, utan fler tryck) | **20°–60° (5 av 5)** |
 
 Sista raden är hela finalen mätt i ett stycke: ett tryck på platåns krön, och sedan
-ingenting alls. Han landar rullande på avsatsen, rullar över krönet ner i skålen, upp
-för uppstudsen och flyger till flaggan — 3,3 till 3,7 sekunder från tryck till flagga.
-Med ett flackare hopp (20°) kommer han in i skålen i 788 px/s, med ett brantare (40°) i
-673. Under ungefär 650 px/s tar farten slut i uppstudsen och han rullar tillbaka ner —
-ingen skada skedd, han hamnar på blocket eller på avsatsen igen och kan försöka om.
+ingenting alls. Han landar rullande på rampens avsats, rullar över krönet, faller genom
+nedslagsbacken, svänger runt i skålen och kastas ut ur uppstudsen — 3,3 till 4,4
+sekunder från tryck till flagga, och **varje vinkel mellan 20° och 60° tar honom hela
+vägen**. Det är den mest förlåtande delen av banan, vilket är precis rätt för det som är
+själva belöningen.
 
-Tre hopp i första utkastet mätte noll eller en vinkel av nio, och alla tre av samma
+Tre hopp i ett tidigt utkast mätte noll eller en vinkel av nio, och alla tre av samma
 skäl: höjdskillnaden låg för nära hoppets tak. Räckvidden faller brant när hoppet ska
 stiga — 346 px rakt fram, men bara omkring 230 px om det samtidigt ska upp 100 px, och
 inget alls över 169 px. Tumregeln banan är byggd efter: **stiger hoppet 100 px får gapet
 vara högst 180 px, stiger det 50 px högst 240 px.**
 
 En detalj värd att skriva ner: vad som räknas är kroppens *mitt*, inte fötterna. Att
-landa på en avsats kräver 35 px mer stigning än avståndet till kanten antyder.
+landa på en avsats kräver 35 px mer stigning än avståndet till kanten antyder. Och ett
+grepp som ligger *nedanför* honom är svårare än ett som ligger i höjd med honom: en
+stång 70 px ner mätte 2 vinklar av 9, samma stång i hans egen höjd 6.
 
 ## Rampen: att bygga fart som ett hopp inte kan ge
 
-Flaggan står 50 px över avsatsen och 1840 px från den, och 740 px över blocket. Den går
-alltså inte att hoppa till från någonstans — hoppet når 346 px långt eller 169 px högt,
-och dubbelhoppet 338 px rakt upp. Enda vägen dit är rampen, och det är hela poängen:
-**hoppkraften läggs till den fart han redan har, så står han still på marken finns ingen
-uppåtfart att lägga den till.** En ramp kan däremot peka farten uppåt.
+Flaggan står 120 px under rampens avsats men 2200 px från den, och 660 px över marken
+under sig. Den går alltså inte att hoppa till från någonstans — hoppet når 346 px långt
+eller 169 px högt, dubbelhoppet 338 px rakt upp. Enda vägen dit är rampen, och det är
+hela poängen: **hoppkraften läggs till den fart han redan har, så står han still på
+marken finns ingen uppåtfart att lägga den till.** En ramp kan däremot peka farten uppåt.
 
-Fyra saker mättes fram under bygget, och alla fyra gäller varje ramp vi bygger härefter:
+Fem saker mättes fram, och alla gäller varje ramp vi bygger härefter:
 
 | | |
 | --- | --- |
-| Krönets radie | minst **v²/1550** px, annars lättar han. Vid 800 px/s alltså 413 px; skålens krön har 700 |
+| Krönets radie | minst **v²/1550** px, annars lättar han. Vid 800 px/s alltså 413 px; rampens krön har 700 |
 | Bågens punkttäthet | krönet mäts som hur mycket lutningen ändrar sig **per bildruta**. Med glesa punkter kommer hela ändringen på en gång, och en mjuk kurva läses som ett tvärt hörn: mätt lyfte han från en 400-radie i 665 px/s, där gränsen ligger vid 190 |
-| Uppstudsens vinkel | 62° kastar honom nästan rakt upp — hög båge, men han landar där han startade. **45°** ger halva farten uppåt och halva framåt, alltså en båge som når någonstans |
-| Läppens höjd | varje 100 px läppen ligger **under** avsatsen sänker toppen av bågen 22 px. Skålens läpp ligger därför i exakt samma höjd som avsatsen, som i en riktig halfpipe |
+| Brant backe | går **inte** att hålla sig kvar i. För att följa en kurva ända ner till 60° i 790 px/s krävs en radie på över 4000 px. Alltså ska han lämna krönet och flyga — och backen nedanför ska ha formen av hans egen kastbana, så att nedslaget blir tangentiellt och nästan ingen fart går förlorad |
+| Uppstudsens vinkel | 62° kastar honom nästan rakt upp — hög båge, men han landar där han startade. **45°** ger halva farten uppåt och halva framåt |
+| Läppens höjd | avgör om bågen blir **hög eller lång**. Varje 100 px läppen ligger under avsatsen ger 22 px lägre topp men mer fart, alltså längre flykt. Rampens läpp ligger 200 px under avsatsen, och det räckte för att fördubbla utfarten |
 
-Mätt genom skålen vid 788 px/s in: **1528 px/s i botten**, 650 px/s kvar vid läppen, och
-bågen toppar 103 px över läppen, 152 px ut. Det låter lite, men det är tillräckligt:
-tornet står 91 px bort och dess topp 50 px över läppen.
+Mätt genom rampen med 788 px/s in på avsatsen: **1019 px/s kvar vid läppen** (mot 650
+med den flacka backen och läppen i avsatsens höjd), och bågen toppar 223 px över läppen.
+Den flyger 2200 px till flaggplatån.
 
 Och en sak till, som inte är fysik utan geometri: **rampens ändkanter måste vara
 lodräta.** En vinkelrät kant på en 45-graders läpp lämnar en liten hylla utanför rampen,
