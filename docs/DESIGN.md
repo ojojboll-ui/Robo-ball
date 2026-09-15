@@ -188,8 +188,16 @@ efter landningen också (`ATTACK_GRACE`, 0,12 s).
 och skadar vid varje beröring. Att den *flyger* är inte pynt: den går inte att nå med
 benen, och det är just det som gör lasern nödvändig i stället för valfri. Därför byter
 siktet skepnad när en röd står närmast: i stället för hoppets båge kommer en rak visare
-som går runt hela varvet som en klocka. Att erbjuda hoppbågen mot en röd vore att
-erbjuda fel svar i just det ögonblick det gäller.
+som sveper det övre halvvarvet fram och tillbaka — samma rörelse och samma startriktning
+som hoppbågen, så det är en rörelse att lära sig och inte två. Att erbjuda hoppbågen mot
+en röd vore att erbjuda fel svar i just det ögonblick det gäller.
+
+Visaren **saktar ner medan den pekar på en fiende**. En fyrkant är 6° bred på 400 px
+håll, och i full takt passerar visaren den på en enda bildruta — då avgörs träffen av
+att trycka på rätt hundradels sekund, alltså av precis det spelet finns till för att
+slippa. Inbromsningen siktar inte åt någon: visaren går hela vägen förbi och ett tryck
+vid fel tillfälle missar. Den ger bara ögonblicket en längd som går att träffa i, på
+samma sätt som slow motion gör det för hoppbågen. Mått i docs/METRICS.md.
 
 Sorterna hålls än så länge isär, en halva var av banan. Blandade lär de ut två saker
 samtidigt, och då lär de inte ut någon: först ska hoppet sitta, sedan lasern.

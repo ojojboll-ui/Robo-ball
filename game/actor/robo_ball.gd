@@ -49,6 +49,8 @@ const GROUND_SNAP := 20.0      ## hur långt motorn får dra ner honom mot marke
 ## bildruta foten råkade nudka marken i — landar han en hundradel innan han når
 ## fienden blir samma rörelse plötsligt en skada i stället för en träff.
 const ATTACK_GRACE := 0.12
+## Hur många grader utanför fiendens egen bredd skjutsiktet börjar bromsa in.
+const SHOT_SLOW_MARGIN := 6.0
 const SIM_STEP := 1.0 / 45.0
 const SIM_STEPS := 70
 
@@ -348,7 +350,12 @@ func _process_aim(delta: float) -> void:
 		# för två. Den börjar också åt samma håll som RB går. Ett helt varv var
 		# det förut, och den halvan som pekade ner i marken var bortkastad
 		# väntan: det finns inget att skjuta där.
-		_sweep_t += real * Settings.shoot_sweep * TAU
+		# ... och den hakar upp sig ett ögonblick när den sveper förbi något som
+		# går att skjuta. Utan det avgörs en träff av att trycka på rätt
+		# hundradels sekund, vilket är precis den sortens krav spelet finns till
+		# för att slippa: fienden är liten på håll, och i 0,9 svep i sekunden
+		# passerar visaren en fiende på 400 px avstånd på en tiondels sekund.
+		_sweep_t += real * Settings.shoot_sweep * TAU * _shot_drag()
 		var shot := 0.5 - 0.5 * cos(_sweep_t)
 		aim_deg = lerpf(0.0, 180.0, shot) if facing > 0 else lerpf(180.0, 0.0, shot)
 		return
@@ -622,6 +629,53 @@ func _launch() -> void:
 	ground_speed = 0.0
 	facing = 1 if velocity.x >= 0.0 else -1
 	_set_state(State.AIR)
+
+## Hur mycket visaren bromsas av att peka på något.
+##
+## Måttet är fiendens egen bredd i grader — en 42 px bred fyrkant på 300 px håll
+## är 8° bred, på 700 px 3,4° — plus en marginal, så att inbromsningen börjar
+## innan den är på mål och släpper efter. Mjuk övergång, för ett hopp i takten är
+## svårare att läsa av än en inbromsning.
+##
+## Bara fiender lasern faktiskt når räknas — inom räckvidden och utan vägg i
+## vägen. Att bromsa för något strålen ändå inte når vore att ljuga om var
+## träffen finns, och en röd bakom en avsats ska man ta sig till (DECISIONS 22).
+func _shot_drag() -> float:
+	if Settings.shoot_slow >= 1.0:
+		return 1.0
+	var aim := Vector2(cos(deg_to_rad(aim_deg)), -sin(deg_to_rad(aim_deg)))
+	var drag := 1.0
+	for node in get_tree().get_nodes_in_group("enemy"):
+		var enemy := node as Enemy
+		if enemy == null:
+			continue
+		var to := enemy.global_position - global_position
+		var away := to.length()
+		if away > Settings.laser_reach:
+			continue
+		if _wall_between(enemy.global_position):
+			continue
+		# Full inbromsning så länge visaren *är* på fienden, och en mjuk övergång
+		# utanför. En spets hade gett full broms bara i den exakta mitten, och
+		# det är inte den tid spelaren behöver — det är tiden då ett tryck
+		# faktiskt träffar som ska räcka till.
+		var half := rad_to_deg(atan2(Enemy.SIZE.x * 0.5, maxf(away, 1.0)))
+		var inner := half + 1.0
+		var outer := half + SHOT_SLOW_MARGIN
+		var off := absf(rad_to_deg(aim.angle_to(to)))
+		if off <= inner:
+			drag = minf(drag, Settings.shoot_slow)
+		elif off < outer:
+			drag = minf(drag, lerpf(Settings.shoot_slow, 1.0, (off - inner) / (outer - inner)))
+	return drag
+
+## Står det en vägg i vägen mellan ögat och en punkt?
+func _wall_between(point: Vector2) -> bool:
+	var dir := (point - global_position).normalized()
+	var from := global_position + dir * (RADIUS + 4.0)
+	var hit := get_world_2d().direct_space_state.intersect_ray(
+		PhysicsRayQueryParameters2D.create(from, point, collision_mask, [get_rid()]))
+	return not hit.is_empty()
 
 ## Lasern ur ögat.
 ##
@@ -1060,7 +1114,7 @@ func _draw_release_arc() -> void:
 	var side := dir.orthogonal() * 7.0
 	draw_colored_polygon(PackedVector2Array([tip, back + side, back - side]), Palette.PINK)
 
-## Skjutsiktet: en rak linje ur ögat som går runt hela varvet som en visare.
+## Skjutsiktet: en rak linje ur ögat som sveper det övre halvvarvet som en visare.
 ##
 ## Ingen båge och inga prickar — ett skott går rakt, och bilden ska säga just
 ## det. Linjen slutar där strålen skulle ta stopp, så man ser räckvidden och

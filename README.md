@@ -56,7 +56,7 @@ bläddra igenom mitt i ett speltest:
 | Sikte | Pilens hastighet, slow motion, vinkelsteg, bågens gränser, hoppkraft, gravitation, tempoknapparna och extra hopp i luften |
 | Rörelse | Gångfart och acceleration, markfäste, hur mycket fart som följer med i landningen och i hoppet, studs mot väggar, knuffkraft, benens fjädring |
 | Rullning | När benen åker in (lutning, benens högsta takt och absolut fart) med uträknad klättergräns under, indragningstakt, förbli boll i luften, förberedd rullning i luften, rullmotstånd |
-| Föremål | Lådornas fysik, effekter, studsmattornas studs och bukt, stängernas och lianernas grepp och dämpning, samt fiendernas fart, studsen på dem, skjutsiktets sveptakt, laserns räckvidd, osårbarheten och antalet hjärtan |
+| Föremål | Lådornas fysik, effekter, studsmattornas studs och bukt, stängernas och lianernas grepp och dämpning, samt fiendernas fart, studsen på dem, skjutsiktets sveptakt och dess inbromsning vid en fiende, laserns räckvidd, osårbarheten och antalet hjärtan |
 | Hjälp | Styrningsvariant, förhandsbana, kantskydd, spelhastighet, dubbeltrycksfilter, timeout |
 | Bana | Banval, börja om, snabbresa och återställning av alla inställningar |
 
@@ -168,6 +168,13 @@ inte hinner tappar bara kedjan. Räknaren syns uppe till höger från två i rad
 övre halvvarvet fram och tillbaka — samma rörelse som hoppbågen, och åt samma håll som
 RB går — och nästa tryck skickar en stråle ur ögat. Strålen stoppas
 av väggar, så en röd bakom en avsats måste man ta sig till.
+
+Visaren **saktar ner när den sveper förbi en fiende**, och tar upp takten igen när den
+passerat. En röd på 400 px håll är bara 6° bred, och i full sveptakt passerar visaren
+den på en enda bildruta — då avgörs träffen av att trycka på rätt hundradels sekund.
+Med grundinbromsningen står den på fienden i 0,23 s i stället — fjorton bildrutor mot
+en. Takten är ett reglage (*Föremål* → *Skjutsiktet saktar ner vid fiende*), och 1,00×
+stänger av inbromsningen helt.
 
 **Hjärtan.** Tre stycken. Tar de slut börjar banan om från början med alla fiender
 tillbaka — att förlora är att få börja om, inte att förlora något man byggt upp.

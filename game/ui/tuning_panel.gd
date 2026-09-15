@@ -311,6 +311,8 @@ func _tab_objects() -> void:
 		func(v: float) -> void: Settings.shoot_range = v, "%.0f px")
 	_slider("Skjutsiktets sveptakt", 0.2, 2.0, 0.05, Settings.shoot_sweep,
 		func(v: float) -> void: Settings.shoot_sweep = v, "%.2f svep/s")
+	_slider("Skjutsiktet saktar ner vid fiende", 0.02, 1.0, 0.02, Settings.shoot_slow,
+		func(v: float) -> void: Settings.shoot_slow = v, "%.2f× takt")
 	_slider("Laserns räckvidd", 400.0, 2400.0, 50.0, Settings.laser_reach,
 		func(v: float) -> void: Settings.laser_reach = v, "%.0f px")
 	_slider("Osårbar efter en träff", 0.0, 4.0, 0.1, Settings.invulnerable_time,

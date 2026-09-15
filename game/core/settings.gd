@@ -108,6 +108,12 @@ var stomp_bounce := 520.0      ## px/s uppåt när han studsar på en blå
 var shoot_range := 700.0       ## px, så nära måste en röd vara för att siktet ska bli ett skjutsikte
 var shoot_sweep := 0.9         ## svep per sekund för skjutsiktets visare, 0–180°
 var laser_reach := 1400.0      ## px, hur långt lasern når
+## Hur mycket skjutsiktet saktar ner när visaren sveper förbi en fiende.
+## 1.0 = ingen inbromsning, 0.08 = en tolftedels takt. Det är ett
+## tillgänglighetsreglage av samma sort som slow motion vid sikte: det ger tid
+## att trycka, inte hjälp att sikta. En fiende på 440 px håll är bara 5° bred,
+## och i full sveptakt passerar visaren den på en enda bildruta.
+var shoot_slow := 0.08
 var invulnerable_time := 1.2   ## sekunder osårbar efter en träff
 var knockback := 260.0         ## px/s bort från den som träffade
 var max_hearts := 3            ## hur många träffar han tål innan banan börjar om
@@ -185,6 +191,7 @@ func as_dict() -> Dictionary:
 		"shoot_range": shoot_range,
 		"shoot_sweep": shoot_sweep,
 		"laser_reach": laser_reach,
+		"shoot_slow": shoot_slow,
 		"invulnerable_time": invulnerable_time,
 		"knockback": knockback,
 		"max_hearts": max_hearts,
@@ -247,6 +254,7 @@ func apply(data: Dictionary) -> void:
 	shoot_range = float(data.get("shoot_range", shoot_range))
 	shoot_sweep = float(data.get("shoot_sweep", shoot_sweep))
 	laser_reach = float(data.get("laser_reach", laser_reach))
+	shoot_slow = float(data.get("shoot_slow", shoot_slow))
 	invulnerable_time = float(data.get("invulnerable_time", invulnerable_time))
 	knockback = float(data.get("knockback", knockback))
 	max_hearts = int(data.get("max_hearts", max_hearts))

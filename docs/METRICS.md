@@ -130,6 +130,8 @@ stället för att starta om. I luften gäller medföljningen inte.
 | Studs när han landar på en blå | 520 px/s uppåt |
 | En träff räknas som anfall efter landning i | 0,12 s (`ATTACK_GRACE`) |
 | Skjutsiktet dyker upp när en röd är närmare än | 700 px |
+| Skjutsiktets sveptakt | 0,9 svep/s över 0–180° |
+| Skjutsiktet saktar ner vid en fiende till | 0,08× takt |
 | Laserns räckvidd | 1400 px, stoppas av väggar |
 | Osårbar efter en träff | 1,2 s |
 
@@ -137,6 +139,37 @@ Kontrollerat i banan: ett fall på en blå dödar den och ger kedja 1 med 520 px
 att gå in i samma sorts fiende på marken kostar ett hjärta och fienden överlever; en
 laser med fri sikt dödar en flygande röd och ger också kedja 1; och en röd bakom en
 avsats skyddas av avsatsen — strålen tar stopp i väggen.
+
+### Skjutsiktet saktar ner vid en fiende
+
+En fyrkant är 42 px bred, så på 400 px håll upptar den **6°** av visarens halvvarv. I
+full sveptakt betyder det att visaren står på fienden i **1 bildruta** — träffen avgörs
+alltså av att trycka på rätt hundradels sekund, vilket är precis den sortens krav spelet
+finns till för att slippa.
+
+Därför bromsar visaren in medan den pekar på något som går att skjuta, och tar upp takten
+igen när den passerat. Bromsen är full så länge visaren *är* på fienden (fiendens egen
+bredd i grader plus 1°) och tonas sedan ut över 6° till full takt. Mätt med RB 400 px
+från en flygande röd, antal bildrutor visaren pekade inom fyrkantens bredd:
+
+| inbromsning | bildrutor på mål | tid |
+| --- | --- | --- |
+| 1,00× (avstängd) | 1 | 0,02 s |
+| 0,25× | 4 | 0,07 s |
+| 0,12× | 9 | 0,15 s |
+| 0,08× (grund) | 14 | 0,23 s |
+| 0,06× | 16 | 0,27 s |
+
+Grundvärdet 0,08 ger alltså 0,23 s att trycka på — fjorton gånger så länge som utan
+inbromsning. Reglaget står i panelens *Föremål*-flik och 1,00× stänger av det.
+
+En **spets i stället för en platå** var det första försöket: full broms bara i den exakta
+mitten och linjär upptrappning utanför. Det mätte 3 bildrutor vid 0,12 mot platåns 9. Det
+är samma sak som med anfallsfönstret: det är inte tiden då siktet är *perfekt* som ska
+räcka till, det är tiden då ett tryck faktiskt träffar.
+
+Fiender bakom en vägg bromsar inte, och inte heller sådana utanför laserns räckvidd — en
+inbromsning är spelets sätt att säga "här finns en träff", och den får inte ljuga.
 
 **Ett flackt hopp rakt in i sidan** mätte 700 px/s i sidled mot en blå: han nådde den i
 samma bildruta som han nuddade marken, och innan `ATTACK_GRACE` fanns hann läget hinna
