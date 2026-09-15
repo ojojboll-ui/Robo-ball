@@ -173,8 +173,9 @@ Visaren **saktar ner när den sveper förbi en fiende**, och tar upp takten igen
 passerat. En röd på 400 px håll är bara 6° bred, och i full sveptakt passerar visaren
 den på en enda bildruta — då avgörs träffen av att trycka på rätt hundradels sekund.
 Med grundinbromsningen står den på fienden i 0,23 s i stället — fjorton bildrutor mot
-en. Takten är ett reglage (*Föremål* → *Skjutsiktet saktar ner vid fiende*), och 1,00×
-stänger av inbromsningen helt.
+en. Bara fiender som **syns i bild** bromsar: lasern når längre än skärmen visar, och en
+inbromsning för något man inte ser är bara en hackning. Takten är ett reglage (*Föremål*
+→ *Skjutsiktet saktar ner vid fiende*), och 1,00× stänger av inbromsningen helt.
 
 **Hjärtan.** Tre stycken. Tar de slut börjar banan om från början med alla fiender
 tillbaka — att förlora är att få börja om, inte att förlora något man byggt upp.

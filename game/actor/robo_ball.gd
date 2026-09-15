@@ -637,9 +637,13 @@ func _launch() -> void:
 ## innan den är på mål och släpper efter. Mjuk övergång, för ett hopp i takten är
 ## svårare att läsa av än en inbromsning.
 ##
-## Bara fiender lasern faktiskt når räknas — inom räckvidden och utan vägg i
-## vägen. Att bromsa för något strålen ändå inte når vore att ljuga om var
-## träffen finns, och en röd bakom en avsats ska man ta sig till (DECISIONS 22).
+## Bara fiender som **syns på skärmen** räknas, och bara de lasern faktiskt når
+## — inom räckvidden och utan vägg i vägen. Att bromsa för något strålen inte når
+## vore att ljuga om var träffen finns, och en röd bakom en avsats ska man ta sig
+## till (DECISIONS 22). Räckvidden ensam räcker inte som gräns: lasern når 1400 px
+## men bilden visar bara 610 px åt vardera hållet, så mer än halva räckvidden
+## ligger utanför skärmen. En inbromsning för något man inte ser är bara en
+## oförklarlig hackning.
 func _shot_drag() -> float:
 	if Settings.shoot_slow >= 1.0:
 		return 1.0
@@ -652,6 +656,8 @@ func _shot_drag() -> float:
 		var to := enemy.global_position - global_position
 		var away := to.length()
 		if away > Settings.laser_reach:
+			continue
+		if not _on_screen(enemy.rect()):
 			continue
 		if _wall_between(enemy.global_position):
 			continue
@@ -668,6 +674,17 @@ func _shot_drag() -> float:
 		elif off < outer:
 			drag = minf(drag, lerpf(Settings.shoot_slow, 1.0, (off - inner) / (outer - inner)))
 	return drag
+
+## Syns någon del av ytan i bild just nu?
+##
+## Kameran sitter på RB med utjämning, zoom och gränser vid banans kanter, så
+## den enda sanna bilden av vad som syns är vyns egen transform — inte ett
+## avstånd räknat från honom.
+func _on_screen(what: Rect2) -> bool:
+	var view := get_viewport()
+	var seen: Rect2 = view.get_canvas_transform().affine_inverse() * Rect2(
+		Vector2.ZERO, Vector2(view.get_visible_rect().size))
+	return seen.intersects(what)
 
 ## Står det en vägg i vägen mellan ögat och en punkt?
 func _wall_between(point: Vector2) -> bool:
