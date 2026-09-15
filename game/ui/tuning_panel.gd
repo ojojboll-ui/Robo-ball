@@ -240,6 +240,10 @@ func _tab_motion() -> void:
 		func(v: float) -> void: Settings.leg_travel = v, "%.0f px")
 	_slider("Kliver över hinder upp till", 0.0, 44.0, 1.0, Settings.step_height,
 		func(v: float) -> void: Settings.step_height = v, "%.0f px")
+	_slider("Klivets takt", 80.0, 900.0, 10.0, Settings.step_pace,
+		func(v: float) -> void: Settings.step_pace = v, "%.0f px/s")
+	_slider("Tålamod innan han vänder", 0.0, 1.5, 0.05, Settings.push_patience,
+		func(v: float) -> void: Settings.push_patience = v, "%.2f s")
 
 func _tab_roll() -> void:
 	_section("När benen åker in")

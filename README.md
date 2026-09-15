@@ -54,7 +54,7 @@ bläddra igenom mitt i ett speltest:
 | Flik | Innehåll |
 | --- | --- |
 | Sikte | Pilens hastighet, slow motion, vinkelsteg, bågens gränser, hoppkraft, gravitation, tempoknapparna och extra hopp i luften |
-| Rörelse | Gångfart och acceleration, markfäste, hur mycket fart som följer med i landningen och i hoppet, studs mot väggar, knuffkraft, benens fjädring och spelrum, och hur högt hinder han kliver över |
+| Rörelse | Gångfart och acceleration, markfäste, hur mycket fart som följer med i landningen och i hoppet, studs mot väggar, knuffkraft, benens fjädring och spelrum, hur högt hinder han kliver över, klivets takt och hur länge han streter innan han vänder |
 | Rullning | När benen åker in (lutning, benens högsta takt och absolut fart) med uträknad klättergräns under, indragningstakt, förbli boll i luften, förberedd rullning i luften, rullmotstånd |
 | Föremål | Lådornas fysik, effekter, studsmattornas studs och bukt, stängernas och lianernas grepp och dämpning, samt fiendernas fart, studsen på dem, skjutsiktets sveptakt och dess inbromsning vid en röd, laserns räckvidd, osårbarheten och antalet hjärtan |
 | Hjälp | Styrningsvariant, förhandsbana, kantskydd, spelhastighet, dubbeltrycksfilter, timeout |
@@ -180,10 +180,18 @@ man siktar, och lasern når längre än skärmen visar. Takten är ett reglage (
 **Skräpet.** En krossad låda och en dödad fiende lämnar bitar efter sig på marken, och
 dem **kliver RB över**. Förut vände han vid varje skärva — motorn kallar allt brantare än
 golvvinkeln för vägg, och en 17 px hög bit är lika lodrät som ett berg, så en lyckad
-strid lade en mur framför honom. Nu lyfter benen honom upp på det som är lågt nog och han
-går vidare, medan en hel låda fortfarande är ett hinder. Gränsen är ett reglage
-(*Rörelse* → *Kliver över hinder upp till*, grund 26 px) och ligger med flit mellan
-skräpet (17–20 px) och lådan (40 px).
+strid lade en mur framför honom. Nu lyfter benen honom upp på det som är lågt nog.
+Gränsen är ett reglage (*Rörelse* → *Kliver över hinder upp till*, grund 26 px) och
+ligger med flit mellan skräpet (17–20 px) och en hel låda (40 px). Rullande gäller
+bollens egen gräns i stället: han tar en kant som är lägre än radien, och bara om farten
+räcker (v² = v0² − 2·g·h) — han betalar alltså klivet i fart, medan benen inte har någon
+sådan gräns.
+
+**Och han vänder inte för att något nuddar honom.** Förut vände han i samma bildruta som
+benen rörde vid vad som helst; nu går han emot det en stund (grund 0,35 s, reglage under
+*Rörelse*). Under tiden hinner han kliva upp på det, eller knuffa undan det — en hel låda
+skjuter han framför sig i stället för att vända vid den. Först när han verkligen inte
+kommer någonstans vänder han.
 
 **Hjärtan.** Tre stycken. Tar de slut börjar banan om från början med alla fiender
 tillbaka — att förlora är att få börja om, inte att förlora något man byggt upp.

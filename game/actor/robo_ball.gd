@@ -84,6 +84,17 @@ var chain := 0                  ## hur många fiender i rad utan att nudda marke
 var _invulnerable := 0.0
 ## Tid sedan han senast var i luften. Se ATTACK_GRACE.
 var _since_air := 999.0
+## Vad som är kvar av ett kliv upp på något, i världskoordinater, uppdelat i
+## lyftet och steget framåt. Klivet tas över flera bildrutor — ett ben lyfter
+## honom, det kastar honom inte — och alltid uppåt först: en diagonal skulle
+## skrapa mot hindrets överkant, vilket är samma skäl som provförflyttningarna
+## görs i två steg.
+var _step_rise := Vector2.ZERO
+var _step_ahead := Vector2.ZERO
+## Farten han har när klivet är klart. Som boll kostar klivet rörelseenergi.
+var _step_exit_speed := 0.0
+## Hur länge han gått och tryckt mot något utan att komma framåt.
+var _blocked := 0.0
 var _laser_time := 0.0
 var _laser_to := Vector2.ZERO
 var _airborne_frames := 0
@@ -203,19 +214,32 @@ func _process_ground(delta: float) -> void:
 	spin += ground_speed / RADIUS * delta
 	velocity = t * ground_speed - ground_normal * Settings.ground_stick
 	var before_move := velocity
+	var before_pos := global_position
+	# Mitt i ett kliv *är* klivet hans rörelse. Lägger man den vanliga gången
+	# ovanpå flyttas han både klivet och ett steg till på samma bildruta, och då
+	# är takten inte längre den man ställt in.
+	if _stepping():
+		_advance_step(delta)
+		_airborne_frames = 0
+		return
 	_move(delta)
-	_push_things(0.5)
+	_push_things(0.5, before_move)
 
 	# Bara en vägg han faktiskt kör in i. Kanten han rullar *ut ifrån* räknas
 	# också som vägg av motorn, och att vända på farten där tog allt han byggt
 	# upp — mätt gick 306 px/s till noll på en vanlig avsats.
 	if is_on_wall() and _driving_into_wall(before_move):
-		# Är det något litet han kan kliva upp på i stället? Då är det inget
-		# hinder, och att vända om vore att göra en skärva till en vägg.
-		if not _step_up():
+		if _begin_step():
+			_blocked = 0.0
+		elif state == State.ROLL:
+			# Bollen studsar. Det är ren fysik och ska ske i samma ögonblick.
 			_hit_wall()
+		else:
+			_lean_on_it(delta, before_pos)
+	else:
+		_blocked = 0.0
 
-	if not is_on_floor():
+	if not is_on_floor() and not _stepping():
 		# Några bildrutors nåd. Kryper han uppför en brant lutning tappar han
 		# annars marken en enstaka bildruta i taget och fladdrar mellan lägena.
 		_airborne_frames += 1
@@ -237,7 +261,8 @@ func _process_ground(delta: float) -> void:
 	ground_normal = next_normal
 	if not is_zero_approx(ground_speed):
 		facing = 1 if ground_speed > 0.0 else -1
-	if Settings.ledge_guard and state == State.WALK and not _ground_ahead():
+	if Settings.ledge_guard and state == State.WALK and not _stepping() \
+			and not _ground_ahead():
 		_turn_around()
 	_update_stance()
 
@@ -281,7 +306,33 @@ func _leaves_crest(before: Vector2, after: Vector2, delta: float) -> bool:
 	var available := Settings.rb_gravity * maxf(after.dot(Vector2.UP), 0.0) + Settings.ground_stick
 	return needed > available
 
-## Klev han upp på det han just gick in i?
+## Han vänder inte för att något nuddar honom — han lutar sig emot det först.
+##
+## Förut vände han i samma bildruta som benen rörde vid vad som helst, och det
+## var en reflex och inte ett beslut: en skärva, en låda han kunde ha knuffat
+## eller en kant han nästan var förbi såg likadana ut som ett berg. Nu fortsätter
+## han gå emot det en stund. Tre saker kan hända under tiden, och alla tre är
+## bättre än att vända:
+##
+## * Det går att kliva upp på — då gör han det.
+## * Det går att knuffa — då rör han sig framåt, och tålamodet börjar om.
+## * Det står still och han kommer ingenstans — först då vänder han.
+##
+## Tålamodet är ett reglage, för hur länge han ska streta är en känslofråga och
+## ingen fysikfråga.
+func _lean_on_it(delta: float, before_pos: Vector2) -> void:
+	# Kom han framåt ändå? Då knuffar han något, och det är inte att vara
+	# blockerad. Tröskeln är en fjärdedel av den fart han försökte hålla.
+	var forward := tangent() * signf(ground_speed)
+	if (global_position - before_pos).dot(forward) > absf(ground_speed) * delta * 0.25:
+		_blocked = 0.0
+		return
+	_blocked += delta
+	if _blocked >= Settings.push_patience:
+		_blocked = 0.0
+		_hit_wall()
+
+## Kan han kliva upp på det han går emot? Då förbereds klivet här.
 ##
 ## Skräpet efter en krossad låda och bitarna efter en dödad fiende blir liggande
 ## på marken, och utan det här vände RB vid var och en av dem: motorn kallar allt
@@ -304,8 +355,10 @@ func _leaves_crest(before: Vector2, after: Vector2, delta: float) -> bool:
 ## finns ingen rörelseenergi att betala med — i gångfart räcker den ändå bara
 ## till 6 px av egen kraft (v²/2g), och det är hela skälet till att det här
 ## måste vara en förmåga hos benen och inte något han rullar över.
-func _step_up() -> bool:
-	if state != State.WALK or Settings.step_height <= 0.0:
+func _begin_step() -> bool:
+	if _stepping() or Settings.step_height <= 0.0:
+		return false
+	if state != State.WALK and state != State.ROLL:
 		return false
 	var up := ground_normal
 	var dir := signf(ground_speed) if not is_zero_approx(ground_speed) else float(facing)
@@ -348,11 +401,68 @@ func _step_up() -> bool:
 	var stride := forward * ((contact - global_position).dot(forward) + STEP_PAST)
 	if test_move(global_transform.translated(lift), stride):
 		return false
-	global_position += lift + stride
-	# Sätt ner foten med en gång. Blir han svävande en bildruta läser
-	# kantskyddet marken framför som en bildruta längre ner än den är.
-	move_and_collide(-up * (STEP_CLEAR + 1.0))
+
+	_step_exit_speed = ground_speed
+	if state == State.ROLL:
+		# Som boll finns inga ben att lyfta med, bara farten han har. Ett hjul
+		# tar en trottoarkant som är lägre än dess radie, och bara om
+		# rörelseenergin räcker: v² = v0² − 2·g·h. Det som blir över är farten
+		# han kommer upp i — klivet kostar alltså precis vad det väger.
+		#
+		# Utan den här grenen vände en rullande RB mot varje skärva i stället,
+		# och studsade bakåt: mätt bar en boll i 258 px/s ner för en 17 px hög
+		# bit rakt in i nästa och kom tillbaka i 111 px/s åt andra hållet, fast
+		# farten räckte till 24 px klättring.
+		if rise >= RADIUS:
+			return false
+		var left := ground_speed * ground_speed - 2.0 * Settings.rb_gravity * rise
+		if left <= 1.0:
+			return false
+		_step_exit_speed = signf(ground_speed) * sqrt(left)
+
+	_step_rise = lift
+	_step_ahead = stride
 	return true
+
+## Klivet, en bildruta i taget.
+##
+## Första versionen flyttade honom hela vägen på en enda bildruta, och det var
+## precis så det såg ut: 36 px på en sextiondels sekund är 2200 px/s, alltså
+## sjutton gånger gångfarten — mätt i Lekplatsens småstenar. Ett ben lyfter en
+## kropp, det kastar den inte. Takten är därför ett reglage, och grundvärdet är
+## satt så att ett kliv tar ungefär lika lång tid som ett vanligt steg.
+func _advance_step(delta: float) -> void:
+	var budget := maxf(Settings.step_pace, 1.0) * delta
+	if _step_rise != Vector2.ZERO:
+		var rise := _step_rise.limit_length(budget)
+		if test_move(global_transform, rise):
+			_cancel_step()
+			return
+		global_position += rise
+		_step_rise -= rise
+		budget -= rise.length()
+		if _step_rise.length() < 0.5:
+			_step_rise = Vector2.ZERO
+	if budget <= 0.01 or _step_ahead == Vector2.ZERO:
+		return
+	var ahead := _step_ahead.limit_length(budget)
+	if test_move(global_transform, ahead):
+		_cancel_step()
+		return
+	global_position += ahead
+	_step_ahead -= ahead
+	if _step_ahead.length() < 0.5:
+		_step_ahead = Vector2.ZERO
+		ground_speed = _step_exit_speed
+
+func _stepping() -> bool:
+	return _step_rise != Vector2.ZERO or _step_ahead != Vector2.ZERO
+
+## Något kom i vägen mitt i klivet — lådan rullade undan, eller han knuffades.
+## Avbryt hellre än att tvinga igenom resten.
+func _cancel_step() -> void:
+	_step_rise = Vector2.ZERO
+	_step_ahead = Vector2.ZERO
 
 ## Studsmatta i stället för mark. Farten som läses är den från bildrutan före
 ## kollisionen, av samma skäl som landningen läser den: motorn har redan skurit
@@ -938,6 +1048,10 @@ func _set_state(next: State) -> void:
 	# utan en omstart skulle de kliva från där de stod innan han rullade.
 	if state == State.ROLL and next != State.ROLL:
 		_legs.reset(self, _smooth_normal)
+	# Ett kliv hör marken till. Lämnar han den mitt i ett är det avbrutet.
+	if next != State.WALK and next != State.ROLL:
+		_cancel_step()
+	_blocked = 0.0
 	state = next
 	# Världen saktas också ner medan han hänger. En stång kan snurra fort — det
 	# är fysik och ska få vara det — men då blir släppet en reflexövning, och
@@ -1058,6 +1172,8 @@ func respawn() -> void:
 	facing = 1
 	_air_jumps_used = 0
 	_left_ground_rolling = false
+	_cancel_step()
+	_blocked = 0.0
 	if _swing != null:
 		_swing.release()
 		_swing = null
@@ -1108,21 +1224,30 @@ func _ground_ahead() -> bool:
 	return _ledge_ray.is_colliding() \
 		and _ledge_ray.get_collision_normal().dot(ground_normal) > 0.8
 
-func _push_things(strength: float) -> void:
+## Knuffen räknas på farten **före** kollisionen.
+##
+## Motorns glidning har redan skurit bort komponenten in i lådan när vi kommer
+## hit, så den fart som står i `velocity` pekar aldrig in i det han kör på — och
+## en knuff räknad därifrån blir nästan noll rakt framifrån. Det var därför han
+## hellre vände än sköt undan en låda han gick rakt in i. Samma rotorsak som
+## landningen, väggarna och anfallsfönstret: ett beslut om en krock får aldrig
+## läsas ur ett tillstånd som rörelsen i samma bildruta redan hunnit ändra.
+func _push_things(strength: float, incoming := Vector2.INF) -> void:
+	var drive := incoming if incoming != Vector2.INF else velocity
 	for i in get_slide_collision_count():
 		var c := get_slide_collision(i)
 		var body := c.get_collider()
 		if not (body is RigidBody2D):
 			continue
 		if body.has_method("take_impact"):
-			body.take_impact(velocity.length())
+			body.take_impact(drive.length())
 		# Knuffa aldrig något som ligger under oss. Gör man det trycks lådan ner
 		# i marken, marken trycker tillbaka, och fysikmotorn löser överlappet
 		# genom att kasta ut RB uppåt — bildruta efter bildruta. Att stå på
 		# något är inte att knuffa det.
 		if c.get_normal().y < -0.5:
 			continue
-		var impulse := velocity * Settings.push_force * strength
+		var impulse := drive * Settings.push_force * strength
 		body.apply_impulse(impulse, c.get_position() - body.global_position)
 
 ## Simulerar hoppbanan mot den riktiga kollisionsvärlden. Eftersom lufttiden är

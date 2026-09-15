@@ -226,26 +226,44 @@ Klivet görs i tre frågor, i tur och ordning, och var och en kan säga nej:
 
 Mätt på fristående hinder, RB i full gångfart rakt in i dem:
 
-| hinder | utfall |
-| --- | --- |
-| 12 px | kliver över |
-| 17 px (bit efter en fiende) | kliver över |
-| 20 px (bit efter en låda) | kliver över |
-| 23 px | kliver över |
-| 26 px (grundvärdet) | kliver över |
-| 28 px | vänder |
-| 30 px | vänder |
-| 40 px (en hel låda) | vänder |
-| 63 px (en avsats) | vänder |
+| hinder | gående | rullande i 400 px/s |
+| --- | --- | --- |
+| 17 px (bit efter en fiende) | kliver över | kliver över |
+| 20 px (bit efter en låda) | kliver över | — |
+| 22 px | — | kliver över |
+| 26 px (grundvärdet) | kliver över | kliver över |
+| 28 px | vänder | — |
+| 40 px (en hel låda) | vänder | — |
+| 63 px (en avsats) | vänder | — |
 
-Och på riktigt skräp, med fysik och allt, jämfört med samma bana utan förmågan:
+Och på riktigt skräp, med fysik och allt:
 
 | framför honom | steghöjd 0 | steghöjd 26 |
 | --- | --- | --- |
 | fyra bitar efter en fiende | vänder | tar sig förbi |
 | fyra bitar efter en krossad låda | vänder | tar sig förbi |
-| en hel låda | vänder | vänder |
+| en hel låda | vänder | knuffar den framför sig |
 | två lådor på varandra | vänder | vänder |
+
+**Som boll kostar klivet fart, och då finns en till gräns.** Ett hjul tar en
+trottoarkant som är lägre än dess radie, och bara om rörelseenergin räcker:
+v² = v0² − 2·g·h. Utan den grenen vände en rullande RB mot varje skärva och studsade
+bakåt — mätt bar en boll i 258 px/s ner för en 17 px hög bit rakt in i nästa och kom
+tillbaka i **111 px/s åt andra hållet**, fast farten räckte till 24 px klättring. Nu
+rullar han över och betalar: 258 px/s in, 138 px/s ut. Gränsen är alltså bollens radie
+(22 px) för den som rullar och steghöjden (26 px) för den som går. Benen har ingen
+energigräns alls — det är därför de finns.
+
+**Klivet tas över flera bildrutor, inte på en.** Första versionen flyttade honom hela
+vägen på en enda bildruta, och så såg det också ut: **36 px på en sextiondels sekund är
+2200 px/s**, alltså sjutton gånger gångfarten — mätt i Lekplatsens småstenar, som är
+24 × 22 px och alltså precis i klivbar höjd. Ett ben lyfter en kropp, det kastar den
+inte. Nu tas klivet i takten `step_pace` (grund 250 px/s, ungefär ett vanligt steg i
+tid), och uppåt först: en diagonal skrapar mot hindrets överkant, vilket är samma skäl
+som provförflyttningarna görs i två steg. Mitt i ett kliv *är* klivet hans rörelse —
+läggs den vanliga gången ovanpå flyttas han både klivet och ett steg till på samma
+bildruta. Efter allt det är den största förflyttningen på en bildruta **4,6 px (280
+px/s)** i samma mätning.
 
 **Klivet måste bära honom förbi hindrets framkant, inte bara upp på den.** Första
 versionen lyfte honom rakt upp och 10 px fram, och då blev han stående med tyngdpunkten
@@ -262,6 +280,27 @@ framför *utanför* den strålen — han klev upp och blev stående och vände o
 där den stod — en lutning framför honom ger en normal som avviker för mycket från den han
 står på (kravet är 0,8 i skalärprodukt, alltså högst 36°), och då är det fortfarande en
 backe han inte ska gå ner för (DECISIONS 28).
+
+## Han vänder inte för att något nuddar honom
+
+Förut vände RB i samma bildruta som benen rörde vid vad som helst. Det var en reflex och
+inte ett beslut: en skärva, en låda han kunde ha knuffat och ett berg såg likadana ut.
+Nu går han emot det en stund först, och under tiden kan tre saker hända — alla tre bättre
+än att vända: han kliver upp på det, han knuffar undan det, eller han kommer ingenstans
+och vänder till slut.
+
+| | vänder efter |
+| --- | --- |
+| tålamod 0 (som förut) | 0,02 s |
+| tålamod 0,35 s (grund) | 0,35 s |
+
+Tålamodet nollställs så fort han kommer framåt, så något han kan knuffa vänder honom
+aldrig. Att han *kan* knuffa en hel låda är i sig en rättelse: **knuffen räknades på
+farten efter kollisionen**, och motorns glidning har redan skurit bort komponenten in i
+lådan när den läses — en knuff rakt framifrån blev alltså nästan noll. Det är samma
+rotorsak som landningen, väggarna och anfallsfönstret (DECISIONS 18, 23). Med farten från
+*före* kollisionen flyttar han en hel låda 46 × 40 px framför sig i stället för att vända
+vid den, medan två lådor på varandra fortfarande stoppar honom.
 
 Klivet är benens arbete och kostar ingen fart. Det är inte generositet utan geometri: i
 gångfart räcker rörelseenergin bara till 6 px av egen kraft (v²/2g med 130 px/s och
@@ -286,8 +325,9 @@ mätningen, för de påverkar siffrorna:
   nedan är mätt ben för ben; en körning i slingor gav tre avvikelser som alla försvann vid
   omkörning ensamma.
 
-Tabellen mättes om efter att benen fått kliva över småhinder (se ovan) och varje rad kom
-tillbaka oförändrad.
+Tabellen mättes om efter att benen fått kliva över småhinder, och igen efter att klivet
+gjorts mjukt och vändningen fått tålamod (se ovan). Alla nitton raderna kom tillbaka
+oförändrade båda gångerna.
 
 | Hopp | vinklar som landar rätt |
 | --- | --- |

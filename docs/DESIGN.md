@@ -470,8 +470,16 @@ rörelseenergin bara till 6 px av egen kraft, så en boll kommer inte ens över 
 skärvan. Därför gäller det bara med benen ute; rullande studsar han mot det han kör in i
 och knuffar det framför sig i stället.
 
-Gränsen är ett reglage och ligger mellan skräpet och en hel låda, för en låda ska
-fortfarande vara ett hinder man gör något åt. Och kan benen lyfta honom upp på något
+Gränsen är ett reglage och ligger mellan skräpet och en hel låda. Rullande gäller
+bollens egen gräns i stället: ett hjul tar en trottoarkant som är lägre än dess radie,
+och bara om rörelseenergin räcker — så klivet kostar honom fart, medan benen inte har
+någon sådan gräns.
+
+Och han **vänder inte för att något nuddar honom**. Att vända i samma bildruta som benen
+rör vid något är en reflex och inte ett beslut: en skärva, en låda han kunde ha knuffat
+och ett berg ser likadana ut för den regeln. Nu går han emot det en stund först, och
+hinner kliva upp på det eller knuffa undan det. Först när han verkligen inte kommer
+någonstans vänder han. Och kan benen lyfta honom upp på något
 måste de klara att ta honom ner igen: kantskyddet räknar därför plan mark inom samma
 steghöjd som mark, medan gränsen för *backar* står kvar där den stod. Mått i
 docs/METRICS.md.

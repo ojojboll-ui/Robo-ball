@@ -79,6 +79,15 @@ var leg_travel := 26.0
 ## medan en hel låda är 40 — gränsen ligger med flit mellan dem, så att småskräp
 ## går att kliva över medan en låda fortfarande är ett hinder. 0 = av.
 var step_height := 26.0
+## px/s, hur fort kroppen lyfts under ett kliv. Grundvärdet gör ett kliv ungefär
+## lika långt i tid som ett vanligt steg (0,15 s). Ett kliv som tas på en enda
+## bildruta blir 2200 px/s och ser ut som en utknuffning, inte som ett ben.
+var step_pace := 250.0
+## Sekunder han går och trycker mot något innan han vänder. Utan den vände han i
+## samma bildruta som benen rörde vid vad som helst, och det var en reflex och
+## inte ett beslut: en skärva, en låda han kunde ha knuffat och ett berg såg
+## likadana ut. 0 = vänder direkt, som förut.
+var push_patience := 0.35
 var tuck_speed := 6.5          ## hur snabbt benen viks in, högre = snabbare
 ## Ser han att marken han är på väg mot är för brant för benen drar han in dem
 ## redan i luften och landar som boll. Annars landar han på fötterna först och
@@ -181,6 +190,8 @@ func as_dict() -> Dictionary:
 		"leg_stiffness": leg_stiffness,
 		"leg_travel": leg_travel,
 		"step_height": step_height,
+		"step_pace": step_pace,
+		"push_patience": push_patience,
 		"leg_damping": leg_damping,
 		"tuck_speed": tuck_speed,
 		"tuck_before_landing": tuck_before_landing,
@@ -246,6 +257,8 @@ func apply(data: Dictionary) -> void:
 	leg_stiffness = float(data.get("leg_stiffness", leg_stiffness))
 	leg_travel = float(data.get("leg_travel", leg_travel))
 	step_height = float(data.get("step_height", step_height))
+	step_pace = float(data.get("step_pace", step_pace))
+	push_patience = float(data.get("push_patience", push_patience))
 	leg_damping = float(data.get("leg_damping", leg_damping))
 	tuck_speed = float(data.get("tuck_speed", tuck_speed))
 	tuck_before_landing = bool(data.get("tuck_before_landing", tuck_before_landing))
