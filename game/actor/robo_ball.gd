@@ -637,13 +637,18 @@ func _launch() -> void:
 ## innan den är på mål och släpper efter. Mjuk övergång, för ett hopp i takten är
 ## svårare att läsa av än en inbromsning.
 ##
-## Bara fiender som **syns på skärmen** räknas, och bara de lasern faktiskt når
-## — inom räckvidden och utan vägg i vägen. Att bromsa för något strålen inte når
-## vore att ljuga om var träffen finns, och en röd bakom en avsats ska man ta sig
-## till (DECISIONS 22). Räckvidden ensam räcker inte som gräns: lasern når 1400 px
-## men bilden visar bara 610 px åt vardera hållet, så mer än halva räckvidden
-## ligger utanför skärmen. En inbromsning för något man inte ser är bara en
-## oförklarlig hackning.
+## Tre villkor, och alla tre finns för att en inbromsning är ett löfte om en
+## träff:
+##
+## 1. **Bara röda.** Strålen dödar visserligen en blå också, men den blå har redan
+##    ett svar som inte kräver att man siktar: hoppa på den. Att bromsa för den
+##    vore att erbjuda det svåra svaret på den lätta frågan, och i praktiken
+##    hakade visaren upp sig på blå man bara gick förbi.
+## 2. **Bara det som syns i bild.** Lasern når 1400 px, men bilden visar 610 px åt
+##    vardera hållet. Mer än halva räckvidden ligger alltså utanför skärmen, och
+##    en inbromsning för något man inte ser är ingen hjälp utan en hackning.
+## 3. **Bara det strålen når** — inom räckvidden och utan vägg i vägen. En röd
+##    bakom en avsats ska man ta sig till (DECISIONS 22).
 func _shot_drag() -> float:
 	if Settings.shoot_slow >= 1.0:
 		return 1.0
@@ -652,6 +657,8 @@ func _shot_drag() -> float:
 	for node in get_tree().get_nodes_in_group("enemy"):
 		var enemy := node as Enemy
 		if enemy == null:
+			continue
+		if enemy.kind != Enemy.Kind.RED:
 			continue
 		var to := enemy.global_position - global_position
 		var away := to.length()

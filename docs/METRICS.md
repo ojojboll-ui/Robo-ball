@@ -168,28 +168,38 @@ mitten och linjär upptrappning utanför. Det mätte 3 bildrutor vid 0,12 mot pl
 är samma sak som med anfallsfönstret: det är inte tiden då siktet är *perfekt* som ska
 räcka till, det är tiden då ett tryck faktiskt träffar.
 
-Bromsen gäller bara fiender som **syns i bild**. Räckvidden ensam räckte inte som gräns:
-lasern når 1400 px, men vid zoom 1,05 visar en 1280 px bred bild **1219 px av världen**,
-alltså 610 px åt vardera hållet från RB. Mer än halva räckvidden ligger alltså utanför
-skärmen, och där kändes inbromsningen bara som en oförklarlig hackning — speltestaren
-märkte den på blå fiender han inte ens såg. Mätt på plats i Fienderna, en fiende i taget:
+Bromsen gäller **bara röda, och bara de som syns i bild**.
+
+*Bara röda*, fast strålen dödar en blå lika gärna: den blå har redan ett svar som inte
+kräver att man siktar, nämligen att hoppa på den. Att bromsa för den vore att erbjuda det
+svåra svaret på den lätta frågan, och i praktiken hakade visaren upp sig på blå man bara
+gick förbi.
+
+*Bara det som syns*, för räckvidden dög inte som gräns: lasern når 1400 px, men vid zoom
+1,05 visar en 1280 px bred bild **1219 px av världen**, alltså 610 px åt vardera hållet.
+Mer än halva räckvidden ligger utanför skärmen, och där är en inbromsning ingen hjälp
+utan en oförklarlig hackning. Gränsen läses ur vyns egen transform och inte ur ett
+avstånd, för kameran har utjämning, zoom och gränser vid banans kanter — nära en bankant
+är RB inte längre mitt i bilden.
+
+Mätt på plats i Fienderna, en fiende i taget (annars ligger de på rad och en och samma
+riktning pekar på flera):
 
 | fiende | avstånd | i bild | broms |
 | --- | --- | --- | --- |
-| blå | 412 px | ja | 0,08× |
-| blå | 832 px | nej | 1,00× |
-| blå | 1072 px | nej | 1,00× |
-| blå | 1312 px | nej | 1,00× |
-| röd | 851 px | nej | 1,00× |
+| blå | 215 px | ja | 1,00× |
+| blå | 278 px | ja | 1,00× |
+| blå | 630 px | nej | 1,00× |
+| blå | 720 px | nej | 1,00× |
+| röd | 281 px | ja | **0,08×** |
+| röd | 709 px | ja | **0,08×** |
+| röd | 1300 px | nej | 1,00× |
 
-Gränsen läses ur vyns egen transform och inte ur ett avstånd, för kameran har utjämning,
-zoom och gränser vid banans kanter — nära en bankant är RB inte längre mitt i bilden.
 (I headless rapporterar motorn vyn som 1280 × 1280 eftersom det inte finns något fönster,
-så siffrorna ovan är mätta i sidled, där bilden är sann.)
+så bildgränsen ovan är mätt i sidled, där bilden är sann.)
 
-Blå fiender bromsar också, för lasern dödar dem lika gärna som röda. Fiender bakom en
-vägg bromsar inte, och inte heller sådana utanför laserns räckvidd — en inbromsning är
-spelets sätt att säga "här finns en träff", och den får inte ljuga.
+Fiender bakom en vägg bromsar inte heller — en inbromsning är spelets sätt att säga "här
+finns en träff", och den får inte ljuga.
 
 **Ett flackt hopp rakt in i sidan** mätte 700 px/s i sidled mot en blå: han nådde den i
 samma bildruta som han nuddade marken, och innan `ATTACK_GRACE` fanns hann läget hinna

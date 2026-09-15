@@ -197,9 +197,9 @@ håll, och i full takt passerar visaren den på en enda bildruta — då avgörs
 att trycka på rätt hundradels sekund, alltså av precis det spelet finns till för att
 slippa. Inbromsningen siktar inte åt någon: visaren går hela vägen förbi och ett tryck
 vid fel tillfälle missar. Den ger bara ögonblicket en längd som går att träffa i, på
-samma sätt som slow motion gör det för hoppbågen. Bara det som syns i bild bromsar —
-lasern når längre än skärmen visar, och en inbromsning för något man inte ser är ingen
-hjälp utan en hackning. Mått i docs/METRICS.md.
+samma sätt som slow motion gör det för hoppbågen. Bara röda som syns i bild bromsar:
+en blå har redan ett svar som inte kräver att man siktar — hoppa på den — och lasern når
+längre än skärmen visar. Mått i docs/METRICS.md.
 
 Sorterna hålls än så länge isär, en halva var av banan. Blandade lär de ut två saker
 samtidigt, och då lär de inte ut någon: först ska hoppet sitta, sedan lasern.

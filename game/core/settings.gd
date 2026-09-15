@@ -108,8 +108,8 @@ var stomp_bounce := 520.0      ## px/s uppåt när han studsar på en blå
 var shoot_range := 700.0       ## px, så nära måste en röd vara för att siktet ska bli ett skjutsikte
 var shoot_sweep := 0.9         ## svep per sekund för skjutsiktets visare, 0–180°
 var laser_reach := 1400.0      ## px, hur långt lasern når
-## Hur mycket skjutsiktet saktar ner när visaren sveper förbi en fiende.
-## 1.0 = ingen inbromsning, 0.08 = en tolftedels takt. Det är ett
+## Hur mycket skjutsiktet saktar ner när visaren sveper förbi en röd som syns i
+## bild. 1.0 = ingen inbromsning, 0.08 = en tolftedels takt. Det är ett
 ## tillgänglighetsreglage av samma sort som slow motion vid sikte: det ger tid
 ## att trycka, inte hjälp att sikta. En fiende på 440 px håll är bara 5° bred,
 ## och i full sveptakt passerar visaren den på en enda bildruta.
