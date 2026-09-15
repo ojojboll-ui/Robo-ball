@@ -26,7 +26,6 @@ const HIP_SPREAD := 7.0    ## halva avståndet mellan höfterna
 ## krymper när benen dras in — det är den som får benen att vika ihop sig.
 var body_height := 48.0
 const LIFT := 13.0         ## hur högt foten lyfts under ett steg
-const MAX_SAG := 16.0      ## hur långt kroppen får hamna från kollisionskroppen
 const MIN_STRIDE := 22.0
 const MAX_STRIDE := 52.0
 ## Så långt benet når. Höften sitter 34 px över marken och ett steg framåt lägger
@@ -35,9 +34,19 @@ const MAX_STRIDE := 52.0
 ## nog att stå böjt, precis som ett fågelben alltid gör.
 const REACH := THIGH + SHIN - 3.0
 ## Hur långt ovanför och nedanför den tänkta fotpunkten vi letar. Kort med flit:
-## benet ska söka marken **under sig**, inte närmsta yta i grannskapet.
+## benet ska söka marken **under sig**, inte närmsta yta i grannskapet. Uppåt
+## räcker det ändå alltid till steghöjden, annars såg benet inte det RB precis
+## klivit upp på och foten sökte sig tillbaka ner till marken han lämnat.
 const PROBE_UP := 12.0
 const PROBE_DOWN := 26.0
+
+## Hur långt kroppen får hamna från kollisionskroppen — benens spelrum.
+static func sag() -> float:
+	return Settings.leg_travel
+
+## Hur långt upp benet letar mark. Aldrig kortare än vad han kan kliva upp på.
+static func probe_up() -> float:
+	return maxf(PROBE_UP, Settings.step_height)
 
 var feet := [Vector2.ZERO, Vector2.ZERO]
 var planted := [true, true]
@@ -45,6 +54,9 @@ var step_t := [0.0, 0.0]
 var step_from := [Vector2.ZERO, Vector2.ZERO]
 var step_to := [Vector2.ZERO, Vector2.ZERO]
 var step_time := [0.2, 0.2]
+## Hur högt foten svingas i just det här steget. Ett steg upp på något måste
+## lyfta över det, annars drar foten rakt in i hindrets framkant.
+var step_lift := [LIFT, LIFT]
 var body_point := Vector2.ZERO
 ## Hur högt bollens mitt sitter över kollisionskroppens mitt. Sätts av RoboBall
 ## så att de två aldrig kan glida isär.
@@ -107,7 +119,7 @@ func _step(rb: Node2D, normal: Vector2, speed: float, delta: float) -> void:
 		if not planted[i]:
 			continue
 		var probe := PhysicsRayQueryParameters2D.create(
-			(feet[i] as Vector2) + normal * 12.0, (feet[i] as Vector2) - normal * 30.0,
+			(feet[i] as Vector2) + normal * probe_up(), (feet[i] as Vector2) - normal * 30.0,
 			rb.collision_mask, [rb.get_rid()])
 		var ground := space.intersect_ray(probe)
 		if not ground.is_empty() and (ground["normal"] as Vector2).dot(normal) > 0.35:
@@ -128,7 +140,8 @@ func _step(rb: Node2D, normal: Vector2, speed: float, delta: float) -> void:
 			feet[i] = step_to[i]
 		else:
 			var k: float = step_t[i]
-			feet[i] = (step_from[i] as Vector2).lerp(step_to[i], k) + normal * sin(k * PI) * LIFT
+			feet[i] = (step_from[i] as Vector2).lerp(step_to[i], k) \
+				+ normal * sin(k * PI) * float(step_lift[i])
 
 	# Bara **ett** ben får vara i luften åt gången. Utan den regeln utlöste
 	# brådskan nedan för båda benen samma bildruta, de steg i takt, och RB
@@ -169,7 +182,7 @@ func _begin_step(rb: Node2D, normal: Vector2, i: int, stride: float, speed: floa
 	var aim := hip - normal * (body_height - 10.0) + t * forward * stride * 0.55
 	var space := rb.get_world_2d().direct_space_state
 	var query := PhysicsRayQueryParameters2D.create(
-		aim + normal * PROBE_UP, aim - normal * PROBE_DOWN, rb.collision_mask, [rb.get_rid()])
+		aim + normal * probe_up(), aim - normal * PROBE_DOWN, rb.collision_mask, [rb.get_rid()])
 	var hit := space.intersect_ray(query)
 
 	# Marken under foten, inte närmsta yta åt något håll: träffen måste luta åt
@@ -188,6 +201,8 @@ func _begin_step(rb: Node2D, normal: Vector2, i: int, stride: float, speed: floa
 
 	step_from[i] = feet[i]
 	step_to[i] = target
+	# Bär steget uppför lyfts foten över kanten, inte bara över marken.
+	step_lift[i] = LIFT + maxf(0.0, (target - (feet[i] as Vector2)).dot(normal)) * 0.7
 	step_t[i] = 0.0
 	planted[i] = false
 	step_time[i] = clampf(stride / maxf(absf(speed), 40.0) * 0.55, 0.07, 0.32)
@@ -264,7 +279,8 @@ func _carry_body(rb: Node2D, normal: Vector2, delta: float) -> void:
 	var anchor := rb.global_position + normal * body_lift
 	var support: Vector2 = ((feet[0] as Vector2) + (feet[1] as Vector2)) * 0.5
 	var along := (support + normal * body_height - anchor).dot(normal)
-	var target := anchor + normal * clampf(along, -MAX_SAG, MAX_SAG)
+	var travel := sag()
+	var target := anchor + normal * clampf(along, -travel, travel)
 
 	_body_vel += (target - body_point) * Settings.leg_stiffness * delta
 	_body_vel *= exp(-Settings.leg_damping * delta)
@@ -272,8 +288,8 @@ func _carry_body(rb: Node2D, normal: Vector2, delta: float) -> void:
 
 	# Sista spärren: grafiken får aldrig lämna kollisionskroppen.
 	var off := body_point - anchor
-	if off.length() > MAX_SAG + 4.0:
-		body_point = anchor + off.normalized() * (MAX_SAG + 4.0)
+	if off.length() > travel + 4.0:
+		body_point = anchor + off.normalized() * (travel + 4.0)
 		_body_vel *= 0.5
 
 # ---------------------------------------------------------------- ritning

@@ -236,6 +236,10 @@ func _tab_motion() -> void:
 		func(v: float) -> void: Settings.leg_stiffness = v, "%.0f")
 	_slider("Fjädringens dämpning", 4.0, 50.0, 1.0, Settings.leg_damping,
 		func(v: float) -> void: Settings.leg_damping = v, "%.0f")
+	_slider("Benens spelrum", 6.0, 48.0, 1.0, Settings.leg_travel,
+		func(v: float) -> void: Settings.leg_travel = v, "%.0f px")
+	_slider("Kliver över hinder upp till", 0.0, 44.0, 1.0, Settings.step_height,
+		func(v: float) -> void: Settings.step_height = v, "%.0f px")
 
 func _tab_roll() -> void:
 	_section("När benen åker in")

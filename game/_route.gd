@@ -7,6 +7,11 @@ extends Node
 ##
 ##     godot --headless --path game res://_route.tscn -- 0 5
 ##
+## Ett tredje argument sätter steghöjden, så att samma farled går att mäta med
+## och utan att benen kliver över småhinder:
+##
+##     godot --headless --path game res://_route.tscn -- 19 20 0
+##
 ## Svinghoppen mäts ur ett *dött häng*, alltså utan någon sväng alls. Det är det
 ## svåraste fallet; med fart i pendeln blir fönstren större. Kravet på banan är
 ## minst tre vinklar av nio (docs/DECISIONS.md 25).
@@ -55,10 +60,15 @@ func _ready() -> void:
 		{"k": "mark", "n": "B → C", "at": Vector2(1060, -390), "f": 1, "to": "C", "lo": 20},
 		{"k": "mark", "n": "C → C2", "at": Vector2(1430, -480), "f": 1, "to": "C2", "lo": 20},
 		{"k": "mark", "n": "C2 → platån", "at": Vector2(1800, -570), "f": 1, "to": "platån", "lo": 20},
+		# Hela finalen i ett stycke: krönet, backen, skålen och uppstudsen.
+		{"k": "final", "n": "platåns krön → flaggan"},
 	]
 	var args := OS.get_cmdline_user_args()
 	var first := int(args[0]) if args.size() > 0 else 0
 	var last := int(args[1]) if args.size() > 1 else legs.size()
+	if args.size() > 2:
+		Settings.step_height = float(args[2])
+		print("steghöjd satt till %.0f" % Settings.step_height)
 	for i in range(first, mini(last, legs.size())):
 		var leg := legs[i]
 		match str(leg["k"]):
@@ -133,41 +143,40 @@ func _hang_top(label: String, from_index: int, target: String, lo: int, hi: int)
 			hits.append(deg)
 	print("%-26s %s" % [label, _window(hits, landed)])
 
-## Sista hoppet, hela sekvensen som en spelare gör den: ett tryck på platåns krön
-## som kastar honom ner i backen, och ett andra tryck på avsatsen när han rullar.
+## Hela finalen i ett stycke, precis som en spelare gör den: **ett** tryck på
+## platåns krön, och sedan ingenting alls. Han hoppar ner på rampens avsats,
+## rullar över krönet, faller genom nedslagsbacken, svänger runt i skålens botten
+## och kastas ut ur uppstudsen i en båge till flaggplatån.
+##
+## Det här är den enda mätningen där ett enda tryck ska bära hela vägen, så den
+## räknar inte vinklar som "landar rätt" utan vinklar som **når flaggan**.
 func _final() -> void:
 	var hits: Array = []
 	var landed := {}
-	for deg in range(20, 96, 10):
-		_reset(Vector2(1750, -580), 1)
+	for deg in range(20, 65, 10):
+		_reset(Vector2(2800, -650), 1)
 		for i in 30:
 			await get_tree().physics_frame
-		# Hoppet ner i backen: 40° är mitt i fönstret som mätts upp separat.
-		InputSignal.pressed.emit()
-		InputSignal.released.emit()
-		await get_tree().physics_frame
-		rb.aim_deg = 40.0
-		InputSignal.pressed.emit()
-		InputSignal.released.emit()
-		var speed := 0.0
-		for i in 300:
-			await get_tree().physics_frame
-			if rb.global_position.x > 2370.0 and rb.state != RoboBall.State.AIR \
-					and rb.state != RoboBall.State.AIM:
-				speed = absf(rb.ground_speed)
-				break
 		InputSignal.pressed.emit()
 		InputSignal.released.emit()
 		await get_tree().physics_frame
 		rb.aim_deg = float(deg)
 		InputSignal.pressed.emit()
 		InputSignal.released.emit()
-		var at := await _settle(240, -1)
-		print("     %3d° -> %s  (fart in %.0f px/s)" % [deg, at, speed])
+		# Lång svansföring: hela sekvensen tar över tre sekunder, och han nuddar
+		# marken flera gånger på vägen — därför får han landa och rulla vidare i
+		# stället för att mätningen slutar vid första markkontakten.
+		var at := "i luften"
+		for i in 420:
+			await get_tree().physics_frame
+			at = _where()
+			if at == "flaggplatån":
+				break
+		print("     %3d° -> %s" % [deg, at])
 		landed[deg] = at
-		if at == "torntopp":
+		if at == "flaggplatån":
 			hits.append(deg)
-	print("%-26s %s" % ["avsatsen → tornet (med fart)", _window(hits, landed)])
+	print("%-26s %s" % ["platåns krön → flaggan", _window(hits, landed)])
 
 func _window(hits: Array, landed: Dictionary) -> String:
 	if hits.is_empty():

@@ -51,6 +51,14 @@ const GROUND_SNAP := 20.0      ## hur långt motorn får dra ner honom mot marke
 const ATTACK_GRACE := 0.12
 ## Hur många grader utanför fiendens egen bredd skjutsiktet börjar bromsa in.
 const SHOT_SLOW_MARGIN := 6.0
+## Klivet över ett litet hinder: hur långt innanför framkanten vi mäter dess
+## höjd, hur mycket luft han får över taket, och hur långt fram foten sätts.
+const STEP_INSET := 4.0
+const STEP_CLEAR := 3.0
+## Hur långt ner kantskyddet känner efter mark. 34 px framåt och så här långt ner
+## är samma sak som att han aldrig går ner för något brantare än 33°.
+const LEDGE_DROP := 22.0
+const STEP_PAST := 6.0
 const SIM_STEP := 1.0 / 45.0
 const SIM_STEPS := 70
 
@@ -202,7 +210,10 @@ func _process_ground(delta: float) -> void:
 	# också som vägg av motorn, och att vända på farten där tog allt han byggt
 	# upp — mätt gick 306 px/s till noll på en vanlig avsats.
 	if is_on_wall() and _driving_into_wall(before_move):
-		_hit_wall()
+		# Är det något litet han kan kliva upp på i stället? Då är det inget
+		# hinder, och att vända om vore att göra en skärva till en vägg.
+		if not _step_up():
+			_hit_wall()
 
 	if not is_on_floor():
 		# Några bildrutors nåd. Kryper han uppför en brant lutning tappar han
@@ -269,6 +280,79 @@ func _leaves_crest(before: Vector2, after: Vector2, delta: float) -> bool:
 	var needed := speed * turn / delta
 	var available := Settings.rb_gravity * maxf(after.dot(Vector2.UP), 0.0) + Settings.ground_stick
 	return needed > available
+
+## Klev han upp på det han just gick in i?
+##
+## Skräpet efter en krossad låda och bitarna efter en dödad fiende blir liggande
+## på marken, och utan det här vände RB vid var och en av dem: motorn kallar allt
+## brantare än golvvinkeln för vägg, och en 17 px hög skärva är lika lodrät som
+## ett berg. Det är benens jobb att lösa — en struts kliver över en sten, den
+## vänder inte om.
+##
+## Klivet görs i tre frågor, i tur och ordning, och alla tre måste ha samma svar
+## som ett verkligt ben skulle få:
+##
+## 1. **Hur högt är det?** En stråle uppifrån, strax innanför hindrets framkant,
+##    letar dess ovansida. Hittar den ingen topp inom steghöjden är det ingen
+##    sten utan en vägg — strålen startar då inuti hindret och rapporterar
+##    ingenting, vilket är precis rätt svar.
+## 2. **Får kroppen plats där uppe?** Provförflyttning rakt upp.
+## 3. **Kommer han fram därifrån?** Provförflyttning framåt från den lyfta
+##    ställningen. Är hindret för brett eller högt tar den stopp.
+##
+## Farten får han behålla. Ett kliv är benens arbete och inte bollens, så det
+## finns ingen rörelseenergi att betala med — i gångfart räcker den ändå bara
+## till 6 px av egen kraft (v²/2g), och det är hela skälet till att det här
+## måste vara en förmåga hos benen och inte något han rullar över.
+func _step_up() -> bool:
+	if state != State.WALK or Settings.step_height <= 0.0:
+		return false
+	var up := ground_normal
+	var dir := signf(ground_speed) if not is_zero_approx(ground_speed) else float(facing)
+	var forward := tangent() * dir
+	var contact := Vector2.ZERO
+	var found := false
+	for i in get_slide_collision_count():
+		var c := get_slide_collision(i)
+		# Golvet han står på är ingen kant att kliva upp på, och inte heller
+		# något han redan passerat: klivet ska bära honom framåt.
+		if c.get_normal().dot(up) > 0.5:
+			continue
+		if (c.get_position() - global_position).dot(forward) <= 0.0:
+			continue
+		contact = c.get_position()
+		found = true
+		break
+	if not found:
+		return false
+
+	var reach := Settings.step_height + STEP_CLEAR
+	var from := contact + forward * STEP_INSET + up * reach
+	var query := PhysicsRayQueryParameters2D.create(
+		from, from - up * (reach + STEP_INSET), collision_mask, [get_rid()])
+	var hit := get_world_2d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return false
+	var foot := global_position - up * (_capsule.height * 0.5)
+	var rise: float = ((hit["position"] as Vector2) - foot).dot(up)
+	if rise <= 0.5 or rise > Settings.step_height:
+		return false
+
+	var lift := up * (rise + STEP_CLEAR)
+	if test_move(global_transform, lift):
+		return false
+	# Klivet måste bära honom *förbi* hindrets framkant, inte bara upp på den.
+	# Landar tyngdpunkten kvar utanför står han på kanten, och en kant ger en
+	# lutande normal: mätt blev underlaget 25° brant, kantskyddets stråle
+	# svängde med och sköt ut i luften — han klev upp och vände på stället.
+	var stride := forward * ((contact - global_position).dot(forward) + STEP_PAST)
+	if test_move(global_transform.translated(lift), stride):
+		return false
+	global_position += lift + stride
+	# Sätt ner foten med en gång. Blir han svävande en bildruta läser
+	# kantskyddet marken framför som en bildruta längre ner än den är.
+	move_and_collide(-up * (STEP_CLEAR + 1.0))
+	return true
 
 ## Studsmatta i stället för mark. Farten som läses är den från bildrutan före
 ## kollisionen, av samma skäl som landningen läser den: motorn har redan skurit
@@ -1002,9 +1086,27 @@ func _turn_around() -> void:
 
 func _ground_ahead() -> bool:
 	var lean := ground_normal.angle() + PI * 0.5
-	_ledge_ray.target_position = Vector2(facing * (RADIUS + 8.0), _capsule.height * 0.5 + 22.0).rotated(lean)
+	var ahead := facing * (RADIUS + 8.0)
+	var down := _capsule.height * 0.5 + LEDGE_DROP
+	_ledge_ray.target_position = Vector2(ahead, down).rotated(lean)
 	_ledge_ray.force_raycast_update()
-	return _ledge_ray.is_colliding()
+	if _ledge_ray.is_colliding():
+		return true
+	# Ett kliv *ner* är inget stup. Kan benen lyfta honom upp på något måste de
+	# också klara att ta honom ner igen, annars blir han stående på det han just
+	# klev upp på: kantskyddet mätte marken framför som saknad, och han vände på
+	# stället, om och om igen.
+	#
+	# Men bara plan mark räknas. Gränsen för *backar* står kvar precis där den
+	# stod — en brant lutning framför honom ger en normal som lutar för mycket,
+	# och då är det fortfarande en backe han inte ska gå ner för (DECISIONS 28).
+	if Settings.step_height <= 0.0:
+		return false
+	_ledge_ray.target_position = Vector2(ahead,
+		down + Settings.step_height + STEP_CLEAR).rotated(lean)
+	_ledge_ray.force_raycast_update()
+	return _ledge_ray.is_colliding() \
+		and _ledge_ray.get_collision_normal().dot(ground_normal) > 0.8
 
 func _push_things(strength: float) -> void:
 	for i in get_slide_collision_count():

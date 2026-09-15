@@ -70,6 +70,15 @@ var ground_stick := 150.0      ## hur hårt han trycks mot underlaget
 var walk_accel := 980.0        ## hur snabbt benen når full gångfart
 var leg_stiffness := 220.0     ## benfjädringens styvhet
 var leg_damping := 22.0        ## benfjädringens dämpning
+## Hur långt kroppen får hamna från kollisionskroppen. Det är benens spelrum:
+## högre gör dem lösare, och ett kliv upp på något absorberas av fjädringen i
+## stället för att rycka till i hela RB.
+var leg_travel := 26.0
+## Hur högt hinder benen klarar att kliva upp på i stället för att vända.
+## Skräpet efter en krossad låda är 20 px högt och bitarna efter en fiende 17 px,
+## medan en hel låda är 40 — gränsen ligger med flit mellan dem, så att småskräp
+## går att kliva över medan en låda fortfarande är ett hinder. 0 = av.
+var step_height := 26.0
 var tuck_speed := 6.5          ## hur snabbt benen viks in, högre = snabbare
 ## Ser han att marken han är på väg mot är för brant för benen drar han in dem
 ## redan i luften och landar som boll. Annars landar han på fötterna först och
@@ -170,6 +179,8 @@ func as_dict() -> Dictionary:
 		"ground_stick": ground_stick,
 		"walk_accel": walk_accel,
 		"leg_stiffness": leg_stiffness,
+		"leg_travel": leg_travel,
+		"step_height": step_height,
 		"leg_damping": leg_damping,
 		"tuck_speed": tuck_speed,
 		"tuck_before_landing": tuck_before_landing,
@@ -233,6 +244,8 @@ func apply(data: Dictionary) -> void:
 	ground_stick = float(data.get("ground_stick", ground_stick))
 	walk_accel = float(data.get("walk_accel", walk_accel))
 	leg_stiffness = float(data.get("leg_stiffness", leg_stiffness))
+	leg_travel = float(data.get("leg_travel", leg_travel))
+	step_height = float(data.get("step_height", step_height))
 	leg_damping = float(data.get("leg_damping", leg_damping))
 	tuck_speed = float(data.get("tuck_speed", tuck_speed))
 	tuck_before_landing = bool(data.get("tuck_before_landing", tuck_before_landing))

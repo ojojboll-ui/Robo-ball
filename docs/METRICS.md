@@ -208,6 +208,67 @@ fienden dör, hjärtan 3 → 3, kedja 1. Det är samma rotorsak som väggarna oc
 ett beslut om en krock får inte läsas ur ett tillstånd som rörelsen i samma bildruta
 redan hunnit ändra.
 
+## Kliva över småhinder
+
+En krossad låda lämnar fyra bitar på 23 × 20 px och en dödad fiende fyra på 17 × 17 px.
+Motorn kallar allt brantare än golvvinkeln för vägg, så innan det här vände RB vid varje
+skärva: en lyckad strid lade en mur framför honom. Nu lyfter benen honom upp på det som
+är lågt nog.
+
+Klivet görs i tre frågor, i tur och ordning, och var och en kan säga nej:
+
+1. **Hur högt är det?** En stråle uppifrån, 4 px innanför hindrets framkant, letar dess
+   ovansida. Är hindret högre än steghöjden startar strålen *inuti* det och rapporterar
+   ingenting — motorn ger ingen träff för en stråle som börjar i en kropp, vilket är
+   precis rätt svar: det är en vägg och inte en sten.
+2. **Får kroppen plats där uppe?** Provförflyttning rakt upp, höjden plus 3 px.
+3. **Kommer han fram därifrån?** Provförflyttning framåt från den lyfta ställningen.
+
+Mätt på fristående hinder, RB i full gångfart rakt in i dem:
+
+| hinder | utfall |
+| --- | --- |
+| 12 px | kliver över |
+| 17 px (bit efter en fiende) | kliver över |
+| 20 px (bit efter en låda) | kliver över |
+| 23 px | kliver över |
+| 26 px (grundvärdet) | kliver över |
+| 28 px | vänder |
+| 30 px | vänder |
+| 40 px (en hel låda) | vänder |
+| 63 px (en avsats) | vänder |
+
+Och på riktigt skräp, med fysik och allt, jämfört med samma bana utan förmågan:
+
+| framför honom | steghöjd 0 | steghöjd 26 |
+| --- | --- | --- |
+| fyra bitar efter en fiende | vänder | tar sig förbi |
+| fyra bitar efter en krossad låda | vänder | tar sig förbi |
+| en hel låda | vänder | vänder |
+| två lådor på varandra | vänder | vänder |
+
+**Klivet måste bära honom förbi hindrets framkant, inte bara upp på den.** Första
+versionen lyfte honom rakt upp och 10 px fram, och då blev han stående med tyngdpunkten
+utanför kanten. En kant ger en lutande normal — mätt blev underlaget 25° brant — och
+kantskyddets stråle svänger med underlaget, så den sköt ut i luften och han vände på
+stället. Nu räknas steglängden ur var kontakten satt: fram till hindrets framkant plus
+6 px.
+
+**Kan benen lyfta honom upp, måste de också klara att ta honom ner.** Kantskyddet känner
+efter mark 34 px framåt och 22 px ner, och stod han på något 23 px högt låg marken
+framför *utanför* den strålen — han klev upp och blev stående och vände om och om igen
+(mätt: han fastnade på 23 och 26 px). Kantskyddet har därför fått en andra fråga: hittas
+**plan** mark inom steghöjden räknas den som mark. Gränsen för *backar* står kvar exakt
+där den stod — en lutning framför honom ger en normal som avviker för mycket från den han
+står på (kravet är 0,8 i skalärprodukt, alltså högst 36°), och då är det fortfarande en
+backe han inte ska gå ner för (DECISIONS 28).
+
+Klivet är benens arbete och kostar ingen fart. Det är inte generositet utan geometri: i
+gångfart räcker rörelseenergin bara till 6 px av egen kraft (v²/2g med 130 px/s och
+1400 px/s²), så en boll kan inte rulla över ens den minsta skärvan. Det *måste* vara en
+förmåga hos benen, och därför gäller det bara när han går — rullande studsar han fortfarande
+mot det han kör in i, och knuffar det framför sig.
+
 ## Klättringen: farledens siktfönster
 
 Banan är byggd efter en konceptskiss och sedan **mätt**: ett verktyg (`_route.tscn`)
@@ -220,6 +281,13 @@ mätningen, för de påverkar siffrorna:
   avsatsen, så spelaren kan välja. Mätningen tar ett normalt läge, inte det bästa.
 * **Alla svinghopp är mätta ur ett dött häng**, alltså utan någon sväng alls. Det är det
   svåraste fallet; med fart i pendeln blir fönstren större.
+* **Ett svingben måste köras ensamt.** Körs flera i följd hakar RB fast i samma grepp han
+  just lämnat, och benet rapporterar noll träffar fast det är helt i sin ordning. Tabellen
+  nedan är mätt ben för ben; en körning i slingor gav tre avvikelser som alla försvann vid
+  omkörning ensamma.
+
+Tabellen mättes om efter att benen fått kliva över småhinder (se ovan) och varje rad kom
+tillbaka oförändrad.
 
 | Hopp | vinklar som landar rätt |
 | --- | --- |
@@ -242,7 +310,7 @@ mätningen, för de påverkar siffrorna:
 | B → C | 50°–80° (4) |
 | C → D | 50°–80° (4) |
 | D → platån | 50°–80° (4) |
-| **platåns krön → flaggan** (hela rampen, utan fler tryck) | **20°–60° (5 av 5)** |
+| **platåns krön → flaggan** (hela rampen, utan fler tryck) | **20°–60° (5 av 5)**, se reservationen nedan |
 
 Sista raden är hela finalen mätt i ett stycke: ett tryck på platåns krön, och sedan
 ingenting alls. Han landar rullande på rampens avsats, rullar över krönet, faller genom
@@ -250,6 +318,17 @@ nedslagsbacken, svänger runt i skålen och kastas ut ur uppstudsen — 3,3 till
 sekunder från tryck till flagga, och **varje vinkel mellan 20° och 60° tar honom hela
 vägen**. Det är den mest förlåtande delen av banan, vilket är precis rätt för det som är
 själva belöningen.
+
+**Med reservation för att den siffran inte går att reproducera.** Finalen mäts numera av
+verktyget självt (`_route.tscn`, sista benet), med avstampet på 2800 och ett enda tryck.
+Den mätningen ger **2–4 vinklar av 5 och varierar mellan körningar med samma
+inställningar** — 20° och 40° går fram varje gång, 30° aldrig, och 50° och 60° vänder
+utfall från körning till körning. Sekvensen är lång och studsig, och verktyget trycker på
+klockslag och inte på känsla, så små skillnader i när trycket faller växer genom backen,
+skålen och uppstudsen. Siffran 5 av 5 mättes med ett annat avstamp och går alltså inte
+att jämföra rakt av. Det som *är* jämförbart, och det enda som den här mätningen duger
+till: samma spridning kommer med och utan att benen kliver över småhinder (tre körningar
+var: 3, 3, 3 mot 4, 3, 2), så den förmågan rör inte finalen.
 
 Tre hopp i ett tidigt utkast mätte noll eller en vinkel av nio, och alla tre av samma
 skäl: höjdskillnaden låg för nära hoppets tak. Räckvidden faller brant när hoppet ska

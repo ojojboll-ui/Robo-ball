@@ -462,6 +462,20 @@ Benens två delar är nästan lika långa, som hos en fågel, och det ger den sn
 leden — omkring 65–75 grader i normal gång. Ett fågelben står alltid böjt; ett rakt ben
 ser ut som en käpp.
 
+Och benen **kliver över småhinder**. En struts vänder inte om för en sten, och skräpet
+efter en krossad låda eller en dödad fiende är stenar: 17–20 px höga, men lodräta, och
+motorn kallar allt lodrätt för vägg. Det var alltså RB:s egna segrar som byggde en mur
+framför honom. Klivet är benens arbete och kan inte vara något annat — i gångfart räcker
+rörelseenergin bara till 6 px av egen kraft, så en boll kommer inte ens över den minsta
+skärvan. Därför gäller det bara med benen ute; rullande studsar han mot det han kör in i
+och knuffar det framför sig i stället.
+
+Gränsen är ett reglage och ligger mellan skräpet och en hel låda, för en låda ska
+fortfarande vara ett hinder man gör något åt. Och kan benen lyfta honom upp på något
+måste de klara att ta honom ner igen: kantskyddet räknar därför plan mark inom samma
+steghöjd som mark, medan gränsen för *backar* står kvar där den stod. Mått i
+docs/METRICS.md.
+
 ## 8. Grafisk riktning
 
 Konceptskisserna sätter tonen: handteckning, tuschlinje, kritig skuggning, starka
