@@ -110,18 +110,26 @@ static func _playground() -> Dictionary:
 			crates.append({"pos": Vector2(3420 + col * (cube.x + 2),
 				GROUND_Y - cube.y * 0.5 - row * (cube.y + 2)), "size": cube})
 
-	# Bro: plankor med överhäng på två breda pelare.
-	for side in [0.0, 1.0]:
-		crates.append({"pos": Vector2(4040 + side * 200.0, GROUND_Y - pillar.y * 0.5), "size": pillar})
+	# Bro: plankor med överhäng på två breda pelare. Den stod förut på marken
+	# under den andra trappan, och när trappan sänktes var det marken den
+	# behövde: pelarna går från marken upp till 92 px, alltså rakt igenom det
+	# nedersta steget. Nu står bron under den *första* trappan i stället, vars
+	# steg hänger 310 px upp och lämnar marken fri.
+	var bridge := 2350.0
+	for side in [-1.0, 1.0]:
+		crates.append({"pos": Vector2(bridge + side * 100.0, GROUND_Y - pillar.y * 0.5),
+			"size": pillar})
 	for layer in 2:
-		crates.append({"pos": Vector2(4140, GROUND_Y - pillar.y - plank.y * 0.5 - 3.0
+		crates.append({"pos": Vector2(bridge, GROUND_Y - pillar.y - plank.y * 0.5 - 3.0
 			- layer * (plank.y + 3)), "size": plank})
 
-	# Stapel högst upp i trappan, att landa på uppifrån.
+	# Stapel högst upp i trappan, att landa på uppifrån. Den står i *bortre*
+	# änden av översta steget: mitt på låg den i nedslagsytan, och mätt föll
+	# hoppet dit på lådorna i stället för på steget.
 	for row in 3:
 		for i in 2:
-			crates.append({"pos": Vector2(4390 + i * (cube.x + 2),
-				340 - cube.y * 0.5 - row * (cube.y + 2)), "size": cube})
+			crates.append({"pos": Vector2(4580 + i * (cube.x + 2),
+				440 - cube.y * 0.5 - row * (cube.y + 2)), "size": cube})
 
 	return {
 		"name": "Lekplatsen",
@@ -131,12 +139,19 @@ static func _playground() -> Dictionary:
 			Rect2(1560, 520, 260, 26),
 			Rect2(1900, 420, 240, 26),
 			Rect2(2240, 330, 220, 26),
-			# Trappan efter kvartspipan börjar numera på steg två. Det första
-			# steget låg i vägen: det gick tvärs igenom pipans lodräta kant, så
-			# den som rullade upp för pipan smällde in i undersidan av det i
-			# stället för att flyga ut ur den.
-			Rect2(4100, 440, 200, 26),
-			Rect2(4330, 340, 240, 26),
+			# Trappan efter kvartspipan. Den låg förut på 200 och 300 px över
+			# marken, och det första steget nådde man inte med ett vanligt hopp:
+			# taket är 169 px. Nu stiger den 100 px i taget, samma steghöjd som
+			# Klättringens avsatser, med god marginal under taket.
+			#
+			# Två mått till kommer ur mätningen och inte ur ritandet. Steget
+			# behöver ungefär 130 px fri mark framför sig — står han närmare når
+			# han bara underkanten, mätt noll av nio vinklar på 33 px — så
+			# trappan börjar på 4150 och inte tätt inpå pipans kant på 3960. Och
+			# det nedersta steget är tunnare än de andra: med 26 px tjocklek blir
+			# det 74 px kvar under det, och RB är 70 px hög.
+			Rect2(4100, 540, 250, 20),
+			Rect2(4400, 440, 260, 26),
 		],
 		"walls": [Rect2(-120, 240, 60, 400), Rect2(right, 200, 60, 440)],
 		"ramps": [

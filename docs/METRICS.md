@@ -325,6 +325,33 @@ gångfart räcker rörelseenergin bara till 6 px av egen kraft (v²/2g med 130 p
 förmåga hos benen, och därför gäller det bara när han går — rullande studsar han fortfarande
 mot det han kör in i, och knuffar det framför sig.
 
+## Lekplatsens andra trappa
+
+Trappan efter kvartspipan gick inte att ta sig upp för med ett vanligt hopp: stegen låg
+200 och 300 px över marken och hoppet når 169 px. Den är omgjord och uppmätt med samma
+verktyg och samma krav som Klättringen — minst tre av nio siktvinklar ska landa rätt.
+
+| hopp | vinklar som landar rätt |
+| --- | --- |
+| marken → steg 1 (100 px upp) | 60°–80° (3 av 9) |
+| steg 1 → steg 2 (200 px upp) | 50°–80° (4 av 9) |
+
+Tre mått kom ur mätningen och inte ur ritandet:
+
+* **Ett steg behöver ungefär 130 px fri mark framför sig.** Första försöket lade steget
+  90 px från kvartspipans lodräta kant, och där stannade RB 33 px från det: varje vinkel
+  nådde bara underkanten, noll av nio. Med 140 px framför blev det tre.
+* **Det nedersta steget måste vara tunnare än de andra.** Med 26 px tjocklek och ovansidan
+  100 px upp blir det 74 px kvar under det, och RB är 70 px hög — han skrapar. 20 px
+  tjocklek ger 80.
+* **Lådstapeln får inte stå i nedslagsytan.** Med stapeln mitt på översta steget landade
+  två av vinklarna på lådorna i stället för på steget (mätt 251 och 257 px över marken i
+  stället för 200). Flyttad till bortre änden blev samma två vinklar träffar.
+
+Bron på pelare fick samtidigt flytta. Den stod på marken under trappan, och pelarna går
+från marken upp till 92 px — alltså rakt igenom ett steg som ligger 100 px upp. Den står
+nu under den *första* trappan i stället, vars steg hänger 310 px upp och lämnar marken fri.
+
 ## Klättringen: farledens siktfönster
 
 Banan är byggd efter en konceptskiss och sedan **mätt**: ett verktyg (`_route.tscn`)
