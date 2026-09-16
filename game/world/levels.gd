@@ -131,7 +131,10 @@ static func _playground() -> Dictionary:
 			Rect2(1560, 520, 260, 26),
 			Rect2(1900, 420, 240, 26),
 			Rect2(2240, 330, 220, 26),
-			Rect2(3850, 540, 200, 26),
+			# Trappan efter kvartspipan börjar numera på steg två. Det första
+			# steget låg i vägen: det gick tvärs igenom pipans lodräta kant, så
+			# den som rullade upp för pipan smällde in i undersidan av det i
+			# stället för att flyga ut ur den.
 			Rect2(4100, 440, 200, 26),
 			Rect2(4330, 340, 240, 26),
 		],
