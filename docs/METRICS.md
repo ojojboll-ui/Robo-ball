@@ -302,6 +302,23 @@ rotorsak som landningen, väggarna och anfallsfönstret (DECISIONS 18, 23). Med 
 *före* kollisionen flyttar han en hel låda 46 × 40 px framför sig i stället för att vända
 vid den, medan två lådor på varandra fortfarande stoppar honom.
 
+**Samma fel satt kvar i luften.** Ett hopp rakt in i en lådas sida flyttade den inte alls,
+vid något läge på reglaget — och det är det renaste fallet av samma sak: farten in i lådan
+skars till noll av krocken (mätt 500 px/s in, 2,5 px/s kvar) och reglaget multiplicerade
+alltså med ingenting. Lådan flyttad, 500 px/s i sidled rakt in i sidan:
+
+| knuffkraft | farten läst efter krocken | farten läst före |
+| --- | --- | --- |
+| 0,10 | 0,0 px | 0,7 px |
+| 0,55 (grund) | 0,0 px | 45,7 px |
+| 1,00 | 0,0 px | 104,6 px |
+| 2,00 | 0,0 px | 354,2 px |
+
+Ett hopp som *landar* intill lådan i samma ögonblick kändes däremot rätt hela tiden
+(27,6 px vid grundvärdet), och skälet är lärorikt: där skar marken bort den *lodräta*
+farten medan den framåtriktade överlevde, så knuffen hade en riktning kvar att räkna på.
+Felet syntes alltså bara i det rena fallet — vilket är precis varför det stod kvar.
+
 Klivet är benens arbete och kostar ingen fart. Det är inte generositet utan geometri: i
 gångfart räcker rörelseenergin bara till 6 px av egen kraft (v²/2g med 130 px/s och
 1400 px/s²), så en boll kan inte rulla över ens den minsta skärvan. Det *måste* vara en

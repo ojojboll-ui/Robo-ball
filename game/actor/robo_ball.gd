@@ -592,7 +592,7 @@ func _process_air(delta: float) -> void:
 	spin += velocity.x / RADIUS * delta * 0.5
 	_impact_velocity = velocity
 	_move(delta)
-	_push_things(1.0)
+	_push_things(1.0, _impact_velocity)
 
 	if _grab_swing():
 		return
@@ -1224,16 +1224,22 @@ func _ground_ahead() -> bool:
 	return _ledge_ray.is_colliding() \
 		and _ledge_ray.get_collision_normal().dot(ground_normal) > 0.8
 
-## Knuffen räknas på farten **före** kollisionen.
+## Knuffen räknas på farten **före** kollisionen. Den är därför ett argument och
+## inte något den här funktionen läser själv — hämtade den `velocity` hade den
+## fel svar, och då vore felet en bildruta bort från att komma tillbaka.
 ##
 ## Motorns glidning har redan skurit bort komponenten in i lådan när vi kommer
 ## hit, så den fart som står i `velocity` pekar aldrig in i det han kör på — och
 ## en knuff räknad därifrån blir nästan noll rakt framifrån. Det var därför han
-## hellre vände än sköt undan en låda han gick rakt in i. Samma rotorsak som
-## landningen, väggarna och anfallsfönstret: ett beslut om en krock får aldrig
-## läsas ur ett tillstånd som rörelsen i samma bildruta redan hunnit ändra.
-func _push_things(strength: float, incoming := Vector2.INF) -> void:
-	var drive := incoming if incoming != Vector2.INF else velocity
+## hellre vände än sköt undan en låda han gick rakt in i, och därför ett hopp
+## rakt in i en låda inte flyttade den alls: mätt 0,0 px vid varje läge på
+## knuffreglaget, mot 46 px vid grundvärdet när farten läses före krocken.
+##
+## Samma rotorsak som landningen, väggarna och anfallsfönstret: ett beslut om en
+## krock får aldrig läsas ur ett tillstånd som rörelsen i samma bildruta redan
+## hunnit ändra.
+func _push_things(strength: float, incoming: Vector2) -> void:
+	var drive := incoming
 	for i in get_slide_collision_count():
 		var c := get_slide_collision(i)
 		var body := c.get_collider()
