@@ -33,7 +33,7 @@ func _ready() -> void:
 
 	_camera = Camera2D.new()
 	_camera.position_smoothing_enabled = true
-	_camera.position_smoothing_speed = 4.0
+	_camera.position_smoothing_speed = CAMERA_EASE
 	_camera.zoom = Vector2(1.05, 1.05)
 	_camera.limit_left = -120
 	_camera.limit_bottom = 1100
@@ -71,7 +71,51 @@ func load_level(index: int) -> void:
 ##
 ## Firandet går i riktig tid: slow motion är en inställning, och den som spelar
 ## långsamt ska inte få ett längre firande än den som spelar fort.
+## Kameran ska aldrig tappa honom.
+##
+## Utjämningen sluter avståndet i en fast takt, så släpet blir ungefär
+## fart/utjämning. Med 4,0 betyder det 400 px släp i 1600 px/s — och halva
+## bilden är bara 343 px på höjden. Mätt: skjuten rakt upp i 1600 px/s hamnade
+## han **162 px ovanför bildens överkant**, alltså utanför bild.
+##
+## Farten kommer ur mekaniken och ska få göra det: hoppet läggs till den fart
+## han redan har (DECISIONS 21), så en rullning plus ett par tryck bär honom
+## långt över tusen. Det är inte farten som är felet, det är att kameran inte
+## följer med.
+##
+## Åtstramningen måste styras av **släpet** och inte av farten. Första försöket
+## skalade med farten, och det bet inte alls: ett skott rakt upp bromsas av
+## gravitationen, så vid toppen är farten noll medan släpet är som störst — och
+## då slappnade utjämningen av precis när den behövdes. Mätt gav det 143 px
+## utanför bild i 1600 px/s, alltså lika illa som utan spärr.
+##
+## Nu växer takten med kvadraten på hur långt efter kameran ligger. Det ger ett
+## tak som inte går att springa ifrån: släpet lägger sig där farten och
+## inhämtningen väger jämnt, och den punkten flyttar sig bara som kubikroten ur
+## farten. Med 170 px tillåtet släp betyder det 243 px i 2000 px/s och 278 px i
+## 3000 — båda innanför halva bilden, som är 343 px på höjden. I gångfart är
+## takten kvar på 4,0 och känns likadan som förut.
+const CAMERA_EASE := 4.0
+const CAMERA_GRIP := 30.0   ## tak, så att den inte blir knyckig vid bankanterna
+
+func _follow_camera() -> void:
+	# Kamerans övre gräns finns för att den inte ska driva upp i tom himmel när
+	# han står på marken — inte för att gömma honom. Och han *kan* komma över
+	# banans egen kant: ett skott rakt upp i 1800 px/s stiger 1157 px, alltså
+	# 737 px över gränsen i Lekplatsen, och då hjälper ingen utjämning i världen.
+	# Mätt utan det här: 407 px utanför bild, med ett släp på 750 px som ingen
+	# inhämtning kunde stå för — det var gränsen som höll kvar kameran.
+	if _level != null:
+		_camera.limit_top = int(minf(_level.top_edge() - 380.0, _rb.global_position.y - 400.0))
+	var lag: float = maxf(Settings.camera_lag, 20.0)
+	var off: float = (_rb.global_position - _camera.get_screen_center_position()).length()
+	var grip := CAMERA_EASE
+	if off > lag:
+		grip = minf(CAMERA_EASE * (off / lag) * (off / lag), CAMERA_GRIP)
+	_camera.position_smoothing_speed = grip
+
 func _process(delta: float) -> void:
+	_follow_camera()
 	if _celebrate > 0.0:
 		_celebrate -= WorldClock.unscaled(delta)
 		if _celebrate <= 0.0:

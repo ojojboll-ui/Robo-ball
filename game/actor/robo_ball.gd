@@ -131,6 +131,19 @@ func _ready() -> void:
 	_legs.body_lift = BODY_LIFT
 	_start_position = global_position
 	floor_snap_length = GROUND_SNAP
+	# Ärv aldrig farten från det han stod på.
+	#
+	# Motorn är byggd för rörliga plattformar: kliver man av en sådan lägger den
+	# till plattformens fart, vilket är rätt för en hiss och fel för en låda. En
+	# låda som kilats fast i en stapel kan få en absurd fart av lösningen av
+	# överlappet, och den farten blev RB:s. Mätt i ett speltest av Lekplatsens
+	# lådsektion: läget GÅENDE, egen fart 61 px/s — och velocity (-16871,
+	# -40683), alltså 44043 px/s. Med den i kroppen flyttas han 736 px på en
+	# enda bildruta, och det var det som såg ut som att han sköt i väg ur bild.
+	#
+	# Spelets egna överföringar av fart går inte den här vägen: studsmattan och
+	# greppen sätter farten själva, så ingenting går förlorat.
+	platform_on_leave = CharacterBody2D.PLATFORM_ON_LEAVE_DO_NOTHING
 	_legs.reset(self, Vector2.UP)
 	InputSignal.pressed.connect(_on_signal_pressed)
 	InputSignal.released.connect(_on_signal_released)
@@ -211,6 +224,8 @@ func _process_ground(delta: float) -> void:
 	else:
 		ground_speed = move_toward(ground_speed, 0.0, Settings.roll_friction * delta)
 
+	if Settings.top_speed > 0.0:
+		ground_speed = clampf(ground_speed, -Settings.top_speed, Settings.top_speed)
 	spin += ground_speed / RADIUS * delta
 	velocity = t * ground_speed - ground_normal * Settings.ground_stick
 	var before_move := velocity
@@ -224,6 +239,10 @@ func _process_ground(delta: float) -> void:
 		_airborne_frames = 0
 		return
 	_move(delta)
+	# Motorn skriver om velocity i förflyttningen. Den som kommer ut får aldrig
+	# vara större än taket — annars bär en enda bildruta honom hur långt som
+	# helst nästa gång, eftersom förflyttningstaket räknas ur just den farten.
+	velocity = _capped(velocity)
 	_push_things(0.5, before_move)
 
 	# Bara en vägg han faktiskt kör in i. Kanten han rullar *ut ifrån* räknas
@@ -472,6 +491,20 @@ func _cancel_step() -> void:
 	_step_rise = Vector2.ZERO
 	_step_ahead = Vector2.ZERO
 
+## Farttaket.
+##
+## Ett hopp lägger sin kraft till den fart han redan har, landningen behåller
+## den och rullmotståndet är försumbart — så tryck efter tryck växer farten utan
+## gräns. Mätt i ett speltest av Lekplatsens lådsektion nådde den **9515 px/s**,
+## alltså 158 px per bildruta.
+##
+## Taket är inte en gissning utan kamerans gräns: vid 2600 px/s rakt upp ligger
+## den mätt 309 px efter honom, och halva bilden är 343 px på höjden. Snabbare
+## än så går inte att visa. Banornas egen topp är Klättringens final på
+## 1863 px/s, så taket rör ingenting som finns i spelet — det stoppar kedjan.
+func _capped(v: Vector2) -> Vector2:
+	return v if Settings.top_speed <= 0.0 else v.limit_length(Settings.top_speed)
+
 ## Studsmatta i stället för mark. Farten som läses är den från bildrutan före
 ## kollisionen, av samma skäl som landningen läser den: motorn har redan skurit
 ## bort komponenten in i ytan när vi kommer hit.
@@ -597,6 +630,7 @@ func _process_air(delta: float) -> void:
 	# kastbanan tills den möter marken på riktigt.
 	floor_snap_length = 0.0
 	velocity.y += Settings.rb_gravity * delta
+	velocity = _capped(velocity)
 	spin += velocity.x / RADIUS * delta * 0.5
 	_impact_velocity = velocity
 	_move(delta)
@@ -857,6 +891,7 @@ func _launch() -> void:
 		_swing = null
 	var a := deg_to_rad(aim_deg)
 	velocity = Vector2(cos(a), -sin(a)) * Settings.jump_power + launch_carry()
+	velocity = _capped(velocity)
 	ground_speed = 0.0
 	facing = 1 if velocity.x >= 0.0 else -1
 	_set_state(State.AIR)

@@ -245,6 +245,12 @@ func _tab_motion() -> void:
 	_slider("Tålamod innan han vänder", 0.0, 1.5, 0.05, Settings.push_patience,
 		func(v: float) -> void: Settings.push_patience = v, "%.2f s")
 
+	_section("Fart och kamera")
+	_slider("Högsta fart", 400.0, 3000.0, 50.0, Settings.top_speed,
+		func(v: float) -> void: Settings.top_speed = v, "%.0f px/s")
+	_slider("Kamerans släp", 60.0, 400.0, 10.0, Settings.camera_lag,
+		func(v: float) -> void: Settings.camera_lag = v, "%.0f px")
+
 func _tab_roll() -> void:
 	_section("När benen åker in")
 	_check("Dra in benen i branta backar", Settings.auto_roll,

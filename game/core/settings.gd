@@ -132,6 +132,24 @@ var laser_reach := 1400.0      ## px, hur långt lasern når
 ## att trycka, inte hjälp att sikta. En fiende på 440 px håll är bara 5° bred,
 ## och i full sveptakt passerar visaren den på en enda bildruta.
 var shoot_slow := 0.08
+## Högsta fart RB kan ha, px/s. 0 = inget tak.
+##
+## Hoppet läggs till den fart han redan har (DECISIONS 21), landningen behåller
+## den och rullmotståndet är 30 px/s² — så en rullning plus tryck efter tryck
+## växer utan gräns. Mätt i ett speltest av Lekplatsens lådsektion: **9515 px/s**,
+## alltså 158 px per bildruta, tvärs över hela banan på en halv sekund.
+##
+## Taket är härlett ur vad kameran klarar av att visa: vid 2600 px/s rakt upp
+## ligger den mätt 309 px efter, och halva bilden är 343 px på höjden. 2400 px/s
+## är alltså den snabbaste fart han kan ha och fortfarande synas. Det snabbaste
+## banorna själva ger är Klättringens final med 1863 px/s, så taket rör inget
+## som finns i spelet i dag — det stoppar bara kedjan.
+var top_speed := 2400.0
+## Hur långt kameran får släpa efter honom, i px. Utjämningen stramas åt med
+## farten så att släpet aldrig växer förbi det här — halva bilden är 343 px på
+## höjden, och utan spärren hamnade han mätt 162 px ovanför bildens överkant i
+## 1600 px/s. Lägre = kameran klistrar sig fast, högre = mjukare men lösare.
+var camera_lag := 170.0
 var invulnerable_time := 1.2   ## sekunder osårbar efter en träff
 var knockback := 260.0         ## px/s bort från den som träffade
 var max_hearts := 3            ## hur många träffar han tål innan banan börjar om
@@ -214,6 +232,8 @@ func as_dict() -> Dictionary:
 		"shoot_sweep": shoot_sweep,
 		"laser_reach": laser_reach,
 		"shoot_slow": shoot_slow,
+		"top_speed": top_speed,
+		"camera_lag": camera_lag,
 		"invulnerable_time": invulnerable_time,
 		"knockback": knockback,
 		"max_hearts": max_hearts,
@@ -281,6 +301,8 @@ func apply(data: Dictionary) -> void:
 	shoot_sweep = float(data.get("shoot_sweep", shoot_sweep))
 	laser_reach = float(data.get("laser_reach", laser_reach))
 	shoot_slow = float(data.get("shoot_slow", shoot_slow))
+	top_speed = float(data.get("top_speed", top_speed))
+	camera_lag = float(data.get("camera_lag", camera_lag))
 	invulnerable_time = float(data.get("invulnerable_time", invulnerable_time))
 	knockback = float(data.get("knockback", knockback))
 	max_hearts = int(data.get("max_hearts", max_hearts))

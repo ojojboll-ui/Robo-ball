@@ -281,6 +281,71 @@ där den stod — en lutning framför honom ger en normal som avviker för mycke
 står på (kravet är 0,8 i skalärprodukt, alltså högst 36°), och då är det fortfarande en
 backe han inte ska gå ner för (DECISIONS 28).
 
+## Han sköt i väg ur bild: tre fel, inte ett
+
+Speltestaren såg RB skjuta i väg ur bild bland lådorna. Det tog tre mätningar att komma
+åt, och det visade sig vara tre olika saker — varav bara den sista var den stora.
+
+### 1. Han ärvde lådans fart
+
+Motorn är byggd för rörliga plattformar: kliver man av en sådan lägger den till
+plattformens fart. Det är rätt för en hiss och fel för en låda — och en låda som kilats
+fast i en stapel kan få en absurd fart av att motorn löser upp överlappet. Den farten
+blev RB:s. Fångat i ett speltest av Lekplatsens lådsektion:
+
+| | |
+| --- | --- |
+| läge | **GÅENDE** |
+| hans egen fart | **61 px/s** |
+| `velocity` | **(−16871, −40683)**, alltså 44043 px/s |
+
+Med den i kroppen flyttas han **736 px på en enda bildruta** — förflyttningstaket räknas
+ur just den farten — och det är det som såg ut som att han sköt i väg ur bild. RB ärver
+nu ingenting från det han stått på (`PLATFORM_ON_LEAVE_DO_NOTHING`). Spelets egna
+överföringar går inte den vägen: studsmattan och greppen sätter farten själva, och de
+mäter oförändrat efteråt (studsen 405 px över mark).
+
+Samma speltest före och efter: **högsta fart 44043 px/s → 2348 px/s.**
+
+### 2. Kedjan hade inget tak
+
+Hoppet läggs till den fart han redan har (DECISIONS 21), landningen behåller den och
+rullmotståndet är 30 px/s². Tryck efter tryck växer alltså farten utan gräns — mätt
+9515 px/s innan lådfarten ens var med i bilden.
+
+Taket är härlett ur vad kameran klarar av att visa: vid 2600 px/s rakt upp ligger den
+mätt 309 px efter, och halva bilden är 343 px på höjden. **2400 px/s** är alltså den
+snabbaste fart han kan ha och fortfarande synas. Banornas egen topp är Klättringens final
+med 1864 px/s, så taket rör ingenting som finns i spelet i dag.
+
+### 3. Kameran tappade honom
+
+Utjämningen sluter avståndet i fast takt, så släpet blir ungefär fart/utjämning: 400 px
+vid 1600 px/s, mot halva bildens 343. Mätt hamnade han **162 px ovanför bildens överkant**
+i 1600 px/s rakt upp.
+
+Två saker rättade det, och den första var fel först:
+
+* **Åtstramningen måste styras av släpet, inte av farten.** Första försöket skalade med
+  farten och bet inte alls — ett skott rakt upp bromsas av gravitationen, så vid toppen är
+  farten noll medan släpet är som störst. Mätt: 143 px utanför bild, alltså lika illa.
+  Nu växer takten med kvadraten på släpet, vilket ger ett tak som inte går att springa
+  ifrån: 243 px släp i 2000 px/s, 278 px i 3000.
+* **Kamerans övre gräns fick inte gömma honom.** Den sätts av banans egen överkant
+  (−420 i Lekplatsen), och ett skott rakt upp i 1800 px/s stiger 1157 px — 737 px över
+  gränsen. Då hjälper ingen utjämning: mätt 407 px utanför bild med ett släp på 750 px
+  som ingen inhämtning kunde stå för. Gränsen följer nu med honom uppåt.
+
+Efteråt, samma svep: **i bild i varje fart upp till 2600 px/s rakt upp** (då stiger han
+7603 px och lämnar banan helt), största släp 309 px. Och i speltestet av lådsektionen:
+**0 av 13500 bildrutor utanför rutan.**
+
+Klättringens farled mättes om ben för ben efteråt. Arton av nitton kom tillbaka
+oförändrade, och finalen nådde flaggplatån med sina 1630 px/s som förut. Det nittonde —
+lian 3 → lian 2 — rapporterar **6 eller 7 av 9 beroende på körning**: dess yttersta
+vinkel, 170°, ligger precis på gränsen och vippar mellan körningar (tre körningar gav 6,
+två tidigare gav 7). Kravet på ett ben är tre, så marginalen är dubbel oavsett vilket.
+
 ## Farten får aldrig växa förbi rörelsen
 
 Gravitationen längs ytan lägger på fart varje bildruta. Står något i vägen färdas han
