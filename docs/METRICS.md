@@ -281,6 +281,54 @@ där den stod — en lutning framför honom ger en normal som avviker för mycke
 står på (kravet är 0,8 i skalärprodukt, alltså högst 36°), och då är det fortfarande en
 backe han inte ska gå ner för (DECISIONS 28).
 
+## Farten får aldrig växa förbi rörelsen
+
+Gravitationen längs ytan lägger på fart varje bildruta. Står något i vägen färdas han
+inte i den — men siffran fortsatte stiga ändå, och när klämmen släppte for han i väg i
+en fart han aldrig byggt upp genom att röra sig. Mätt i Lekplatsens lådsektion, en
+bildruta fångad i en skreva i lådmuren:
+
+| | |
+| --- | --- |
+| lagrad `ground_speed` | **1827 px/s** |
+| faktisk förflyttning | **117 px/s** (1,9 px på en bildruta) |
+| underlag | golv *och* vägg samtidigt, normaler (0,72, −0,69) och (−0,97, −0,25) |
+
+Femton gånger för mycket, och 1827 px/s tar honom tvärs över bilden (1219 px) på sju
+tiondelar av en sekund. Det var det speltestaren såg som att han "skjuter i väg ur bild".
+
+Regeln som rättar det är densamma som för landningen, väggarna, anfallsfönstret och
+knuffen: **ett tal som beskriver rörelsen får inte leva sitt eget liv vid sidan av den.**
+Färdas en bildruta mindre än en fjärdedel av den lagrade farten sätts farten till den han
+faktiskt färdades i.
+
+Tröskeln ligger vid en fjärdedel och inte vid ett strikt tak, för motorns glidning äter
+alltid någon procent på ojämn mark och en spärr vid varje sådan bildruta skulle mala ner
+farten i backar där ingenting är fel. Hur ofta den slår till, mätt genom att gå av sig
+själv från varje station i varje bana:
+
+| bana | bildrutor som höll emot | högsta fart |
+| --- | --- | --- |
+| Klättringen | 19 av 4000 (0,5 %) | 253 px/s |
+| Lekplatsen | 25 av 3000 (0,8 %) | 484 px/s |
+| Rullbanan | 90 av 4000 (2,3 %) | 873 px/s |
+| Verkstaden | 1 av 2500 (0,04 %) | 130 px/s |
+| Fienderna | 4 av 2500 (0,2 %) | 263 px/s |
+
+Och den slår till på rätt ställen: mot väggen vid Klättringens start (130 px/s lagrad,
+0 px/s färdad) och på Rullbanans 41-gradersbacke, där han enligt mätningen sedan tidigare
+*står kvar men glider bakåt*. Samma soak i lådsektionen efteråt: högsta lagrade fart
+402 px/s, mot 1827 innan — och den 402 är ärlig, han färdades i 409.
+
+Väggstudsen räknas nu på farten före rörelsen. Annars hade sanningskollen hunnit skära
+ner den först, och en boll som studsade mot en vägg hade tappat studsen i samma veva.
+Samma sak med tålamodet innan han vänder: det mäter framsteg mot den fart han *försökte*
+hålla, inte mot den nerskurna — annars hade varje stillastående bildruta sett ut som
+framsteg och han aldrig vänt.
+
+Klättringens nitton farledsben mättes om ett i taget efteråt och kom tillbaka oförändrade,
+och finalen gav 2–4 av 5, alltså samma spridning som före ändringen.
+
 ## Han vänder inte för att något nuddar honom
 
 Förut vände RB i samma bildruta som benen rörde vid vad som helst. Det var en reflex och

@@ -215,6 +215,7 @@ func _process_ground(delta: float) -> void:
 	velocity = t * ground_speed - ground_normal * Settings.ground_stick
 	var before_move := velocity
 	var before_pos := global_position
+	var speed_before := ground_speed
 	# Mitt i ett kliv *är* klivet hans rörelse. Lägger man den vanliga gången
 	# ovanpå flyttas han både klivet och ett steg till på samma bildruta, och då
 	# är takten inte längre den man ställt in.
@@ -228,14 +229,18 @@ func _process_ground(delta: float) -> void:
 	# Bara en vägg han faktiskt kör in i. Kanten han rullar *ut ifrån* räknas
 	# också som vägg av motorn, och att vända på farten där tog allt han byggt
 	# upp — mätt gick 306 px/s till noll på en vanlig avsats.
+	_settle_speed(delta, before_pos)
+
 	if is_on_wall() and _driving_into_wall(before_move):
 		if _begin_step():
 			_blocked = 0.0
 		elif state == State.ROLL:
-			# Bollen studsar. Det är ren fysik och ska ske i samma ögonblick.
-			_hit_wall()
+			# Bollen studsar. Det är ren fysik och ska ske i samma ögonblick,
+			# och på den fart han kom in med — den som står kvar efteråt är
+			# redan beskuren av både motorn och sanningskollen ovan.
+			_hit_wall(speed_before)
 		else:
-			_lean_on_it(delta, before_pos)
+			_lean_on_it(delta, before_pos, speed_before)
 	else:
 		_blocked = 0.0
 
@@ -320,11 +325,14 @@ func _leaves_crest(before: Vector2, after: Vector2, delta: float) -> bool:
 ##
 ## Tålamodet är ett reglage, för hur länge han ska streta är en känslofråga och
 ## ingen fysikfråga.
-func _lean_on_it(delta: float, before_pos: Vector2) -> void:
+func _lean_on_it(delta: float, before_pos: Vector2, tried: float) -> void:
 	# Kom han framåt ändå? Då knuffar han något, och det är inte att vara
-	# blockerad. Tröskeln är en fjärdedel av den fart han försökte hålla.
-	var forward := tangent() * signf(ground_speed)
-	if (global_position - before_pos).dot(forward) > absf(ground_speed) * delta * 0.25:
+	# blockerad. Tröskeln är en fjärdedel av den fart han *försökte* hålla, och
+	# den måste läsas före rörelsen: sanningskollen har redan skurit ner den
+	# lagrade farten till det han faktiskt färdades, så mätt mot den skulle
+	# varje stillastående bildruta se ut som framsteg och han aldrig vända.
+	var forward := tangent() * signf(tried)
+	if (global_position - before_pos).dot(forward) > absf(tried) * delta * 0.25:
 		_blocked = 0.0
 		return
 	_blocked += delta
@@ -749,12 +757,41 @@ func _update_stance() -> void:
 			and (Settings.roll_speed <= 0.0 or absf(ground_speed) < Settings.roll_speed * 0.8):
 		_set_state(State.WALK)
 
-func _hit_wall() -> void:
+func _hit_wall(incoming := NAN) -> void:
 	if state == State.ROLL:
-		ground_speed = -ground_speed * Settings.wall_bounce
+		ground_speed = -(incoming if not is_nan(incoming) else ground_speed) * Settings.wall_bounce
 	else:
 		facing = -facing
 		ground_speed = 0.0
+
+## Farten får aldrig växa förbi den rörelse som faktiskt blev av.
+##
+## Gravitationen längs ytan lägger på fart varje bildruta, men står något i
+## vägen färdas han inte i den. Kommer han i kläm — mellan en låda och marken,
+## eller i en skreva i en lådmur — fortsätter siffran att stiga medan han står
+## still, och när klämmen släpper far han i väg i en fart han aldrig byggt upp
+## genom att röra sig. Mätt i Lekplatsens lådsektion: **1827 px/s lagrad fart
+## medan han flyttade sig 117 px/s**, alltså femton gånger för mycket — och
+## 1827 px/s tar honom tvärs över bilden på sju tiondelar av en sekund.
+##
+## Regeln är densamma som för landningen, väggarna, anfallsfönstret och knuffen:
+## ett tal som beskriver rörelsen får inte leva sitt eget liv vid sidan av den.
+##
+## Tröskeln ligger vid en fjärdedel och inte vid ett strikt tak, för motorns
+## glidning äter alltid någon procent på ojämn mark, och en spärr som slog till
+## vid varje sådan bildruta skulle mala ner farten i backar där ingenting är
+## fel. En fjärdedel är ingen normal bildruta — det är något som håller emot.
+const SPEED_TRUTH := 0.25
+
+func _settle_speed(delta: float, before_pos: Vector2) -> void:
+	if delta <= 0.0:
+		return
+	var claimed := absf(ground_speed) * delta
+	if claimed < 1.0:
+		return
+	var travelled := (global_position - before_pos).length()
+	if travelled < claimed * SPEED_TRUTH:
+		ground_speed = signf(ground_speed) * travelled / delta
 
 # ---------------------------------------------------------------- signalen
 
