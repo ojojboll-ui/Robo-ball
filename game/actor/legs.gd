@@ -239,14 +239,24 @@ const DANGLE_DAMP := 11.0
 ## Hur fort kroppen sätter sig till rätta på kollisionskroppen när han lämnat
 ## marken. 14 ger ett par tiondelars sekund, alltså mjukt men utan efterhäng.
 const AIR_SETTLE := 14.0
-## Hur långt benet hänger från höften i luften. Nästan hela räckvidden: stående
-## står fågelbenet böjt för att bära kroppen, hängande bär det ingenting.
-const DANGLE_LENGTH := REACH * 0.92
+## Benets längd från höften i luften. Avslappnat hänger det lätt böjt; i full
+## vind och inför landningen sträcks det helt rakt — lår och underben i linje.
+const RELAX_LENGTH := REACH * 0.88
+const STRAIGHT_LENGTH := THIGH + SHIN - 0.5
+## Fallfart där benen är fullt utsträckta mot landningen.
+const LAND_SPEED := 300.0
+## Hur mycket styvare benen blir när de sträcker sig mot landningen, utöver den
+## passiva pendeln. 3 ger fyra gånger styvhet och halva svängtiden.
+const LAND_GRIP := 3.0
+## Fart där vinden sträcker benen helt raka. Lägre än slängens tak: ett vanligt
+## avstamp går i 680–800 px/s, och vid maxsläng ska benen vara raka på riktigt,
+## inte nästan — med taket vid 900 stannade de på 71,3 px av 72,5.
+const STRETCH_SPEED := 600.0
 ## Den fart luftmotståndet räknas upp till. Snabbare än så ger inget större
 ## utslag — annars pekar benen rakt upp i ett riktigt långt fall.
 const SWAY_TOP := 900.0
 
-## Pendlingen räknas **i kroppens egen ram**, och slängen kommer ur luften.
+## Pendlingen räknas **i kroppens egen ram**, och flykten har två faser.
 ##
 ## I ett fall faller kropp och ben lika fort, och den som faller kan inte känna
 ## att han rör sig — bara att farten ändras. Räknas fjädern mot ett mål som far
@@ -255,32 +265,55 @@ const SWAY_TOP := 900.0
 ## punkt blev felet dessutom radiellt — mätt hängde foten 85 px under kroppen på
 ## väg upp och 3,6 px på väg ner, ett ben som växte och krympte 80 px.
 ##
-## I kroppens ram tar gravitationen ut sig själv, och då återstår det som
-## faktiskt får ett hängande ben att släpa: **luften han far genom.** Motståndet
-## drar fötterna mot färdriktningen, så slängen följer hur han flyger — bakåt i
-## ett språng, uppåt i ett fall, och den vänder mjukt när hoppet vänder. Utan
-## den satt benen blickstilla, vilket var lika osant som guppet.
+## I kroppens ram tar gravitationen ut sig själv, och kvar blir två saker som
+## faktiskt rör ett ben i luften:
+##
+## * **På väg upp släpar benen efter kroppen.** Det är luften han far genom:
+##   motståndet drar fötterna mot färdriktningen, i styrka mot farten, och i full
+##   fart sträcker det benen helt raka. Nära vändpunkten, där det nästan inte
+##   blåser alls, hänger de avslappnat böjda.
+## * **På väg ner förbereder benen landningen.** Det är benen själva och ingen
+##   luft: de sträcker sig raka och söker sig ned och fram längs färdriktningen,
+##   så att fötterna är först när marken kommer. Övergången börjar vid
+##   vändpunkten och är fullt utsträckt när han faller i LAND_SPEED.
 func _dangle(normal: Vector2, delta: float, flight: Vector2) -> void:
 	var t := Vector2(-normal.y, normal.x)
-	# Motståndet är taget vid en fart, annars pekar benen rakt upp i ett långt
-	# fall. Vid taket är utslaget knappt 40 px av benets 64, alltså drygt 35°.
-	var drag := -flight.limit_length(SWAY_TOP) * Settings.leg_sway
+	var down := -normal
+	# Hur långt in i landningsfasen han är: noll på väg upp och vid vändpunkten,
+	# ett när han faller fort.
+	var land := smoothstep(0.0, LAND_SPEED, flight.dot(down)) * clampf(Settings.leg_landing, 0.0, 1.0)
+	# Luften, taget vid en fart — annars pekar benen rakt upp i ett långt fall.
+	# På väg ner tar benen själva över, så vinden får mindre och mindre att säga.
+	var wind := flight.limit_length(SWAY_TOP)
+	var drag := -wind * Settings.leg_sway * (1.0 - land)
+	var gust := clampf(wind.length() / STRETCH_SPEED, 0.0, 1.0) * (1.0 - land)
+	# Riktningen benet söker: rakt ner i stilla luft, och inför landningen mitt
+	# emellan rakt ner och färdriktningen.
+	var aim := down
+	if land > 0.0 and flight.length() > 1.0:
+		aim = down.lerp((flight.normalized() + down).normalized(), land).normalized()
+	# Längden: avslappnat böjt när det är stilla, helt rakt i full vind och när
+	# benen sträcker sig mot marken.
+	var length := lerpf(RELAX_LENGTH, STRAIGHT_LENGTH, clampf(maxf(gust, land), 0.0, 1.0))
 	for i in 2:
-		# Höften och det hängande benets viloläge, båda i kroppens ram. Benet
-		# hänger nästan rakt ner: stående står det böjt för att bära kroppen,
-		# och i luften bär det ingenting.
 		var hip := -normal * 10.0 + t * (i * 2.0 - 1.0) * HIP_SPREAD
-		var rest := hip - normal * DANGLE_LENGTH
+		var rest := hip + aim * length
 		var off: Vector2 = (feet[i] as Vector2) - body_point
 		var vel: Vector2 = _foot_vel[i]
-		vel += ((rest - off) * DANGLE_SPRING + drag) * delta
-		vel *= exp(-DANGLE_DAMP * delta)
+		# Inför landningen är det benen själva som arbetar, och en muskel är
+		# snabbare än en pendel: fjädern stramas åt med landningsfasen. Utan det
+		# hann benen inte fram i ett flackt hopp — mätt var foten som längst
+		# fram fortfarande 43 px bakom höften när han slog i marken.
+		var grip := 1.0 + LAND_GRIP * land
+		vel += ((rest - off) * DANGLE_SPRING * grip + drag) * delta
+		vel *= exp(-DANGLE_DAMP * sqrt(grip) * delta)
 		off += vel * delta
 		# **Ett ben svänger i vinkel, det teleskoperar inte.** Fjädern och luften
-		# får peka ut riktningen, men längden är benets egen.
+		# får peka ut riktningen; längden är benets egen och ändras bara av om
+		# det hänger avslappnat eller är utsträckt.
 		var hang := off - hip
 		if hang.length() > 0.001:
-			off = hip + hang.normalized() * DANGLE_LENGTH
+			off = hip + hang.normalized() * length
 			vel = vel.slide(hang.normalized())
 		_foot_vel[i] = vel
 		feet[i] = body_point + off

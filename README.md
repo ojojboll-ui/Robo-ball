@@ -54,7 +54,7 @@ bläddra igenom mitt i ett speltest:
 | Flik | Innehåll |
 | --- | --- |
 | Sikte | Pilens hastighet, slow motion, vinkelsteg, bågens gränser, hoppkraft, gravitation, tempoknapparna och extra hopp i luften |
-| Rörelse | Gångfart och acceleration, markfäste, hur mycket fart som följer med i landningen och i hoppet, studs mot väggar, knuffkraft, benens fjädring, spelrum och släng i luften, hur högt hinder han kliver över, klivets takt, hur länge han streter innan han vänder, högsta fart och kamerans släp |
+| Rörelse | Gångfart och acceleration, markfäste, hur mycket fart som följer med i landningen och i hoppet, studs mot väggar, knuffkraft, benens fjädring, spelrum och släng i luften, om de förbereder landningen, hur högt hinder han kliver över, klivets takt, hur länge han streter innan han vänder, högsta fart och kamerans släp |
 | Rullning | När benen åker in (lutning, benens högsta takt och absolut fart) med uträknad klättergräns under, indragningstakt, förbli boll i luften, förberedd rullning i luften, rullmotstånd |
 | Föremål | Lådornas fysik, effekter, studsmattornas studs och bukt, stängernas och lianernas grepp och dämpning, samt fiendernas fart, studsen på dem, skjutsiktets sveptakt och dess inbromsning vid en röd, laserns räckvidd, osårbarheten och antalet hjärtan |
 | Hjälp | Styrningsvariant, förhandsbana, kantskydd, spelhastighet, dubbeltrycksfilter, timeout |

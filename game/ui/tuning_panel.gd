@@ -240,6 +240,8 @@ func _tab_motion() -> void:
 		func(v: float) -> void: Settings.leg_travel = v, "%.0f px")
 	_slider("Benens släng i luften", 0.0, 20.0, 0.5, Settings.leg_sway,
 		func(v: float) -> void: Settings.leg_sway = v, "%.1f")
+	_slider("Benen förbereder landningen", 0.0, 1.0, 0.05, Settings.leg_landing,
+		func(v: float) -> void: Settings.leg_landing = v, "%.0f%%", 100.0)
 	_slider("Kliver över hinder upp till", 0.0, 44.0, 1.0, Settings.step_height,
 		func(v: float) -> void: Settings.step_height = v, "%.0f px")
 	_slider("Klivets takt", 80.0, 900.0, 10.0, Settings.step_pace,

@@ -322,31 +322,38 @@ faller kan inte känna att han rör sig, bara att farten ändras), och riktninge
 bestämmas av fjädern medan längden är benets egen. Mätt genom hela flykten: **64,4 px
 från höften, 0,0 px variation.** Benet svänger i vinkel och ingenting annat.
 
-### Men slängen skulle vara kvar
+### Men slängen skulle vara kvar — och flykten har två faser
 
 I kroppens ram finns ingen kraft kvar som får ett hängande ben att röra sig, och då blev
-benen blickstilla i luften — lika osant som guppet, och sämre att titta på. Det som
-*faktiskt* släpar ett hängande ben i en flykt är **luften han far genom**, så motståndet
-finns nu med: det drar fötterna mot färdriktningen, i styrka mot farten. Slängen följer
-alltså hur han flyger — bakåt i ett språng, uppåt i ett fall, och den vänder mjukt när
-hoppet vänder.
+benen blickstilla i luften — lika osant som guppet, och sämre att titta på. Speltestaren
+ville att de ska *slänga efter kroppen på väg upp och förbereda landningen på väg ner*,
+och att de ska kunna vara helt raka vid maxsläng. Det blev två faser:
 
-Benets vinkel från rakt ner, mätt under ett hopp:
+* **På väg upp släpar benen efter kroppen.** Det är luften han far genom: motståndet
+  drar fötterna mot färdriktningen, i styrka mot farten. Vinden sträcker också benen —
+  vid 600 px/s är de helt raka, lår och underben i linje. Nära vändpunkten, där det
+  knappt blåser, hänger de avslappnat böjda.
+* **På väg ner förbereder benen landningen.** Det är benen själva och ingen luft: de
+  sträcker sig raka och söker sig ned och fram längs färdriktningen. Övergången börjar
+  vid vändpunkten och är fullt på vid 300 px/s fall. En muskel är snabbare än en pendel,
+  så benen är fyra gånger styvare i den fasen — utan det hann de inte fram i ett flackt
+  hopp, och foten var fortfarande 43 px *bakom* höften när han slog i.
 
-| | utan motstånd | med motstånd (grund 8,0) |
+Mätt under två hopp (rakt ben = 72,5 px från höften):
+
+| | rakt upp | snett framåt |
 | --- | --- | --- |
-| hopp rakt upp, i fallet | +3° → +9° | **+1° → +25°** |
-| hopp snett framåt (703 px/s i sidled) | +27°–+48° | **+40°–+58°** |
+| benets längd på väg upp | 72,5 (rakt) | 72,5 (rakt) |
+| vid vändpunkten | 64,0 (böjt) | 72,3 (fortfarande blåsigt, 703 px/s i sidled) |
+| på väg ner | 72,5 (rakt) | 72,5 (rakt) |
+| foten som längst fram före nedslaget | +19 px framför höften | **+34 px** (var −43) |
+| kroppens vandring | 5,5 px | 2,0 px |
 
-Utan motstånd kryper benet tillbaka till nästan rakt ner och blir stående där; med det
-växer släpet med fallfarten, vilket är hela poängen. Motståndet är taget vid 900 px/s,
-annars pekar benen rakt upp i ett långt fall — vid taket är utslaget drygt 35°.
-
-Kroppen är orörd av tillägget: samma hopp mätte **5,9 px vandring** och benets längd
-64,4 px med 0,0 px variation.
-
-På marken är fjädringen orörd: mätt över Rullbanans backar ligger kroppen inom
-−7,1..0,2 px från kollisionskroppen med högst 1,0 px ändring mellan bildrutor.
+Sträckningen har ett eget tak, lägre än slängens: med taket vid slängens 900 px/s
+stannade benen på 71,3 av 72,5 px i ett vanligt avstamp — nästan raka, men inte på riktigt.
+Slängen själv är fortfarande tagen vid 900 px/s, annars pekar benen rakt upp i ett långt
+fall. Två reglage under *Rörelse*: **Benens släng i luften** och **Benen förbereder
+landningen** (0 % stänger av landningsfasen).
 
 ## Han sköt i väg ur bild: tre fel, inte ett
 
