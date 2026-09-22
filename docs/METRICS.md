@@ -281,6 +281,50 @@ där den stod — en lutning framför honom ger en normal som avviker för mycke
 står på (kravet är 0,8 i skalärprodukt, alltså högst 36°), och då är det fortfarande en
 backe han inte ska gå ner för (DECISIONS 28).
 
+## Guppet i luften: vikten satt i benen
+
+Speltestaren såg RB guppa till när hoppet vände från upp till ner, och beskrev det som
+att vikten satt i benen i stället för på kroppen. Det stämde bokstavligt: den ritade
+kroppen hängde i en fjäder som räknades mot fötterna, och en fjäder **måste** släpa efter
+ett mål som rör sig. Med styvheten 220 och dämpningen 22 blir släpet fart/10 — 60 px i
+600 px/s, kapat vid spärren. Mätt under ett hopp rakt upp:
+
+| | gammalt | nytt |
+| --- | --- | --- |
+| kroppens läge mot kollisionskroppen, på väg upp | **+28,6 px** (under) | 0 px |
+| samma, på väg ner | **−29,4 px** (över) | 0 px |
+| total vandring genom vändpunkten | **59,2 px** | **10,0 px** |
+
+De 10 px som är kvar är avstampets sättning, som tonar ut på ett par tiondelar och sedan
+ligger på noll hela flykten. Ingen vändning, inget gupp.
+
+Tre saker behövdes, och de två första räckte inte var för sig:
+
+* **I luften fjädrar ingenting.** Fjädringen finns för att marken är ojämn; i ett fall
+  finns ingen mark att fjädra mot, och då är kroppen tyngden som följer kastbanan.
+* **Avståndet måste vara ett eget tillstånd som tonar ut.** Första försöket räknade om
+  det mot kollisionskroppen varje bildruta, och då matades rörelsen in på nytt varje
+  gång: kvar blev ett stadigt släp på nästan fyra bildrutor, mätt 41 px i 660 px/s.
+  Alltså samma gupp som förut, bara av en annan anledning.
+* **Kroppen placeras före benen.** Sattes fötterna först och kroppen sedan, ändrades
+  benets längd av kroppens egen rörelse — mätt 21,7 px under en flykt trots att längden
+  var låst.
+
+### Och benen hade samma fel
+
+Fotens fjäder räknades också mot ett mål som for genom världen, med släpet fart/17. Benen
+svängde alltså ut av *farten* i stället för av avstampet. Värre: fjädern drar mot en
+punkt, så felet blev radiellt — benet växte och krympte. Mätt hängde foten **85 px** under
+kroppen på väg upp och **3,6 px** på väg ner.
+
+Nu räknas pendlingen i kroppens egen ram, där gravitationen tar ut sig själv (den som
+faller kan inte känna att han rör sig, bara att farten ändras), och riktningen får
+bestämmas av fjädern medan längden är benets egen. Mätt genom hela flykten: **64,4 px
+från höften, 0,0 px variation.** Benet svänger i vinkel och ingenting annat.
+
+På marken är fjädringen orörd: mätt över Rullbanans backar ligger kroppen inom
+−7,1..0,2 px från kollisionskroppen med högst 1,0 px ändring mellan bildrutor.
+
 ## Han sköt i väg ur bild: tre fel, inte ett
 
 Speltestaren såg RB skjuta i väg ur bild bland lådorna. Det tog tre mätningar att komma

@@ -68,11 +68,20 @@ var body_lift := 13.0
 var _side := [1.0, 1.0]
 var _foot_vel := [Vector2.ZERO, Vector2.ZERO]
 var _body_vel := Vector2.ZERO
+## Kroppens avstånd till kollisionskroppen när han lämnade marken — det tonar ut
+## under flykten och byggs aldrig på av att kastbanan rör sig.
+var _drift := Vector2.ZERO
+var _was_grounded := true
 var _ready := false
 
 func reset(rb: Node2D, normal: Vector2) -> void:
 	body_point = rb.global_position + normal * body_lift
 	_body_vel = Vector2.ZERO
+	# Pendlingens fart räknas i kroppens ram och hör till luften. Den får inte
+	# ligga kvar från förra flykten när fötterna sätts ner på nytt.
+	_foot_vel = [Vector2.ZERO, Vector2.ZERO]
+	_drift = Vector2.ZERO
+	_was_grounded = true
 	var t := Vector2(-normal.y, normal.x)
 	for i in 2:
 		feet[i] = body_point - normal * body_height + t * (i * 2.0 - 1.0) * HIP_SPREAD
@@ -88,11 +97,15 @@ func hips(normal: Vector2) -> Array:
 func update(rb: Node2D, normal: Vector2, speed: float, grounded: bool, delta: float) -> void:
 	if not _ready:
 		reset(rb, normal)
+	# Kroppen placeras först, benen hängs sedan i den. Gjordes det tvärtom
+	# flyttades kroppen efter att fötterna satts i förhållande till den, och då
+	# ändrades benets längd av kroppens egen rörelse: mätt varierade det 21,7 px
+	# under en flykt trots att längden var låst.
+	_carry_body(rb, normal, delta, grounded)
 	if grounded:
 		_step(rb, normal, speed, delta)
 	else:
 		_dangle(normal, delta, (rb.get("velocity") as Vector2).length())
-	_carry_body(rb, normal, delta)
 
 # ---------------------------------------------------------------- stegen
 
@@ -223,23 +236,48 @@ func _begin_step(rb: Node2D, normal: Vector2, i: int, stride: float, speed: floa
 ## sträckan är hårt kapad vid vad benet når.
 const DANGLE_SPRING := 190.0
 const DANGLE_DAMP := 11.0
+## Hur fort kroppen sätter sig till rätta på kollisionskroppen när han lämnat
+## marken. 14 ger ett par tiondelars sekund, alltså mjukt men utan efterhäng.
+const AIR_SETTLE := 14.0
+## Hur långt benet hänger från höften i luften. Nästan hela räckvidden: stående
+## står fågelbenet böjt för att bära kroppen, hängande bär det ingenting.
+const DANGLE_LENGTH := REACH * 0.92
 
+## Pendlingen räknas **i kroppens egen ram**, inte i världens.
+##
+## I ett fall faller kropp och ben lika fort, och den som faller kan inte känna
+## att han rör sig — bara att farten ändras. Räknas fjädern mot ett mål som far
+## genom världen släpar den efter i stället, med fart/17, alltså 35 px i
+## 600 px/s: benen svängde ut av *farten* och inte av avstampet, och de drogs
+## rakare ju fortare han föll. Samma sorts fel som kroppens fjädring hade.
+##
+## I kroppens ram tar gravitationen ut sig själv och kvar blir det som faktiskt
+## ska synas: knycken i avstampet, svängen efter en riktningsändring, och sedan
+## ett lugnt häng.
 func _dangle(normal: Vector2, delta: float, _fall_speed: float) -> void:
 	var t := Vector2(-normal.y, normal.x)
 	for i in 2:
-		var rest := body_point - normal * (body_height - 6.0) + t * (i * 2.0 - 1.0) * HIP_SPREAD
-		var foot: Vector2 = feet[i]
+		# Höften och det hängande benets viloläge, båda i kroppens ram. Benet
+		# hänger nästan rakt ner: stående står det böjt för att bära kroppen,
+		# och i luften bär det ingenting.
+		var hip := -normal * 10.0 + t * (i * 2.0 - 1.0) * HIP_SPREAD
+		var rest := hip - normal * DANGLE_LENGTH
+		var off: Vector2 = (feet[i] as Vector2) - body_point
 		var vel: Vector2 = _foot_vel[i]
-		vel += (rest - foot) * DANGLE_SPRING * delta
+		vel += (rest - off) * DANGLE_SPRING * delta
 		vel *= exp(-DANGLE_DAMP * delta)
-		foot += vel * delta
-		var hip := body_point - normal * 10.0 + t * (i * 2.0 - 1.0) * HIP_SPREAD
-		var reach := foot - hip
-		if reach.length() > REACH:
-			foot = hip + reach.normalized() * REACH
-			vel = vel.slide(reach.normalized())
+		off += vel * delta
+		# **Ett ben svänger i vinkel, det teleskoperar inte.** Fjädern får peka
+		# ut riktningen, men längden är benets egen. Utan det drog fjädern foten
+		# in och ut ur höften i takt med sin egen svängning: mätt hängde foten
+		# 85 px under kroppen på väg upp och 3,6 px på väg ner, alltså ett ben
+		# som växte och krympte 80 px under en enda flykt.
+		var hang := off - hip
+		if hang.length() > 0.001:
+			off = hip + hang.normalized() * DANGLE_LENGTH
+			vel = vel.slide(hang.normalized())
 		_foot_vel[i] = vel
-		feet[i] = foot
+		feet[i] = body_point + off
 		planted[i] = true
 		step_t[i] = 1.0
 		step_to[i] = feet[i]
@@ -272,15 +310,46 @@ func hang(rb: Node2D, grip: Vector2, delta: float) -> void:
 ## Fjädringen. Kroppen dras mot en punkt ovanför fötterna i stället för att sitta
 ## fast i kollisionskroppen, och det är den som gör att småhack i marken inte
 ## längre skakar hela RB.
-func _carry_body(rb: Node2D, normal: Vector2, delta: float) -> void:
+func _carry_body(rb: Node2D, normal: Vector2, delta: float, grounded: bool) -> void:
 	# Kroppen sitter alltid rakt ovanför kollisionskroppen i sidled — en
 	# fjädring som också drar i sidled får RB att luta bakåt när han går uppför.
 	# Bara höjden fjädrar, och den styrs av var fötterna faktiskt står.
 	var anchor := rb.global_position + normal * body_lift
+	var travel := sag()
+	var target := anchor
+
+	# **I luften fjädrar ingenting.** Fjädringen finns för att marken är ojämn:
+	# fötterna står på den, och kroppen får hänga mjukt ovanför dem i stället
+	# för att ärva varje hack. I ett fall finns ingen mark att fjädra mot — då
+	# är kroppen tyngden, och den följer kastbanan rakt av.
+	#
+	# Och en fjäder *måste* släpa efter ett mål som rör sig: med styvheten 220
+	# och dämpningen 22 blir släpet fart/10, alltså 60 px i 600 px/s, kapat vid
+	# spärren. Mätt hängde kroppen därför 28,6 px under kollisionskroppen på väg
+	# upp och 29,4 px ovanför den på väg ner — **58 px vandring genom
+	# vändpunkten**, och den vandringen *är* guppet. Det såg ut som att vikten
+	# satt i benen, och i räkningen gjorde den faktiskt det.
+	#
+	# I luften får avståndet i stället rinna av mot noll och sedan ligga där, så
+	# att kroppen sitter exakt på kollisionskroppen hela flykten. Det som är kvar
+	# från marken tonar ut på ett par tiondelar i stället för att slå om.
+	if not grounded:
+		# Avståndet är ett eget tillstånd som bara tonar ut. Räknas det i stället
+		# om mot kollisionskroppen varje bildruta matas rörelsen in på nytt varje
+		# gång, och kvar blir ett stadigt släp på nästan fyra bildrutor — mätt
+		# 41 px i 660 px/s, alltså precis det gupp som skulle bort.
+		if _was_grounded:
+			_drift = body_point - anchor
+			_was_grounded = false
+		_drift *= exp(-AIR_SETTLE * delta)
+		body_point = anchor + _drift
+		_body_vel = Vector2.ZERO
+		return
+
+	_was_grounded = true
 	var support: Vector2 = ((feet[0] as Vector2) + (feet[1] as Vector2)) * 0.5
 	var along := (support + normal * body_height - anchor).dot(normal)
-	var travel := sag()
-	var target := anchor + normal * clampf(along, -travel, travel)
+	target = anchor + normal * clampf(along, -travel, travel)
 
 	_body_vel += (target - body_point) * Settings.leg_stiffness * delta
 	_body_vel *= exp(-Settings.leg_damping * delta)
