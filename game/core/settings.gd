@@ -74,6 +74,10 @@ var leg_damping := 22.0        ## benfjädringens dämpning
 ## högre gör dem lösare, och ett kliv upp på något absorberas av fjädringen i
 ## stället för att rycka till i hela RB.
 var leg_travel := 26.0
+## Hur mycket luften tar i benen när han flyger. Det är den enda kraft som får
+## ett hängande ben att släpa i ett fall — gravitationen tar ut sig själv, för
+## kropp och ben faller lika fort. 0 = blickstilla ben, högre = mer släng.
+var leg_sway := 8.0
 ## Hur högt hinder benen klarar att kliva upp på i stället för att vända.
 ## Skräpet efter en krossad låda är 20 px högt och bitarna efter en fiende 17 px,
 ## medan en hel låda är 40 — gränsen ligger med flit mellan dem, så att småskräp
@@ -207,6 +211,7 @@ func as_dict() -> Dictionary:
 		"walk_accel": walk_accel,
 		"leg_stiffness": leg_stiffness,
 		"leg_travel": leg_travel,
+		"leg_sway": leg_sway,
 		"step_height": step_height,
 		"step_pace": step_pace,
 		"push_patience": push_patience,
@@ -276,6 +281,7 @@ func apply(data: Dictionary) -> void:
 	walk_accel = float(data.get("walk_accel", walk_accel))
 	leg_stiffness = float(data.get("leg_stiffness", leg_stiffness))
 	leg_travel = float(data.get("leg_travel", leg_travel))
+	leg_sway = float(data.get("leg_sway", leg_sway))
 	step_height = float(data.get("step_height", step_height))
 	step_pace = float(data.get("step_pace", step_pace))
 	push_patience = float(data.get("push_patience", push_patience))

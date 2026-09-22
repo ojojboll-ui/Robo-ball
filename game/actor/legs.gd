@@ -105,7 +105,7 @@ func update(rb: Node2D, normal: Vector2, speed: float, grounded: bool, delta: fl
 	if grounded:
 		_step(rb, normal, speed, delta)
 	else:
-		_dangle(normal, delta, (rb.get("velocity") as Vector2).length())
+		_dangle(normal, delta, rb.get("velocity") as Vector2)
 
 # ---------------------------------------------------------------- stegen
 
@@ -242,20 +242,29 @@ const AIR_SETTLE := 14.0
 ## Hur långt benet hänger från höften i luften. Nästan hela räckvidden: stående
 ## står fågelbenet böjt för att bära kroppen, hängande bär det ingenting.
 const DANGLE_LENGTH := REACH * 0.92
+## Den fart luftmotståndet räknas upp till. Snabbare än så ger inget större
+## utslag — annars pekar benen rakt upp i ett riktigt långt fall.
+const SWAY_TOP := 900.0
 
-## Pendlingen räknas **i kroppens egen ram**, inte i världens.
+## Pendlingen räknas **i kroppens egen ram**, och slängen kommer ur luften.
 ##
 ## I ett fall faller kropp och ben lika fort, och den som faller kan inte känna
 ## att han rör sig — bara att farten ändras. Räknas fjädern mot ett mål som far
-## genom världen släpar den efter i stället, med fart/17, alltså 35 px i
-## 600 px/s: benen svängde ut av *farten* och inte av avstampet, och de drogs
-## rakare ju fortare han föll. Samma sorts fel som kroppens fjädring hade.
+## genom världen släpar den efter i stället, med fart/17: benen svängde ut av
+## *farten* i stället för av något verkligt, och eftersom en fjäder drar mot en
+## punkt blev felet dessutom radiellt — mätt hängde foten 85 px under kroppen på
+## väg upp och 3,6 px på väg ner, ett ben som växte och krympte 80 px.
 ##
-## I kroppens ram tar gravitationen ut sig själv och kvar blir det som faktiskt
-## ska synas: knycken i avstampet, svängen efter en riktningsändring, och sedan
-## ett lugnt häng.
-func _dangle(normal: Vector2, delta: float, _fall_speed: float) -> void:
+## I kroppens ram tar gravitationen ut sig själv, och då återstår det som
+## faktiskt får ett hängande ben att släpa: **luften han far genom.** Motståndet
+## drar fötterna mot färdriktningen, så slängen följer hur han flyger — bakåt i
+## ett språng, uppåt i ett fall, och den vänder mjukt när hoppet vänder. Utan
+## den satt benen blickstilla, vilket var lika osant som guppet.
+func _dangle(normal: Vector2, delta: float, flight: Vector2) -> void:
 	var t := Vector2(-normal.y, normal.x)
+	# Motståndet är taget vid en fart, annars pekar benen rakt upp i ett långt
+	# fall. Vid taket är utslaget knappt 40 px av benets 64, alltså drygt 35°.
+	var drag := -flight.limit_length(SWAY_TOP) * Settings.leg_sway
 	for i in 2:
 		# Höften och det hängande benets viloläge, båda i kroppens ram. Benet
 		# hänger nästan rakt ner: stående står det böjt för att bära kroppen,
@@ -264,14 +273,11 @@ func _dangle(normal: Vector2, delta: float, _fall_speed: float) -> void:
 		var rest := hip - normal * DANGLE_LENGTH
 		var off: Vector2 = (feet[i] as Vector2) - body_point
 		var vel: Vector2 = _foot_vel[i]
-		vel += (rest - off) * DANGLE_SPRING * delta
+		vel += ((rest - off) * DANGLE_SPRING + drag) * delta
 		vel *= exp(-DANGLE_DAMP * delta)
 		off += vel * delta
-		# **Ett ben svänger i vinkel, det teleskoperar inte.** Fjädern får peka
-		# ut riktningen, men längden är benets egen. Utan det drog fjädern foten
-		# in och ut ur höften i takt med sin egen svängning: mätt hängde foten
-		# 85 px under kroppen på väg upp och 3,6 px på väg ner, alltså ett ben
-		# som växte och krympte 80 px under en enda flykt.
+		# **Ett ben svänger i vinkel, det teleskoperar inte.** Fjädern och luften
+		# får peka ut riktningen, men längden är benets egen.
 		var hang := off - hip
 		if hang.length() > 0.001:
 			off = hip + hang.normalized() * DANGLE_LENGTH

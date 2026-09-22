@@ -322,6 +322,29 @@ faller kan inte känna att han rör sig, bara att farten ändras), och riktninge
 bestämmas av fjädern medan längden är benets egen. Mätt genom hela flykten: **64,4 px
 från höften, 0,0 px variation.** Benet svänger i vinkel och ingenting annat.
 
+### Men slängen skulle vara kvar
+
+I kroppens ram finns ingen kraft kvar som får ett hängande ben att röra sig, och då blev
+benen blickstilla i luften — lika osant som guppet, och sämre att titta på. Det som
+*faktiskt* släpar ett hängande ben i en flykt är **luften han far genom**, så motståndet
+finns nu med: det drar fötterna mot färdriktningen, i styrka mot farten. Slängen följer
+alltså hur han flyger — bakåt i ett språng, uppåt i ett fall, och den vänder mjukt när
+hoppet vänder.
+
+Benets vinkel från rakt ner, mätt under ett hopp:
+
+| | utan motstånd | med motstånd (grund 8,0) |
+| --- | --- | --- |
+| hopp rakt upp, i fallet | +3° → +9° | **+1° → +25°** |
+| hopp snett framåt (703 px/s i sidled) | +27°–+48° | **+40°–+58°** |
+
+Utan motstånd kryper benet tillbaka till nästan rakt ner och blir stående där; med det
+växer släpet med fallfarten, vilket är hela poängen. Motståndet är taget vid 900 px/s,
+annars pekar benen rakt upp i ett långt fall — vid taket är utslaget drygt 35°.
+
+Kroppen är orörd av tillägget: samma hopp mätte **5,9 px vandring** och benets längd
+64,4 px med 0,0 px variation.
+
 På marken är fjädringen orörd: mätt över Rullbanans backar ligger kroppen inom
 −7,1..0,2 px från kollisionskroppen med högst 1,0 px ändring mellan bildrutor.
 
