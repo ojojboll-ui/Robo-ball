@@ -59,6 +59,7 @@ const STEP_CLEAR := 3.0
 ## är samma sak som att han aldrig går ner för något brantare än 33°.
 const LEDGE_DROP := 22.0
 const STEP_PAST := 6.0
+const CORNER_DOT := 0.98       ## ytans normal mot kontaktens; under det är det ett hörn (11°)
 const SIM_STEP := 1.0 / 45.0
 const SIM_STEPS := 70
 
@@ -144,6 +145,14 @@ func _ready() -> void:
 	# Spelets egna överföringar av fart går inte den här vägen: studsmattan och
 	# greppen sätter farten själva, så ingenting går förlorat.
 	platform_on_leave = CharacterBody2D.PLATFORM_ON_LEAVE_DO_NOTHING
+	# Motorns "stå still i backar" gissar att en fart rakt nedåt är tyngden som
+	# ska hållas emot, och nollar den. Men hans fart i en backe är fart längs
+	# ytan plus markfästet in i den, och på väg nedför en brant passerar summan
+	# rakt nedåt vid en enda fart — i 55° vid 215 px/s. Där stannade han helt en
+	# bildruta, sanningskollen tog farten, och han fick börja om: ett hack varje
+	# gång han rullade nedför skålen efter en vända. Han står aldrig still på det
+	# sätt motorn menar — farten längs ytan är hans egen och räknas ut varje gång.
+	floor_stop_on_slope = false
 	_legs.reset(self, Vector2.UP)
 	InputSignal.pressed.connect(_on_signal_pressed)
 	InputSignal.released.connect(_on_signal_released)
@@ -227,7 +236,10 @@ func _process_ground(delta: float) -> void:
 	if Settings.top_speed > 0.0:
 		ground_speed = clampf(ground_speed, -Settings.top_speed, Settings.top_speed)
 	spin += ground_speed / RADIUS * delta
-	velocity = t * ground_speed - ground_normal * Settings.ground_stick
+	# Farten han färdas med, och den som bara håller honom mot underlaget. Bara
+	# den första är rörelse; den andra är ett grepp och får aldrig knuffa något.
+	var travel := t * ground_speed
+	velocity = travel - ground_normal * Settings.ground_stick
 	var before_move := velocity
 	var before_pos := global_position
 	var speed_before := ground_speed
@@ -243,7 +255,7 @@ func _process_ground(delta: float) -> void:
 	# vara större än taket — annars bär en enda bildruta honom hur långt som
 	# helst nästa gång, eftersom förflyttningstaket räknas ur just den farten.
 	velocity = _capped(velocity)
-	_push_things(0.5, before_move)
+	_push_things(0.5, travel)
 
 	# Bara en vägg han faktiskt kör in i. Kanten han rullar *ut ifrån* räknas
 	# också som vägg av motorn, och att vända på farten där tog allt han byggt
@@ -275,6 +287,8 @@ func _process_ground(delta: float) -> void:
 	_airborne_frames = 0
 
 	var next_normal := get_floor_normal()
+	if state == State.WALK and _on_a_corner(next_normal):
+		next_normal = ground_normal
 	if Settings.crest_release and _leaves_crest(ground_normal, next_normal, delta):
 		# Farten behåller riktningen den hade *före* kanten. Det är det som gör
 		# att han far ut i en båge i stället för att vika av nedåt utmed hörnet.
@@ -289,6 +303,33 @@ func _process_ground(delta: float) -> void:
 			and not _ground_ahead():
 		_turn_around()
 	_update_stance()
+
+## Står han på ett hörn och inte på en yta?
+##
+## När han går över kanten på en låda rundar kapseln hörnet, och motorn ger då
+## en normal som pekar från hörnet mot hans mitt — den vrider sig från 0° till
+## 60° medan han kliver av. Men det finns ingen sådan lutning någonstans: lådan
+## har en plan ovansida och en lodrät sida, och hörnet är en punkt. Läst som
+## underlag blev det en brant backe, benen åkte in och han blev boll på kanten.
+## Mätt på den sista småstenen vid Lekplatsens start: 0°, 16°, 35°, 50° på fyra
+## bildrutor, sedan RULLAR.
+##
+## Frågan ställs till ytan själv: en kort stråle längs normalen in mot
+## kontaktpunkten. Är det en riktig yta svarar den med samma normal. Är det ett
+## hörn svarar den med en av sidornas normal, som inte är den motorn gav.
+## Rampernas egna knäckar är några grader och räknas som yta; ett lådhörn är det
+## inte förrän han redan är på väg ner.
+func _on_a_corner(normal: Vector2) -> bool:
+	for i in get_slide_collision_count():
+		var c := get_slide_collision(i)
+		if c.get_normal().dot(normal) < 0.999:
+			continue
+		var at := c.get_position()
+		var query := PhysicsRayQueryParameters2D.create(
+			at + normal * 4.0, at - normal * 4.0, collision_mask, [get_rid()])
+		var hit := get_world_2d().direct_space_state.intersect_ray(query)
+		return hit.is_empty() or (hit["normal"] as Vector2).dot(normal) < CORNER_DOT
+	return false
 
 ## Kör han in i väggen, eller bort från den? Motorn kallar allt brantare än
 ## golvvinkeln för vägg, och kanten han just lämnat är en sådan yta.
@@ -1311,21 +1352,42 @@ func _ground_ahead() -> bool:
 ## krock får aldrig läsas ur ett tillstånd som rörelsen i samma bildruta redan
 ## hunnit ändra.
 func _push_things(strength: float, incoming: Vector2) -> void:
-	var drive := incoming
 	for i in get_slide_collision_count():
 		var c := get_slide_collision(i)
 		var body := c.get_collider()
 		if not (body is RigidBody2D):
 			continue
+		# Bara det som går *in i* föremålet knuffar det, och bara längs
+		# kontaktens normal — så trycker en kropp på en annan. Förut sköts hela
+		# farten in som knuff åt vilket håll den än pekade, och på ett lådhörn
+		# pekade den nästan längs lådan: han rundade kanten, och lådan han stod
+		# på sköts ut bakom honom. Mätt 290 px/s bakåt för en låda han bara gick
+		# av, med markfästets 150 px/s inräknat som om det vore fart.
+		#
+		# Om lådan går sönder avgörs fortfarande av hela farten, precis som
+		# förut: det är smällen, inte knuffen, och den ändringen har ingen bett om.
+		var n := c.get_normal()
+		var into := maxf(0.0, -incoming.dot(n))
 		if body.has_method("take_impact"):
-			body.take_impact(drive.length())
+			body.take_impact(incoming.length())
 		# Knuffa aldrig något som ligger under oss. Gör man det trycks lådan ner
 		# i marken, marken trycker tillbaka, och fysikmotorn löser överlappet
 		# genom att kasta ut RB uppåt — bildruta efter bildruta. Att stå på
 		# något är inte att knuffa det.
-		if c.get_normal().y < -0.5:
+		if n.y < -0.5:
 			continue
-		var impulse := drive * Settings.push_force * strength
+		# Och aldrig mer än skillnaden i fart. En kropp kan bara knuffa något
+		# som är långsammare än den själv — när lådan väl åker lika fort som han
+		# går finns inget kvar att trycka med. Förut gavs samma knuff varje
+		# bildruta oavsett hur fort lådan redan for, och en småsten på en
+		# tredjedels lådvikt fick 105 px/s till *per bildruta*, i överkanten, så
+		# att den tippade och flög. Nu är det massan gånger farten som skiljer,
+		# och reglaget avgör hur mycket av den han hinner ge på en bildruta.
+		var rb_body := body as RigidBody2D
+		var gap := into - maxf(0.0, rb_body.linear_velocity.dot(-n))
+		if gap <= 0.0:
+			continue
+		var impulse := -n * gap * rb_body.mass * Settings.push_force * strength
 		body.apply_impulse(impulse, c.get_position() - body.global_position)
 
 ## Simulerar hoppbanan mot den riktiga kollisionsvärlden. Eftersom lufttiden är

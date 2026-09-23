@@ -484,6 +484,17 @@ måste de klara att ta honom ner igen: kantskyddet räknar därför plan mark in
 steghöjd som mark, medan gränsen för *backar* står kvar där den stod. Mått i
 docs/METRICS.md.
 
+Ett **hörn är ingen backe**. När han går över kanten på en låda rundar kroppen hörnet,
+och fysikmotorn kallar det en lutning som vrider sig från plan till brant. Men lådan
+har en plan ovansida och en lodrät sida, och det finns ingen backe där. Han kliver av
+kanten på benen och blir inte boll för att underlaget ser brant ut under en bråkdels
+sekund.
+
+Och **knuffen följer reglerna för två kroppar**. Bara rörelse knuffar, inte greppet
+mot marken. Bara den del som går in i föremålet trycker, längs kontakten. Och ingen
+kropp kan ge något mer fart än den själv kommer med. Utan de tre reglerna sköt han
+iväg lådan han stod på när han gick av den.
+
 ## 8. Grafisk riktning
 
 Konceptskisserna sätter tonen: handteckning, tuschlinje, kritig skuggning, starka

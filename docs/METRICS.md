@@ -355,6 +355,121 @@ Slängen själv är fortfarande tagen vid 900 px/s, annars pekar benen rakt upp 
 fall. Två reglage under *Rörelse*: **Benens släng i luften** och **Benen förbereder
 landningen** (0 % stänger av landningsfasen).
 
+## Hacket i skålen och bollen på lådkanten
+
+Två fel från samma speltest. Båda kom ur samma sak: något som *inte* är rörelse
+räknades som rörelse.
+
+### Skålen: motorn trodde att han stod still
+
+Rullbanans skål, RB går ner i botten och uppför väggen tills benen åker in vid 43°,
+och rullar sedan tillbaka. Varje gång han vände och började rulla nedför stannade han
+helt en bildruta:
+
+| Bildruta | Fart före | Förflyttning | Fart efter |
+| --- | --- | --- | --- |
+| 120 | −181 px/s | 3,3 px | −200 px/s |
+| 121 | −200 px/s | **0,1 px** | **−7 px/s** |
+| 122 | −7 px/s | 0,4 px | −26 px/s |
+
+Orsaken är motorns inställning *floor_stop_on_slope*. Den nollar förflyttningen när
+farten pekar rakt nedåt, eftersom den gissar att det är tyngden som ska hållas emot i
+en backe. Men hans fart i en backe är fart längs ytan *plus* markfästet in i den, och
+på väg nedför passerar summan rakt nedåt vid en enda fart. I 55° blir det
+150 · 0,82 / 0,57 = 215 px/s. Där stannade han, sanningskollen (se nedan) tog farten
+eftersom han inte rört sig, och han fick börja om från noll: ett hack per nedfärd.
+
+Han står aldrig still på det sätt motorn menar, eftersom farten längs ytan är hans egen
+och räknas ut varje bildruta. Inställningen är nu av.
+
+| Tio sekunder i skålen | Stopp mitt i en nedfärd |
+| --- | --- |
+| Före | 4 |
+| Efter | 0 |
+
+### Lådkanten: ett hörn är ingen backe
+
+RB går över den sista småstenen vid Lekplatsens start (22 px hög). Kapseln rundar
+hörnet, och motorn ger då en normal som pekar från hörnet mot hans mitt:
+
+| Bildruta | Underlagets lutning | Läge |
+| --- | --- | --- |
+| 163 | 3° | GÅR |
+| 166 | 22° | GÅR |
+| 169 | 41° | GÅR |
+| 170 | 47° | **RULLAR** |
+| 170–179 | 41–53° | RULLAR, kvar på kanten |
+
+Lådan har ingen sådan lutning någonstans. Ovansidan är plan och sidan lodrät, och
+hörnet är en punkt. Men läst som underlag blev det en backe brantare än benens 43°,
+och han blev boll på kanten.
+
+Hörnet känns nu igen genom att fråga ytan själv. En kort stråle skjuts längs normalen
+in mot kontaktpunkten. En riktig yta svarar med samma normal, ett hörn med en av
+sidornas. Gränsen är 11°. Rampernas egna knäckar är några grader och räknas som yta.
+Går han på ett hörn behåller han underlaget han hade, kliver av och landar 22 px
+längre ner.
+
+| Över de åtta småstenarna | Bildrutor som boll |
+| --- | --- |
+| Före | 10 |
+| Efter | 0 |
+
+Kollen får inte ta rampernas polygoner för hörn. Mätt i gående bildrutor på Rullbanan:
+
+| Sträcka | Gående bildrutor | Kallade hörn |
+| --- | --- | --- |
+| Vinkeltrappan | 891 | 0 |
+| Kullarna | 713 | 0 |
+| Pucklarna | 874 | 4 |
+
+De fyra på pucklarna är skarvar mellan polygonens konvexa bitar (se sist i avsnittet),
+och där gör kollen nytta. Över pucklarna, stopp mitt i gång: 10 före, 3 efter. Korta
+växlingar till boll: 5 före, 2 efter.
+
+### Och lådan sköts bakåt
+
+Knuffen tog hela farten före kollisionen och sköt in den i lådan, oavsett riktning.
+På ett hörn pekar farten nästan *längs* lådan, och markfästets 150 px/s in i
+underlaget räknades som fart. Lådan han stod på trycktes ut bakom honom: mätt
+290 px/s bakåt i en körning. Om det hände avgjordes av slumpen i fysiken, men
+bollen på kanten kom varje gång.
+
+Nu gäller tre regler, och de är de som gäller för två kroppar som trycker på varandra:
+
+1. **Bara rörelse knuffar.** Markfästet är ett grepp, ingen fart.
+2. **Bara längs kontaktens normal.** Den del av farten som går längs ytan trycker inte.
+3. **Aldrig mer än skillnaden i fart.** Knuffen är massan gånger den fart han kommer
+   med *utöver* lådans egen. När lådan väl åker lika fort som han finns inget kvar att
+   trycka med.
+
+Den tredje regeln föll ut av mätningen. Utan den fick en småsten, en tredjedel så tung
+som en låda, 105 px/s till *varje bildruta* han rörde den. Stöten tog i överkanten,
+så lådan tippade och flög. Förut höll den gamla knuffens nedåtdel emot, eftersom den
+tryckte ner lådan i marken, men det var en slump och inte en regel.
+
+Om en låda går sönder avgörs som förut av hela farten. Det är smällen och inte
+knuffen, och den har ingen bett om att ändra.
+
+| Mätt | Före | Efter |
+| --- | --- | --- |
+| Hopp in i sexvåningstornet, 300 px/s | 8,2 px | 9,8 px |
+| Hopp in i sexvåningstornet, 600 px/s | 8,2 px | 9,0 px |
+| Gå in i tornet och luta sig mot det | lådorna står | lådorna står, han vänder efter 0,35 s |
+| Högsta fart på en småsten han kliver upp på | 55 px/s | 96 px/s |
+
+Knuffen i luften är alltså oförändrad eller något starkare. Småstenarna rör sig lite
+mer än förut, eftersom den gamla knuffen också tryckte ner dem i marken, men aldrig
+fortare än han själv går.
+
+### Kvar: skarvarna i Klättringens krön
+
+En sak syntes i mätningen men hör inte till de här felen. Krönet och skålen i
+Klättringen är en enda polygon som motorn delar upp i konvexa bitar, och vid bitarnas
+skarvar kan kapseln haka i en inre kant. Mätt på krönet: en bildruta med 45° eller
+61° lutning (han blir boll en bildruta och vänder), och enstaka stopp: 3 före och 2
+efter på 400 bildrutor. Det fanns före den här ändringen och finns kvar.
+
 ## Han sköt i väg ur bild: tre fel, inte ett
 
 Speltestaren såg RB skjuta i väg ur bild bland lådorna. Det tog tre mätningar att komma

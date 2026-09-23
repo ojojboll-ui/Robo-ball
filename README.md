@@ -193,6 +193,12 @@ benen rörde vid vad som helst; nu går han emot det en stund (grund 0,35 s, reg
 skjuter han framför sig i stället för att vända vid den. Först när han verkligen inte
 kommer någonstans vänder han.
 
+**Kanter och knuffar.** Går han över kanten på en låda kliver han av den på benen. Ett
+hörn räknas inte som en brant backe, så han blir inte boll på kanten. Knuffen följer
+reglerna för två kroppar. Bara rörelse knuffar, inte greppet mot marken. Bara den del
+av farten som går in i föremålet trycker. Och han kan aldrig ge en låda mer fart än han
+själv har. Därför skjuts inte lådan han går av ut bakom honom.
+
 **Hjärtan.** Tre stycken. Tar de slut börjar banan om från början med alla fiender
 tillbaka — att förlora är att få börja om, inte att förlora något man byggt upp.
 
